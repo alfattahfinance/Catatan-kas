@@ -1,4 +1,4 @@
-      - name: Prepare Android project
+    - name: Prepare Android project
         shell: bash
         run: |
           set -e
