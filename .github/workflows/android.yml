@@ -96,6 +96,13 @@ jobs:
           cp *.jpg app/src/main/assets/ || true
           cp *.jpeg app/src/main/assets/ || true
 
+               - name: Enable AndroidX
+        run: |
+          cat > gradle.properties <<'EOF'
+          android.useAndroidX=true
+          android.enableJetifier=true
+          EOF
+          
       - name: Generate Gradle wrapper
         run: |
           gradle wrapper --gradle-version 8.9
