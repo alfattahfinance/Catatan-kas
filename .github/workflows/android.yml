@@ -147,7 +147,7 @@ jobs:
           fi
 
           - name: Prepare Android assets
-        run: |
+            run: 
           echo "Menyiapkan folder assets Android..."
 
           mkdir -p app/src/main/assets
