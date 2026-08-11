@@ -1252,28 +1252,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!logo) return;
 
-    const tersimpan = localStorage.getItem("logoDashboard");
+    const logoDefault =
+        "assets/logo-catatan-keuangan.png";
 
+    const tersimpan =
+        localStorage.getItem("logoDashboard");
+
+    // Gunakan logo yang tersimpan
     if (tersimpan) {
         logo.src = tersimpan;
     }
 
-    // Jika logo dari localStorage rusak,
-    // kembali ke logo bawaan aplikasi
+    // Jika logo gagal dimuat
     logo.onerror = function () {
 
-        console.warn("Logo gagal dimuat. Menggunakan logo bawaan.");
+        console.warn(
+            "Logo gagal dimuat. Menggunakan logo default."
+        );
 
+        // Hapus logo lama yang rusak
         localStorage.removeItem("logoDashboard");
 
-        logo.src = "assets/logo-catatan-kas.png";
+        // Kembali ke logo default
+        logo.src = logoDefault;
 
     };
 
 });
 
 </script>
-
 
 <!-- =====================================================
      SCRIPT TAHUN OTOMATIS
