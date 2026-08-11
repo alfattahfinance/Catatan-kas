@@ -8,217 +8,99 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      # ==========================================
-      # 1. CHECKOUT PROJECT
-      # ==========================================
       - name: Checkout project
         uses: actions/checkout@v4
 
-
-      # ==========================================
-      # 2. SETUP JAVA
-      # ==========================================
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
           cache: gradle
 
-
-      # ==========================================
-      # 3. SETUP ANDROID SDK
-      # ==========================================
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-
-      # ==========================================
-      # 4. INSTALL ANDROID SDK
-      # ==========================================
       - name: Install Android SDK
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-35"
+          sdkmanager "build-tools;35.0.0"
 
-          sdkmanager \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
-
-
-      # ==========================================
-      # 5. BUAT FOLDER ANDROID
-      # ==========================================
       - name: Create Android project folders
         run: |
           mkdir -p app/src/main/java/com/catatankas/app
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/assets
 
-
-      # ==========================================
-      # 6. SALIN SEMUA FILE WEB
-      # ==========================================
       - name: Copy web files
         run: |
-          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" \) -exec cp {} app/src/main/assets/ \;
+          echo "Menyalin file HTML..."
+          find . -maxdepth 1 -type f -name "*.html" -exec cp {} app/src/main/assets/ \;
 
+          echo "Menyalin file JS..."
+          find . -maxdepth 1 -type f -name "*.js" -exec cp {} app/src/main/assets/ \;
+
+          echo "Menyalin file CSS..."
+          find . -maxdepth 1 -type f -name "*.css" -exec cp {} app/src/main/assets/ \;
+
+          echo "Menyalin folder js..."
           if [ -d "js" ]; then
             cp -r js app/src/main/assets/
           fi
 
+          echo "Menyalin folder Js..."
           if [ -d "Js" ]; then
             cp -r Js app/src/main/assets/
           fi
 
+          echo "Menyalin folder css..."
           if [ -d "css" ]; then
             cp -r css app/src/main/assets/
           fi
 
+          echo "Menyalin folder assets..."
           if [ -d "assets" ]; then
             cp -r assets app/src/main/assets/
           fi
 
+          echo "Menyalin folder images..."
           if [ -d "images" ]; then
             cp -r images app/src/main/assets/
           fi
 
+          echo "Menyalin folder img..."
           if [ -d "img" ]; then
             cp -r img app/src/main/assets/
           fi
 
-          echo "=== FILE ASSETS ==="
+          echo ""
+          echo "Isi assets:"
           find app/src/main/assets -maxdepth 3 -type f | sort
-          echo "======================================"
-          echo "MENYALIN FILE CATATAN KAS"
-          echo "======================================"
 
-          # --------------------------------------
-          # File HTML di root
-          # --------------------------------------
-          find . -maxdepth 1 -type f -name "*.html" \
-            -exec cp {} app/src/main/assets/ \;
-
-          # --------------------------------------
-          # File JavaScript di root
-          # --------------------------------------
-          find . -maxdepth 1 -type f -name "*.js" \
-            -exec cp {} app/src/main/assets/ \;
-
-          # --------------------------------------
-          # File CSS di root
-          # --------------------------------------
-          find . -maxdepth 1 -type f -name "*.css" \
-            -exec cp {} app/src/main/assets/ \;
-
-          # --------------------------------------
-          # manifest.json
-          # --------------------------------------
-          if [ -f "manifest.json" ]; then
-            cp manifest.json app/src/main/assets/
-          fi
-
-          # --------------------------------------
-          # Folder js
-          # --------------------------------------
-          if [ -d "js" ]; then
-            cp -r js app/src/main/assets/
-          fi
-
-          # --------------------------------------
-          # Folder Js
-          # --------------------------------------
-          if [ -d "Js" ]; then
-            cp -r Js app/src/main/assets/
-          fi
-
-          # --------------------------------------
-          # Folder css
-          # --------------------------------------
-          if [ -d "css" ]; then
-            cp -r css app/src/main/assets/
-          fi
-
-          # --------------------------------------
-          # Folder assets
-          # --------------------------------------
-          if [ -d "assets" ]; then
-            cp -r assets app/src/main/assets/
-          fi
-
-          # --------------------------------------
-          # Folder images
-          # --------------------------------------
-          if [ -d "images" ]; then
-            cp -r images app/src/main/assets/
-          fi
-
-          # --------------------------------------
-          # Folder img
-          # --------------------------------------
-          if [ -d "img" ]; then
-            cp -r img app/src/main/assets/
-          fi
-
-          echo ""
-          echo "======================================"
-          echo "ISI ASSETS APK"
-          echo "======================================"
-
-          find app/src/main/assets -maxdepth 5 -type f | sort
-
-
-      # ==========================================
-      # 7. CEK FILE WAJIB
-      # ==========================================
-          - name: Copy web files
+      - name: Fix Firebase config location
         run: |
-          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" \) -exec cp {} app/src/main/assets/ \;
-
-          if [ -d "js" ]; then
-            cp -r js app/src/main/assets/
+          if [ -f "app/src/main/assets/firebase-config.js" ]; then
+            mkdir -p app/src/main/assets/js
+            cp app/src/main/assets/firebase-config.js app/src/main/assets/js/firebase-config.js
+            echo "OK: firebase-config.js tersedia di root dan js/"
           fi
 
-          if [ -d "Js" ]; then
-            cp -r Js app/src/main/assets/
-          fi
-
-          if [ -d "css" ]; then
-            cp -r css app/src/main/assets/
-          fi
-
-          if [ -d "images" ]; then
-            cp -r images app/src/main/assets/
-          fi
-
-          if [ -d "img" ]; then
-            cp -r img app/src/main/assets/
-          fi
-
-          # Logo Catatan Kas
-          mkdir -p app/src/main/assets/assets
-
-          if [ -f "logo-catatan-kas.jpg" ]; then
-            cp logo-catatan-kas.jpg app/src/main/assets/assets/logo-catatan-kas.jpg
-            echo "OK: Logo Catatan Kas berhasil disalin."
-          else
-            echo "WARNING: Logo tidak ditemukan."
-          fi
-
-          echo ""
-          echo "=== VALIDASI LOGO ==="
+      - name: Check logo
+        run: |
+          echo "Memeriksa logo..."
 
           if [ -f "app/src/main/assets/assets/logo-catatan-kas.jpg" ]; then
             echo "OK: assets/logo-catatan-kas.jpg"
+          elif [ -f "app/src/main/assets/assets/logo-catatan-keuangan.png" ]; then
+            echo "OK: assets/logo-catatan-keuangan.png"
           else
-            echo "ERROR: Logo tidak ditemukan di APK assets."
+            echo "PERINGATAN: Logo tidak ditemukan."
           fi
-      
 
-      # ==========================================
-      # 8. SETTINGS GRADLE
-      # ==========================================
+          echo ""
+          echo "Validasi file selesai."
+
       - name: Create settings.gradle
         run: |
           cat > settings.gradle <<'EOF'
@@ -232,7 +114,6 @@ jobs:
 
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-
               repositories {
                   google()
                   mavenCentral()
@@ -240,14 +121,9 @@ jobs:
           }
 
           rootProject.name = "CatatanKas"
-
           include(":app")
           EOF
 
-
-      # ==========================================
-      # 9. ROOT BUILD GRADLE
-      # ==========================================
       - name: Create root build.gradle
         run: |
           cat > build.gradle <<'EOF'
@@ -256,10 +132,6 @@ jobs:
           }
           EOF
 
-
-      # ==========================================
-      # 10. APP BUILD GRADLE
-      # ==========================================
       - name: Create app build.gradle
         run: |
           cat > app/build.gradle <<'EOF'
@@ -269,18 +141,13 @@ jobs:
 
           android {
               namespace 'com.catatankas.app'
-
               compileSdk 35
 
               defaultConfig {
                   applicationId 'com.catatankas.app'
-
                   minSdk 24
-
                   targetSdk 35
-
                   versionCode 1
-
                   versionName '1.0'
               }
 
@@ -296,20 +163,13 @@ jobs:
           }
           EOF
 
-
-      # ==========================================
-      # 11. ANDROID MANIFEST
-      # ==========================================
       - name: Create AndroidManifest.xml
         run: |
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-              <!-- Internet untuk Firebase -->
-              <uses-permission
-                  android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.INTERNET" />
 
               <application
                   android:allowBackup="true"
@@ -322,13 +182,8 @@ jobs:
                       android:exported="true">
 
                       <intent-filter>
-
-                          <action
-                              android:name="android.intent.action.MAIN" />
-
-                          <category
-                              android:name="android.intent.category.LAUNCHER" />
-
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
 
                   </activity>
@@ -338,15 +193,10 @@ jobs:
           </manifest>
           EOF
 
-
-      # ==========================================
-      # 12. STYLE ANDROID
-      # ==========================================
       - name: Create styles.xml
         run: |
           cat > app/src/main/res/values/styles.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-
           <resources>
 
               <style
@@ -354,32 +204,15 @@ jobs:
                   parent="android:style/Theme.Material.Light.NoActionBar">
 
                   <item name="android:fontFamily">sans</item>
-
-                  <item name="android:colorAccent">
-                      #198754
-                  </item>
-
-                  <item name="android:statusBarColor">
-                      #198754
-                  </item>
-
-                  <item name="android:navigationBarColor">
-                      #000000
-                  </item>
-
-                  <item name="android:windowLightStatusBar">
-                      false
-                  </item>
+                  <item name="android:colorAccent">#198754</item>
+                  <item name="android:navigationBarColor">#000000</item>
+                  <item name="android:statusBarColor">#000000</item>
 
               </style>
 
           </resources>
           EOF
 
-
-      # ==========================================
-      # 13. MAIN ACTIVITY
-      # ==========================================
       - name: Create MainActivity.java
         run: |
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
@@ -404,45 +237,19 @@ jobs:
               @SuppressLint("SetJavaScriptEnabled")
               @Override
               protected void onCreate(Bundle savedInstanceState) {
-
                   super.onCreate(savedInstanceState);
 
                   webView = new WebView(this);
-
                   setContentView(webView);
 
-                  WebSettings settings =
-                          webView.getSettings();
+                  WebSettings settings = webView.getSettings();
 
-                  // JavaScript
                   settings.setJavaScriptEnabled(true);
-
-                  // LocalStorage
                   settings.setDomStorageEnabled(true);
-
-                  // Database
                   settings.setDatabaseEnabled(true);
 
-                  // Zoom
-                  settings.setBuiltInZoomControls(false);
-
-                  settings.setDisplayZoomControls(false);
-
-                  // Allow media
-                  settings.setMediaPlaybackRequiresUserGesture(false);
-
-                  // Keamanan file
                   settings.setAllowFileAccess(false);
-
                   settings.setAllowContentAccess(false);
-
-                  /*
-                   * WebViewAssetLoader membuat file HTML,
-                   * CSS, JavaScript dan assets dapat dibuka
-                   * menggunakan:
-                   *
-                   * https://appassets.androidplatform.net/assets/
-                   */
 
                   final WebViewAssetLoader assetLoader =
                           new WebViewAssetLoader.Builder()
@@ -452,117 +259,71 @@ jobs:
                                   )
                                   .build();
 
+                  webView.setWebViewClient(new WebViewClient() {
 
-                  webView.setWebViewClient(
-                          new WebViewClient() {
+                      @Override
+                      public WebResourceResponse shouldInterceptRequest(
+                              WebView view,
+                              WebResourceRequest request) {
 
-                              @Override
-                              public WebResourceResponse
-                              shouldInterceptRequest(
-                                      WebView view,
-                                      WebResourceRequest request) {
+                          Uri uri = request.getUrl();
 
-                                  Uri uri =
-                                          request.getUrl();
+                          return assetLoader.shouldInterceptRequest(uri);
+                      }
+                  });
 
-                                  WebResourceResponse response =
-                                          assetLoader.shouldInterceptRequest(uri);
-
-                                  return response;
-                              }
-
-                          }
-                  );
-
-
-                  // Buka dashboard
                   webView.loadUrl(
                           "https://appassets.androidplatform.net/assets/index.html"
                   );
               }
 
-
               @Override
               public void onBackPressed() {
 
-                  if (
-                          webView != null &&
-                          webView.canGoBack()
-                  ) {
-
+                  if (webView != null && webView.canGoBack()) {
                       webView.goBack();
-
                   } else {
-
                       super.onBackPressed();
-
                   }
               }
           }
           EOF
 
-
-      # ==========================================
-      # 14. TAMPILKAN STRUKTUR APK
-      # ==========================================
-      - name: Show final project structure
+      - name: Check index.html
         run: |
-          echo "======================================"
-          echo "STRUKTUR PROJECT ANDROID"
-          echo "======================================"
-
-          find app/src/main -maxdepth 5 -type f | sort
-
-
-      # ==========================================
-      # 15. SETUP GRADLE
-      # ==========================================
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: "8.10"
-
-
-      # ==========================================
-      # 16. CLEAN PROJECT
-      # ==========================================
-      - name: Clean project
-        run: |
-          gradle --no-daemon clean
-
-
-      # ==========================================
-      # 17. BUILD DEBUG APK
-      # ==========================================
-      - name: Build Debug APK
-        run: |
-          gradle --no-daemon :app:assembleDebug
-
-
-      # ==========================================
-      # 18. CEK APK
-      # ==========================================
-      - name: Check APK
-        run: |
-          echo "======================================"
-          echo "MEMERIKSA APK"
-          echo "======================================"
-
-          APK="app/build/outputs/apk/debug/app-debug.apk"
-
-          if [ ! -f "$APK" ]; then
-            echo "ERROR: APK tidak berhasil dibuat!"
+          if [ ! -f "app/src/main/assets/index.html" ]; then
+            echo "ERROR: index.html tidak ditemukan."
             exit 1
           fi
 
-          echo ""
-          echo "APK BERHASIL DIBUAT:"
-          ls -lh "$APK"
+          echo "OK: index.html ditemukan."
 
+      - name: Check logo result
+        run: |
+          if [ -f "app/src/main/assets/assets/logo-catatan-kas.jpg" ]; then
+            echo "OK: Logo Catatan Kas siap dimasukkan ke APK."
+          elif [ -f "app/src/main/assets/assets/logo-catatan-keuangan.png" ]; then
+            echo "OK: Logo Catatan Keuangan siap dimasukkan ke APK."
+          else
+            echo "PERINGATAN: Logo belum ditemukan."
+          fi
 
-      # ==========================================
-      # 19. UPLOAD APK
-      # ==========================================
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10'
+
+      - name: Build APK
+        run: |
+          gradle --no-daemon clean
+          gradle --no-daemon :app:assembleDebug
+
+      - name: Check APK
+        run: |
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          echo "APK berhasil dibuat."
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
