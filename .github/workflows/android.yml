@@ -30,18 +30,16 @@ jobs:
         run: |
           set -e
 
-          echo "======================================"
-          echo "MENYIAPKAN PROJECT ANDROID CATATAN KAS"
-          echo "======================================"
+          echo "===================================="
+          echo "MEMBANGUN APK CATATAN KAS"
+          echo "===================================="
 
+          # Struktur folder
           mkdir -p app/src/main/java/com/catatankas/app
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/assets
 
-          # ----------------------------------
           # settings.gradle
-          # ----------------------------------
-
           cat > settings.gradle <<'EOF'
           pluginManagement {
               repositories {
@@ -63,179 +61,185 @@ jobs:
           include(":app")
           EOF
 
-          # ----------------------------------
           # build.gradle
-          # ----------------------------------
-
           cat > build.gradle <<'EOF'
           plugins {
-              id "com.android.application" version "8.7.3" apply false
+              id 'com.android.application' version '8.7.3' apply false
           }
           EOF
 
-          # ----------------------------------
-          # app/build.gradle
-          # ----------------------------------
+          # gradle.properties
+          cat > gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          EOF
 
+          # app/build.gradle
           cat > app/build.gradle <<'EOF'
           plugins {
-              id "com.android.application"
+              id 'com.android.application'
           }
 
           android {
-              namespace "com.catatankas.app"
+              namespace 'com.catatankas.app'
               compileSdk 35
 
               defaultConfig {
-                  applicationId "com.catatankas.app"
+                  applicationId 'com.catatankas.app'
                   minSdk 23
                   targetSdk 35
                   versionCode 1
-                  versionName "1.0"
+                  versionName '1.0'
               }
           }
+          EOF
 
-          dependencies {
-              implementation "androidx.appcompat:appcompat:1.7.0"
-              implementation "androidx.webkit:webkit:1.12.1"
+          # AndroidManifest.xml
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-permission android:name="android.permission.INTERNET" />
+
+              <application
+                  android:allowBackup="true"
+                  android:label="Catatan Kas"
+                  android:theme="@style/AppTheme"
+                  android:usesCleartextTraffic="true">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+
+                  </activity>
+
+              </application>
+
+          </manifest>
+          EOF
+
+          # MainActivity.java
+          cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
+          package com.catatankas.app;
+
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          public class MainActivity extends Activity {
+
+              private WebView webView;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  webView = new WebView(this);
+
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setAllowFileAccess(true);
+                  settings.setAllowContentAccess(true);
+                  settings.setBuiltInZoomControls(false);
+                  settings.setDisplayZoomControls(false);
+                  settings.setLoadWithOverviewMode(true);
+                  settings.setUseWideViewPort(true);
+
+                  webView.setWebViewClient(new WebViewClient());
+
+                  setContentView(webView);
+
+                  webView.loadUrl("file:///android_asset/index.html");
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (webView.canGoBack()) {
+                      webView.goBack();
+                  } else {
+                      super.onBackPressed();
+                  }
+              }
           }
           EOF
 
-          # ----------------------------------
-          # gradle.properties
-          # ----------------------------------
+          # styles.xml
+          cat > app/src/main/res/values/styles.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
 
-          cat > gradle.properties <<'EOF'
-          android.useAndroidX=true
-          android.enableJetifier=true
+              <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+                  <item name="android:fontFamily">sans</item>
+                  <item name="android:colorAccent">#164c3d</item>
+                  <item name="android:navigationBarColor">#ffffff</item>
+                  <item name="android:statusBarColor">#ffffff</item>
+                  <item name="android:windowLightStatusBar">true</item>
+              </style>
+
+          </resources>
           EOF
 
-          # ----------------------------------
-          # MainActivity
-          # ----------------------------------
-
-          if [ ! -f MainActivity.java ]; then
-            echo "ERROR: MainActivity.java tidak ditemukan!"
-            exit 1
+          # Salin HTML utama
+          if [ -f index.html ]; then
+              cp index.html app/src/main/assets/index.html
+          else
+              echo "ERROR: index.html tidak ditemukan!"
+              exit 1
           fi
 
-          cp MainActivity.java \
-            app/src/main/java/com/catatankas/app/MainActivity.java
-
-          # ----------------------------------
-          # AndroidManifest
-          # ----------------------------------
-
-          if [ ! -f AndroidManifest.xml ]; then
-            echo "ERROR: AndroidManifest.xml tidak ditemukan!"
-            exit 1
-          fi
-
-          cp AndroidManifest.xml \
-            app/src/main/AndroidManifest.xml
-
-          # ----------------------------------
-          # styles.xml
-          # ----------------------------------
-
-          if [ -f styles.xml ]; then
-            cp styles.xml \
-              app/src/main/res/values/styles.xml
-          fi
-
-          # ----------------------------------
-          # HTML
-          # ----------------------------------
-
-          echo "Menyalin file HTML..."
-
-          find . -maxdepth 1 -type f \
-            \( -name "*.html" -o -name "*.htm" \) \
-            -exec cp {} app/src/main/assets/ \;
-
-          # ----------------------------------
-          # JavaScript
-          # ----------------------------------
-
+          # Salin JS
           if [ -d js ]; then
-            echo "Menyalin folder js..."
-            cp -R js app/src/main/assets/
+              cp -R js app/src/main/assets/
           fi
 
-          # ----------------------------------
-          # CSS
-          # ----------------------------------
-
+          # Salin CSS
           if [ -d css ]; then
-            echo "Menyalin folder css..."
-            cp -R css app/src/main/assets/
+              cp -R css app/src/main/assets/
           fi
 
-          # ----------------------------------
-          # ASSETS
-          # PENTING:
-          # folder assets dipertahankan namanya
-          # ----------------------------------
-
+          # Salin seluruh folder assets
           if [ -d assets ]; then
-            echo "Menyalin folder assets..."
-            cp -R assets app/src/main/assets/
-          else
-            echo "Folder assets belum ada."
-            mkdir -p app/src/main/assets/assets
+              cp -R assets/. app/src/main/assets/
           fi
 
-          # ----------------------------------
-          # LOGO ROOT
-          # Jika logo berada di root repository,
-          # masukkan ke assets/assets/
-          # ----------------------------------
-
+          # Pastikan logo tersedia
           if [ -f logo-catatan-kas.png ]; then
-            echo "Logo PNG ditemukan di root."
-            cp logo-catatan-kas.png \
-              app/src/main/assets/assets/logo-catatan-kas.png
-          fi
-
-          if [ -f logo-catatan-kas.jpg ]; then
-            echo "Logo JPG ditemukan di root."
-
-            # Simpan juga versi JPG
-            cp logo-catatan-kas.jpg \
-              app/src/main/assets/assets/logo-catatan-kas.jpg
-          fi
-
-          # ----------------------------------
-          # CEK LOGO
-          # ----------------------------------
-
-          echo ""
-          echo "======================================"
-          echo "PEMERIKSAAN LOGO"
-          echo "======================================"
-
-          if [ -f app/src/main/assets/assets/logo-catatan-kas.png ]; then
-            echo "OK: logo-catatan-kas.png ditemukan."
-          elif [ -f app/src/main/assets/assets/logo-catatan-kas.jpg ]; then
-            echo "OK: logo-catatan-kas.jpg ditemukan."
+              cp logo-catatan-kas.png \
+                app/src/main/assets/logo-catatan-kas.png
+              echo "Logo PNG ditemukan dan disalin."
+          elif [ -f logo-catatan-kas.jpg ]; then
+              cp logo-catatan-kas.jpg \
+                app/src/main/assets/logo-catatan-kas.jpg
+              echo "Logo JPG ditemukan dan disalin."
           else
-            echo "PERINGATAN: Logo belum ditemukan!"
+              echo "PERINGATAN: logo-catatan-kas.png tidak ditemukan."
           fi
 
           echo ""
-          echo "Isi assets Android:"
-          find app/src/main/assets -maxdepth 3 -type f | sort
+          echo "===================================="
+          echo "ISI ASSETS:"
+          echo "===================================="
+          find app/src/main/assets -maxdepth 3 -type f -print
 
       - name: Build APK
         shell: bash
         run: |
           set -e
 
-          echo "======================================"
-          echo "MEMBANGUN APK CATATAN KAS"
-          echo "======================================"
+          echo "===================================="
+          echo "BUILD APK CATATAN KAS"
+          echo "===================================="
 
-          gradle assembleDebug --no-daemon
+          gradle --no-daemon \
+            --stacktrace \
+            assembleDebug
 
       - name: Rename APK
         shell: bash
@@ -244,17 +248,8 @@ jobs:
 
           mkdir -p output
 
-          APK=$(find app/build/outputs/apk/debug \
-            -type f \
-            -name "*.apk" \
-            | head -n 1)
-
-          if [ -z "$APK" ]; then
-            echo "ERROR: APK tidak ditemukan!"
-            exit 1
-          fi
-
-          cp "$APK" output/Catatan-Kas-APK.apk
+          cp app/build/outputs/apk/debug/app-debug.apk \
+            output/Catatan-Kas-APK.apk
 
           echo "APK berhasil dibuat:"
           ls -lh output/Catatan-Kas-APK.apk
