@@ -63,6 +63,12 @@ jobs:
             cp -r img app/src/main/assets/
           fi
 
+              mkdir -p app/src/main/assets/assets
+
+          if [ -f "logo-catatan-kas.jpg" ]; then
+            cp logo-catatan-kas.jpg app/src/main/assets/assets/logo-catatan-kas.jpg
+          fi
+
       - name: Prepare Firebase config
         run: |
           if [ -f "app/src/main/assets/firebase-config.js" ]; then
