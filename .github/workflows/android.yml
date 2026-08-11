@@ -146,28 +146,27 @@ jobs:
             cp -r assets/* app/src/main/assets/ 2>/dev/null || true
           fi
 
-          - name: Prepare Android assets
-            run: 
+
+      - name: Prepare Android assets
+        run: |
           echo "Menyiapkan folder assets Android..."
 
           mkdir -p app/src/main/assets
 
-          echo "Menyalin folder assets..."
           if [ -d assets ]; then
+            echo "Menyalin assets..."
             cp -R assets/. app/src/main/assets/
           fi
 
-          echo "Menyalin logo Catatan Kas..."
-
           if [ -f logo-catatan-kas.png ]; then
+            echo "Logo PNG ditemukan."
             cp logo-catatan-kas.png app/src/main/assets/logo-catatan-kas.png
-            echo "Logo PNG berhasil disalin."
           elif [ -f logo-catatan-kas.jpg ]; then
+            echo "Logo JPG ditemukan."
             cp logo-catatan-kas.jpg app/src/main/assets/logo-catatan-kas.jpg
-            echo "Logo JPG berhasil disalin."
           else
-            echo "PERINGATAN: Logo tidak ditemukan."
+            echo "Logo belum ditemukan."
           fi
 
-          echo "Isi folder Android assets:"
+          echo "Isi folder assets:"
           ls -lah app/src/main/assets
