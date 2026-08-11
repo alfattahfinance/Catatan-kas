@@ -60,8 +60,36 @@ jobs:
       # ==========================================
       # 6. SALIN SEMUA FILE WEB
       # ==========================================
-      - name: Copy web application files
+      - name: Copy web files
         run: |
+          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" \) -exec cp {} app/src/main/assets/ \;
+
+          if [ -d "js" ]; then
+            cp -r js app/src/main/assets/
+          fi
+
+          if [ -d "Js" ]; then
+            cp -r Js app/src/main/assets/
+          fi
+
+          if [ -d "css" ]; then
+            cp -r css app/src/main/assets/
+          fi
+
+          if [ -d "assets" ]; then
+            cp -r assets app/src/main/assets/
+          fi
+
+          if [ -d "images" ]; then
+            cp -r images app/src/main/assets/
+          fi
+
+          if [ -d "img" ]; then
+            cp -r img app/src/main/assets/
+          fi
+
+          echo "=== FILE ASSETS ==="
+          find app/src/main/assets -maxdepth 3 -type f | sort
           echo "======================================"
           echo "MENYALIN FILE CATATAN KAS"
           echo "======================================"
