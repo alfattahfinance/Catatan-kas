@@ -1,6 +1,6 @@
 // ======================================
-// Syahriyyah App v2
-// app.js
+// CATATAN KAS - APP.JS
+// Versi Stabil Dashboard + Firebase
 // ======================================
 
 import {
@@ -19,14 +19,14 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
+
 // ======================================
 // FORMAT RUPIAH
 // ======================================
 
 function rupiah(nilai) {
 
-    return "Rp " +
-        Number(nilai || 0).toLocaleString("id-ID");
+    return "Rp " + Number(nilai || 0).toLocaleString("id-ID");
 
 }
 
@@ -45,7 +45,7 @@ let stokBeras = 0;
 
 
 // ======================================
-// DATA LAPORAN
+// DATA FIREBASE
 // ======================================
 
 let semuaPembayaran = [];
@@ -54,59 +54,28 @@ let semuaPengeluaran = [];
 
 
 // ======================================
-// REKAP PERIODE
-// ======================================
-
-let masukHariIni = 0;
-
-let masukBulanIni = 0;
-
-let masukTahunIni = 0;
-
-let keluarHariIni = 0;
-
-let keluarBulanIni = 0;
-
-let keluarTahunIni = 0;
-
-
-// ======================================
-// REKAP JENIS PEMASUKAN
+// REKAP JENIS
 // ======================================
 
 const pemasukan = {
 
     SPP: 0,
-
     Syahriyyah: 0,
-
     Infaq: 0,
-
     Kas: 0,
-
     Beras: 0,
-
     Lainnya: 0
 
 };
 
 
-// ======================================
-// REKAP JENIS PENGELUARAN
-// ======================================
-
 const pengeluaran = {
 
     SPP: 0,
-
     Syahriyyah: 0,
-
     Infaq: 0,
-
     Kas: 0,
-
     Beras: 0,
-
     Lainnya: 0
 
 };
@@ -123,20 +92,6 @@ function resetData() {
     totalKeluar = 0;
 
     stokBeras = 0;
-
-
-    masukHariIni = 0;
-
-    masukBulanIni = 0;
-
-    masukTahunIni = 0;
-
-
-    keluarHariIni = 0;
-
-    keluarBulanIni = 0;
-
-    keluarTahunIni = 0;
 
 
     Object.keys(pemasukan).forEach(key => {
@@ -156,61 +111,102 @@ function resetData() {
 
 
 // ======================================
-// BACA TANGGAL TRANSAKSI
+// FORMAT / BACA TANGGAL
 // ======================================
 
 function bacaTanggal(data) {
 
-    const nilaiTanggal =
-        data.tanggal ||
-        data.date ||
-        data.createdAt ||
-        data.waktu;
+    const nilai =
+        data?.tanggal ??
+        data?.date ??
+        data?.createdAt ??
+        data?.waktu ??
+        null;
 
 
-    if (!nilaiTanggal) {
+    if (!nilai) {
 
         return null;
 
     }
 
 
-    // Firebase Timestamp
-    if (nilaiTanggal?.toDate) {
+    // Firestore Timestamp
+    if (
+        typeof nilai === "object" &&
+        typeof nilai.toDate === "function"
+    ) {
 
-        return nilaiTanggal.toDate();
+        return nilai.toDate();
 
     }
 
 
     // JavaScript Date
-    if (nilaiTanggal instanceof Date) {
+    if (nilai instanceof Date) {
 
-        return nilaiTanggal;
-
-    }
-
-
-    // Timestamp angka
-    if (typeof nilaiTanggal === "number") {
-
-        return new Date(nilaiTanggal);
+        return nilai;
 
     }
 
 
-    // String tanggal
-    if (typeof nilaiTanggal === "string") {
+    // Angka timestamp
+    if (typeof nilai === "number") {
 
-        const tanggal =
-            new Date(nilaiTanggal);
+        const tanggal = new Date(nilai);
+
+        return isNaN(tanggal.getTime())
+            ? null
+            : tanggal;
+
+    }
 
 
-        if (!isNaN(tanggal.getTime())) {
+    // String
+    if (typeof nilai === "string") {
 
-            return tanggal;
+        // Format YYYY-MM-DD
+        // Dibaca sebagai tanggal lokal Indonesia
+        const cocok =
+            nilai.match(
+                /^(\d{4})-(\d{2})-(\d{2})$/
+            );
+
+
+        if (cocok) {
+
+            const tahun =
+                Number(cocok[1]);
+
+            const bulan =
+                Number(cocok[2]) - 1;
+
+            const hari =
+                Number(cocok[3]);
+
+
+            const tanggal =
+                new Date(
+                    tahun,
+                    bulan,
+                    hari
+                );
+
+
+            return isNaN(tanggal.getTime())
+                ? null
+                : tanggal;
 
         }
+
+
+        const tanggal =
+            new Date(nilai);
+
+
+        return isNaN(tanggal.getTime())
+            ? null
+            : tanggal;
 
     }
 
@@ -221,95 +217,59 @@ function bacaTanggal(data) {
 
 
 // ======================================
-// CEK HARI INI
+// CEK TANGGAL
 // ======================================
 
 function tanggalHariIni(tanggal) {
 
-    if (!tanggal) {
+    if (!tanggal) return false;
 
-        return false;
-
-    }
-
-
-    const sekarang =
-        new Date();
-
+    const sekarang = new Date();
 
     return (
 
-        tanggal.getDate() ===
-        sekarang.getDate()
+        tanggal.getDate() === sekarang.getDate()
 
         &&
 
-        tanggal.getMonth() ===
-        sekarang.getMonth()
+        tanggal.getMonth() === sekarang.getMonth()
 
         &&
 
-        tanggal.getFullYear() ===
-        sekarang.getFullYear()
+        tanggal.getFullYear() === sekarang.getFullYear()
 
     );
 
 }
 
-
-// ======================================
-// CEK BULAN INI
-// ======================================
 
 function tanggalBulanIni(tanggal) {
 
-    if (!tanggal) {
+    if (!tanggal) return false;
 
-        return false;
-
-    }
-
-
-    const sekarang =
-        new Date();
-
+    const sekarang = new Date();
 
     return (
 
-        tanggal.getMonth() ===
-        sekarang.getMonth()
+        tanggal.getMonth() === sekarang.getMonth()
 
         &&
 
-        tanggal.getFullYear() ===
-        sekarang.getFullYear()
+        tanggal.getFullYear() === sekarang.getFullYear()
 
     );
 
 }
 
 
-// ======================================
-// CEK TAHUN INI
-// ======================================
-
 function tanggalTahunIni(tanggal) {
 
-    if (!tanggal) {
-
-        return false;
-
-    }
-
-
-    const sekarang =
-        new Date();
-
+    if (!tanggal) return false;
 
     return (
 
         tanggal.getFullYear() ===
-        sekarang.getFullYear()
+        new Date().getFullYear()
 
     );
 
@@ -317,7 +277,7 @@ function tanggalTahunIni(tanggal) {
 
 
 // ======================================
-// AMBIL SEMUA DATA FIREBASE
+// AMBIL DATA FIREBASE
 // ======================================
 
 async function ambilDataFirebase() {
@@ -325,65 +285,62 @@ async function ambilDataFirebase() {
     resetData();
 
 
+    // ------------------------------
     // SANTRI
+    // ------------------------------
+
     const santriSnapshot =
         await getDocs(
             collection(db, "santri")
         );
 
 
+    // ------------------------------
     // PEMBAYARAN
+    // ------------------------------
+
     const pembayaranSnapshot =
         await getDocs(
             collection(db, "payments")
         );
 
 
+    // ------------------------------
     // PENGELUARAN
+    // ------------------------------
+
     const pengeluaranSnapshot =
         await getDocs(
             collection(db, "expenses")
         );
 
 
-    // ==================================
+    // ------------------------------
     // SIMPAN PEMBAYARAN
-    // ==================================
+    // ------------------------------
 
-    semuaPembayaran = [];
+    semuaPembayaran =
+        pembayaranSnapshot.docs.map(doc => ({
 
+            id: doc.id,
 
-    pembayaranSnapshot.forEach(item => {
+            ...doc.data()
 
-        semuaPembayaran.push({
-
-            id: item.id,
-
-            ...item.data()
-
-        });
-
-    });
+        }));
 
 
-    // ==================================
+    // ------------------------------
     // SIMPAN PENGELUARAN
-    // ==================================
+    // ------------------------------
 
-    semuaPengeluaran = [];
+    semuaPengeluaran =
+        pengeluaranSnapshot.docs.map(doc => ({
 
+            id: doc.id,
 
-    pengeluaranSnapshot.forEach(item => {
+            ...doc.data()
 
-        semuaPengeluaran.push({
-
-            id: item.id,
-
-            ...item.data()
-
-        });
-
-    });
+        }));
 
 
     totalSantri =
@@ -417,11 +374,14 @@ function hitungPemasukan(snapshot) {
             bacaTanggal(data);
 
 
-        // ==================================
-        // BERAS
-        // ==================================
+        // ==============================
+        // BERAS LITER
+        // ==============================
 
-        if (data.satuan === "Liter") {
+        if (
+            String(data.satuan || "").toLowerCase()
+            === "liter"
+        ) {
 
             const liter =
                 Number(data.jumlah || 0);
@@ -432,50 +392,19 @@ function hitungPemasukan(snapshot) {
             pemasukan.Beras += liter;
 
 
-            if (tanggal) {
-
-                if (
-                    tanggalHariIni(tanggal)
-                ) {
-
-                    masukHariIni += liter;
-
-                }
-
-
-                if (
-                    tanggalBulanIni(tanggal)
-                ) {
-
-                    masukBulanIni += liter;
-
-                }
-
-
-                if (
-                    tanggalTahunIni(tanggal)
-                ) {
-
-                    masukTahunIni += liter;
-
-                }
-
-            }
-
-
             return;
 
         }
 
 
-        // ==================================
+        // ==============================
         // UANG
-        // ==================================
+        // ==============================
 
         const nominal =
             Number(
-                data.nominal ||
-                data.jumlah ||
+                data.nominal ??
+                data.jumlah ??
                 0
             );
 
@@ -483,42 +412,15 @@ function hitungPemasukan(snapshot) {
         totalMasuk += nominal;
 
 
-        if (tanggal) {
-
-            if (
-                tanggalHariIni(tanggal)
-            ) {
-
-                masukHariIni += nominal;
-
-            }
-
-
-            if (
-                tanggalBulanIni(tanggal)
-            ) {
-
-                masukBulanIni += nominal;
-
-            }
-
-
-            if (
-                tanggalTahunIni(tanggal)
-            ) {
-
-                masukTahunIni += nominal;
-
-            }
-
-        }
-
-
-        // ==================================
+        // ==============================
         // JENIS
-        // ==================================
+        // ==============================
 
-        switch (data.jenis) {
+        const jenis =
+            data.jenis || "";
+
+
+        switch (jenis) {
 
             case "SPP":
 
@@ -582,11 +484,14 @@ function hitungPengeluaran(snapshot) {
             bacaTanggal(data);
 
 
-        // ==================================
-        // BERAS
-        // ==================================
+        // ==============================
+        // BERAS LITER
+        // ==============================
 
-        if (data.satuan === "Liter") {
+        if (
+            String(data.satuan || "").toLowerCase()
+            === "liter"
+        ) {
 
             const liter =
                 Number(data.jumlah || 0);
@@ -597,50 +502,19 @@ function hitungPengeluaran(snapshot) {
             pengeluaran.Beras += liter;
 
 
-            if (tanggal) {
-
-                if (
-                    tanggalHariIni(tanggal)
-                ) {
-
-                    keluarHariIni += liter;
-
-                }
-
-
-                if (
-                    tanggalBulanIni(tanggal)
-                ) {
-
-                    keluarBulanIni += liter;
-
-                }
-
-
-                if (
-                    tanggalTahunIni(tanggal)
-                ) {
-
-                    keluarTahunIni += liter;
-
-                }
-
-            }
-
-
             return;
 
         }
 
 
-        // ==================================
+        // ==============================
         // UANG
-        // ==================================
+        // ==============================
 
         const nominal =
             Number(
-                data.jumlah ||
-                data.nominal ||
+                data.jumlah ??
+                data.nominal ??
                 0
             );
 
@@ -648,42 +522,15 @@ function hitungPengeluaran(snapshot) {
         totalKeluar += nominal;
 
 
-        if (tanggal) {
-
-            if (
-                tanggalHariIni(tanggal)
-            ) {
-
-                keluarHariIni += nominal;
-
-            }
-
-
-            if (
-                tanggalBulanIni(tanggal)
-            ) {
-
-                keluarBulanIni += nominal;
-
-            }
-
-
-            if (
-                tanggalTahunIni(tanggal)
-            ) {
-
-                keluarTahunIni += nominal;
-
-            }
-
-        }
-
-
-        // ==================================
+        // ==============================
         // JENIS
-        // ==================================
+        // ==============================
 
-        switch (data.jenis) {
+        const jenis =
+            data.jenis || "";
+
+
+        switch (jenis) {
 
             case "SPP":
 
@@ -730,78 +577,83 @@ function hitungPengeluaran(snapshot) {
 
 }
 
-// ======================================
-// HAPUS KARTU RINGKASAN JENIS
-// ======================================
-
-function hapusKartuJenis() {
-
-    const judulEl =
-        document.getElementById("judulJenis");
-
-    if (!judulEl) {
-        return;
-    }
-
-    const kartu =
-        judulEl.closest(".card, .card-stat");
-
-    if (kartu) {
-        kartu.remove();
-    }
-
-}
 
 // ======================================
-// HITUNG DASHBOARD BERDASARKAN TAHUN
+// HITUNG DASHBOARD TAHUN
 // ======================================
 
-function hitungDashboardTahun(tahun, jenis) {
+function hitungDashboardTahun(
+    tahun,
+    jenis
+) {
 
     let masuk = 0;
+
     let keluar = 0;
+
     let berasMasuk = 0;
+
     let berasKeluar = 0;
 
-    // ================================
+
+    // ==================================
     // PEMASUKAN
-    // ================================
+    // ==================================
 
     semuaPembayaran.forEach(data => {
 
-        const tanggal = bacaTanggal(data);
+        const tanggal =
+            bacaTanggal(data);
+
 
         if (!tanggal) return;
 
-        // Hanya tahun yang dipilih
-        if (tanggal.getFullYear() !== tahun) {
+
+        if (
+            tanggal.getFullYear() !== tahun
+        ) {
+
             return;
+
         }
 
-        // Beras
-        if (data.satuan === "Liter") {
+
+        // ------------------------------
+        // BERAS LITER
+        // ------------------------------
+
+        if (
+            String(data.satuan || "").toLowerCase()
+            === "liter"
+        ) {
 
             if (jenis === "beras") {
 
-                berasMasuk += Number(
-                    data.jumlah || 0
-                );
+                berasMasuk +=
+                    Number(data.jumlah || 0);
 
             }
 
             return;
+
         }
 
-        // Jenis transaksi
+
         const jenisData =
             data.jenis || "";
 
+
         const nominal =
             Number(
-                data.nominal ||
-                data.jumlah ||
+                data.nominal ??
+                data.jumlah ??
                 0
             );
+
+
+        // ------------------------------
+        // SYAHRiYYAH
+        // ------------------------------
 
         if (
             jenis === "syahriyyah" &&
@@ -812,6 +664,11 @@ function hitungDashboardTahun(tahun, jenis) {
 
         }
 
+
+        // ------------------------------
+        // KAS
+        // ------------------------------
+
         else if (
             jenis === "kas" &&
             jenisData === "Kas"
@@ -820,6 +677,11 @@ function hitungDashboardTahun(tahun, jenis) {
             masuk += nominal;
 
         }
+
+
+        // ------------------------------
+        // BERAS UANG
+        // ------------------------------
 
         else if (
             jenis === "beras" &&
@@ -833,44 +695,64 @@ function hitungDashboardTahun(tahun, jenis) {
     });
 
 
-    // ================================
+    // ==================================
     // PENGELUARAN
-    // ================================
+    // ==================================
 
     semuaPengeluaran.forEach(data => {
 
-        const tanggal = bacaTanggal(data);
+        const tanggal =
+            bacaTanggal(data);
+
 
         if (!tanggal) return;
 
-        // Hanya tahun yang dipilih
-        if (tanggal.getFullYear() !== tahun) {
+
+        if (
+            tanggal.getFullYear() !== tahun
+        ) {
+
             return;
+
         }
 
-        // Beras
-        if (data.satuan === "Liter") {
+
+        // ------------------------------
+        // BERAS LITER
+        // ------------------------------
+
+        if (
+            String(data.satuan || "").toLowerCase()
+            === "liter"
+        ) {
 
             if (jenis === "beras") {
 
-                berasKeluar += Number(
-                    data.jumlah || 0
-                );
+                berasKeluar +=
+                    Number(data.jumlah || 0);
 
             }
 
             return;
+
         }
+
 
         const jenisData =
             data.jenis || "";
 
+
         const nominal =
             Number(
-                data.jumlah ||
-                data.nominal ||
+                data.jumlah ??
+                data.nominal ??
                 0
             );
+
+
+        // ------------------------------
+        // SYAHRIYYAH
+        // ------------------------------
 
         if (
             jenis === "syahriyyah" &&
@@ -881,6 +763,11 @@ function hitungDashboardTahun(tahun, jenis) {
 
         }
 
+
+        // ------------------------------
+        // KAS
+        // ------------------------------
+
         else if (
             jenis === "kas" &&
             jenisData === "Kas"
@@ -889,6 +776,11 @@ function hitungDashboardTahun(tahun, jenis) {
             keluar += nominal;
 
         }
+
+
+        // ------------------------------
+        // BERAS UANG
+        // ------------------------------
 
         else if (
             jenis === "beras" &&
@@ -902,36 +794,45 @@ function hitungDashboardTahun(tahun, jenis) {
     });
 
 
-    // ================================
-    // BERAS
-    // ================================
+    // ==================================
+    // HASIL BERAS
+    // ==================================
 
     if (jenis === "beras") {
 
         return {
 
             masuk: berasMasuk,
+
             keluar: berasKeluar,
-            saldo: berasMasuk - berasKeluar
+
+            saldo:
+                berasMasuk -
+                berasKeluar
 
         };
 
     }
 
 
-    // ================================
-    // UANG
-    // ================================
+    // ==================================
+    // HASIL UANG
+    // ==================================
 
     return {
 
-        masuk: masuk,
-        keluar: keluar,
-        saldo: masuk - keluar
+        masuk,
+
+        keluar,
+
+        saldo:
+            masuk -
+            keluar
 
     };
 
 }
+
 
 // ======================================
 // TAMPILKAN DASHBOARD
@@ -939,67 +840,96 @@ function hitungDashboardTahun(tahun, jenis) {
 
 function tampilkanDashboard() {
 
-    // Hapus kartu Syahriyyah/Ringkasan Jenis
-    // tetapi dropdown Jenis tetap berfungsi
-    hapusKartuJenis();
+    const jenisEl =
+        document.getElementById(
+            "jenisDashboard"
+        );
+
+
+    const tahunEl =
+        document.getElementById(
+            "tahunDashboard"
+        );
+
+
+    const modeEl =
+        document.getElementById(
+            "modeBeras"
+        );
+
 
     const jenis =
-        document
-            .getElementById("jenisDashboard")
-            ?.value || "syahriyyah";
+        jenisEl?.value ||
+        "syahriyyah";
 
-    const tahunDashboard =
-    Number(
-        document.getElementById("tahunDashboard")?.value
-    ) || new Date().getFullYear();
-    
+
+    const tahun =
+        Number(
+            tahunEl?.value
+        ) ||
+        new Date().getFullYear();
+
+
     const mode =
-        document
-            .getElementById("modeBeras")
-            ?.value || "liter";
-    
-    const tahunDipilih =
-    Number(
-        document.getElementById("tahunDashboard")?.value
-    ) || new Date().getFullYear();
+        modeEl?.value ||
+        "liter";
 
-const hasilTahun =
-    hitungDashboardTahun(
-        tahunDipilih,
-        jenis
-    );
-    
+
+    // ==================================
+    // ELEMENT DASHBOARD
+    // ==================================
+
     const totalSantriEl =
-        document.getElementById("totalSantri");
+        document.getElementById(
+            "totalSantri"
+        );
 
 
     const totalSaldoEl =
-        document.getElementById("totalSaldo");
+        document.getElementById(
+            "totalSaldo"
+        );
 
 
     const totalMasukEl =
-        document.getElementById("totalMasuk");
+        document.getElementById(
+            "totalMasuk"
+        );
 
 
     const totalKeluarEl =
-        document.getElementById("totalKeluar");
+        document.getElementById(
+            "totalKeluar"
+        );
 
 
     const judulEl =
-        document.getElementById("judulJenis");
+        document.getElementById(
+            "judulJenis"
+        );
 
 
     const masukEl =
-        document.getElementById("masuk");
+        document.getElementById(
+            "masuk"
+        );
 
 
     const keluarEl =
-        document.getElementById("keluar");
+        document.getElementById(
+            "keluar"
+        );
 
 
     const saldoEl =
-        document.getElementById("saldo");
+        document.getElementById(
+            "saldo"
+        );
 
+
+    // ==================================
+    // TOTAL SANTRI
+    // ==================================
 
     if (totalSantriEl) {
 
@@ -1009,85 +939,19 @@ const hasilTahun =
     }
 
 
-    const namaJenis = {
+    // ==================================
+    // HITUNG
+    // ==================================
 
-        syahriyyah: "Syahriyyah",
-
-        spp: "SPP",
-
-        kas: "Kas",
-
-        infaq: "Infaq",
-
-        beras: "Beras"
-
-    };
-
-    // ======================================
-// FILTER DASHBOARD BERDASARKAN TAHUN
-// ======================================
-
-let masukTahunDashboard = 0;
-let keluarTahunDashboard = 0;
-let stokBerasTahun = 0;
-
-semuaPembayaran.forEach(data => {
-
-    const tanggal = bacaTanggal(data);
-
-    if (!tanggal) return;
-
-    if (tanggal.getFullYear() !== tahunDashboard) {
-        return;
-    }
-
-    if (data.satuan === "Liter") {
-
-        stokBerasTahun +=
-            Number(data.jumlah || 0);
-
-        return;
-    }
-
-    masukTahunDashboard +=
-        Number(
-            data.nominal ||
-            data.jumlah ||
-            0
+    const hasil =
+        hitungDashboardTahun(
+            tahun,
+            jenis
         );
 
-});
-
-
-semuaPengeluaran.forEach(data => {
-
-    const tanggal = bacaTanggal(data);
-
-    if (!tanggal) return;
-
-    if (tanggal.getFullYear() !== tahunDashboard) {
-        return;
-    }
-
-    if (data.satuan === "Liter") {
-
-        stokBerasTahun -=
-            Number(data.jumlah || 0);
-
-        return;
-    }
-
-    keluarTahunDashboard +=
-        Number(
-            data.jumlah ||
-            data.nominal ||
-            0
-        );
-
-});
 
     // ==================================
-    // DASHBOARD BERAS
+    // BERAS
     // ==================================
 
     if (jenis === "beras") {
@@ -1097,7 +961,9 @@ semuaPengeluaran.forEach(data => {
             if (totalMasukEl) {
 
                 totalMasukEl.textContent =
-                    hasilTahun.masuk + " Liter"
+                    hasil.masuk.toLocaleString(
+                        "id-ID"
+                    ) + " Liter";
 
             }
 
@@ -1105,7 +971,9 @@ semuaPengeluaran.forEach(data => {
             if (totalKeluarEl) {
 
                 totalKeluarEl.textContent =
-                    hasilTahun.keluar + " Liter"
+                    hasil.keluar.toLocaleString(
+                        "id-ID"
+                    ) + " Liter";
 
             }
 
@@ -1113,48 +981,29 @@ semuaPengeluaran.forEach(data => {
             if (totalSaldoEl) {
 
                 totalSaldoEl.textContent =
-                    hasilTahun.saldo + " Liter"
+                    hasil.saldo.toLocaleString(
+                        "id-ID"
+                    ) + " Liter";
 
             }
 
+        }
 
-            if (masukEl) {
+        else {
 
-                masukEl.textContent =
-                    pemasukan.Beras +
-                    " Liter";
-
-            }
-
-
-            if (keluarEl) {
-
-                keluarEl.textContent =
-                    pengeluaran.Beras +
-                    " Liter";
-
-            }
-
-
-            if (saldoEl) {
-
-                saldoEl.textContent =
-                    stokBeras +
-                    " Liter";
-
-            }
-
-        } else {
-
-            const saldo =
-                pemasukan.Beras -
-                pengeluaran.Beras;
-
+            // Mode UANG
+            //
+            // Untuk transaksi Beras yang
+            // memang disimpan dalam rupiah,
+            // hasil.masuk dan hasil.keluar
+            // adalah nominal uang.
 
             if (totalMasukEl) {
 
                 totalMasukEl.textContent =
-                    rupiah(pemasukan.Beras);
+                    rupiah(
+                        pemasukan.Beras
+                    );
 
             }
 
@@ -1162,7 +1011,9 @@ semuaPengeluaran.forEach(data => {
             if (totalKeluarEl) {
 
                 totalKeluarEl.textContent =
-                    rupiah(pengeluaran.Beras);
+                    rupiah(
+                        pengeluaran.Beras
+                    );
 
             }
 
@@ -1170,31 +1021,10 @@ semuaPengeluaran.forEach(data => {
             if (totalSaldoEl) {
 
                 totalSaldoEl.textContent =
-                    rupiah(saldo);
-
-            }
-
-
-            if (masukEl) {
-
-                masukEl.textContent =
-                    rupiah(pemasukan.Beras);
-
-            }
-
-
-            if (keluarEl) {
-
-                keluarEl.textContent =
-                    rupiah(pengeluaran.Beras);
-
-            }
-
-
-            if (saldoEl) {
-
-                saldoEl.textContent =
-                    rupiah(saldo);
+                    rupiah(
+                        pemasukan.Beras -
+                        pengeluaran.Beras
+                    );
 
             }
 
@@ -1215,25 +1045,13 @@ semuaPengeluaran.forEach(data => {
 
 
     // ==================================
-    // DASHBOARD UANG
+    // UANG
     // ==================================
-
-const key =
-    namaJenis[jenis];
-
-const masuk =
-    hasilTahun.masuk;
-
-const keluar =
-    hasilTahun.keluar;
-
-const saldo =
-    hasilTahun.saldo;
 
     if (totalMasukEl) {
 
         totalMasukEl.textContent =
-            rupiah(masuk);
+            rupiah(hasil.masuk);
 
     }
 
@@ -1241,7 +1059,7 @@ const saldo =
     if (totalKeluarEl) {
 
         totalKeluarEl.textContent =
-            rupiah(keluar);
+            rupiah(hasil.keluar);
 
     }
 
@@ -1249,15 +1067,19 @@ const saldo =
     if (totalSaldoEl) {
 
         totalSaldoEl.textContent =
-            rupiah(saldo);
+            rupiah(hasil.saldo);
 
     }
 
 
+    // ==================================
+    // KARTU LAMA JIKA ADA
+    // ==================================
+
     if (masukEl) {
 
         masukEl.textContent =
-            rupiah(masuk);
+            rupiah(hasil.masuk);
 
     }
 
@@ -1265,7 +1087,7 @@ const saldo =
     if (keluarEl) {
 
         keluarEl.textContent =
-            rupiah(keluar);
+            rupiah(hasil.keluar);
 
     }
 
@@ -1273,15 +1095,36 @@ const saldo =
     if (saldoEl) {
 
         saldoEl.textContent =
-            rupiah(saldo);
+            rupiah(hasil.saldo);
 
     }
 
 
     if (judulEl) {
 
+        const namaJenis = {
+
+            syahriyyah:
+                "Syahriyyah",
+
+            kas:
+                "Kas",
+
+            beras:
+                "Beras",
+
+            spp:
+                "SPP",
+
+            infaq:
+                "Infaq"
+
+        };
+
+
         judulEl.textContent =
-            key;
+            namaJenis[jenis] ||
+            jenis;
 
     }
 
@@ -1289,7 +1132,7 @@ const saldo =
 
 
 // ======================================
-// ISI FILTER BULAN & TAHUN
+// ISI FILTER LAPORAN
 // ======================================
 
 function isiFilter() {
@@ -1312,116 +1155,107 @@ function isiFilter() {
     const namaBulan = [
 
         "Januari",
-
         "Februari",
-
         "Maret",
-
         "April",
-
         "Mei",
-
         "Juni",
-
         "Juli",
-
         "Agustus",
-
         "September",
-
         "Oktober",
-
         "November",
-
         "Desember"
 
     ];
 
 
-    bulan.innerHTML = "";
+    // ==================================
+    // BULAN
+    // ==================================
+
+    if (!bulan.options.length) {
+
+        namaBulan.forEach(
+            (nama, index) => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
 
 
-    namaBulan.forEach((nama, index) => {
-
-        bulan.innerHTML += `
-
-            <option value="${index + 1}">
-                ${nama}
-            </option>
-
-        `;
-
-    });
+                option.value =
+                    index + 1;
 
 
-    tahun.innerHTML = "";
+                option.textContent =
+                    nama;
 
 
-    const sekarang =
-        new Date().getFullYear();
+                bulan.appendChild(
+                    option
+                );
 
-
-    for (
-        let i = sekarang - 2;
-        i <= sekarang + 2;
-        i++
-    ) {
-
-        tahun.innerHTML += `
-
-            <option value="${i}">
-                ${i}
-            </option>
-
-        `;
+            }
+        );
 
     }
 
 
-    bulan.value =
-        new Date().getMonth() + 1;
+    // ==================================
+    // TAHUN
+    // ==================================
+
+    if (!tahun.options.length) {
+
+        const sekarang =
+            new Date().getFullYear();
 
 
-    tahun.value =
-        sekarang;
+        for (
+            let i = sekarang - 2;
+            i <= sekarang + 2;
+            i++
+        ) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value = i;
+
+            option.textContent = i;
+
+
+            tahun.appendChild(
+                option
+            );
+
+        }
+
+    }
+
+
+    if (!bulan.value) {
+
+        bulan.value =
+            new Date().getMonth() + 1;
+
+    }
+
+
+    if (!tahun.value) {
+
+        tahun.value =
+            new Date().getFullYear();
+
+    }
 
 }
 
-// ======================================
-// ISI TAHUN DASHBOARD
-// ======================================
-
-function isiTahunDashboard() {
-
-    const tahunEl =
-        document.getElementById("tahunDashboard");
-
-    if (!tahunEl) {
-        return;
-    }
-
-    const sekarang =
-        new Date().getFullYear();
-
-    tahunEl.innerHTML = "";
-
-    for (
-        let tahun = sekarang - 2;
-        tahun <= sekarang + 2;
-        tahun++
-    ) {
-
-        tahunEl.innerHTML += `
-            <option value="${tahun}">
-                ${tahun}
-            </option>
-        `;
-
-    }
-
-    tahunEl.value = sekarang;
-
-}
 
 // ======================================
 // TAMPILKAN LAPORAN
@@ -1430,19 +1264,27 @@ function isiTahunDashboard() {
 function tampilkanLaporan() {
 
     const totalSaldoEl =
-        document.getElementById("totalSaldo");
+        document.getElementById(
+            "totalSaldo"
+        );
 
 
     const hariIniEl =
-        document.getElementById("hariIni");
+        document.getElementById(
+            "hariIni"
+        );
 
 
     const bulanIniEl =
-        document.getElementById("bulanIni");
+        document.getElementById(
+            "bulanIni"
+        );
 
 
     const tahunIniEl =
-        document.getElementById("tahunIni");
+        document.getElementById(
+            "tahunIni"
+        );
 
 
     const pengeluaranHariIniEl =
@@ -1463,18 +1305,16 @@ function tampilkanLaporan() {
         );
 
 
-    // ==================================
-    // CEK HALAMAN
-    // ==================================
-
+    // Jika bukan halaman laporan
     if (
-        !totalSaldoEl &&
+
         !hariIniEl &&
         !bulanIniEl &&
         !tahunIniEl &&
         !pengeluaranHariIniEl &&
         !pengeluaranBulanIniEl &&
         !pengeluaranTahunIniEl
+
     ) {
 
         return;
@@ -1482,55 +1322,56 @@ function tampilkanLaporan() {
     }
 
 
-    // ==================================
-    // FILTER
-    // ==================================
-
     const bulanEl =
-        document.getElementById("bulan");
+        document.getElementById(
+            "bulan"
+        );
 
 
     const tahunEl =
-        document.getElementById("tahun");
+        document.getElementById(
+            "tahun"
+        );
 
 
     const jenisEl =
-        document.getElementById("filterJenis");
+        document.getElementById(
+            "filterJenis"
+        );
 
 
-    const bulanDipilih =
-        Number(bulanEl?.value);
+    const bulan =
+        Number(
+            bulanEl?.value
+        );
 
 
-    const tahunDipilih =
-        Number(tahunEl?.value);
+    const tahun =
+        Number(
+            tahunEl?.value
+        );
 
 
     const jenisDipilih =
-        jenisEl?.value || "semua";
+        jenisEl?.value ||
+        "semua";
+
+
+    let masukBulan = 0;
+
+    let keluarBulan = 0;
+
+    let masukTahun = 0;
+
+    let keluarTahun = 0;
+
+    let masukHari = 0;
+
+    let keluarHari = 0;
 
 
     // ==================================
-    // VARIABEL
-    // ==================================
-
-    let pemasukanBulan = 0;
-
-    let pengeluaranBulan = 0;
-
-
-    let pemasukanTahun = 0;
-
-    let pengeluaranTahun = 0;
-
-
-    let pemasukanHariIni = 0;
-
-    let pengeluaranHariIni = 0;
-
-
-    // ==================================
-    // HITUNG PEMASUKAN
+    // PEMASUKAN
     // ==================================
 
     semuaPembayaran.forEach(data => {
@@ -1539,21 +1380,32 @@ function tampilkanLaporan() {
             bacaTanggal(data);
 
 
-        if (!tanggal) {
-
-            return;
-
-        }
+        if (!tanggal) return;
 
 
         const jenis =
             data.jenis || "";
 
 
-        // Filter jenis
         if (
+
             jenisDipilih !== "semua" &&
+
             jenis !== jenisDipilih
+
+        ) {
+
+            return;
+
+        }
+
+
+        // Jangan masukkan beras liter
+        // ke laporan uang
+
+        if (
+            String(data.satuan || "").toLowerCase()
+            === "liter"
         ) {
 
             return;
@@ -1563,56 +1415,39 @@ function tampilkanLaporan() {
 
         const nominal =
             Number(
-                data.nominal ||
-                data.jumlah ||
+                data.nominal ??
+                data.jumlah ??
                 0
             );
 
-
-        // ------------------------------
-        // HARI INI
-        // ------------------------------
 
         if (
             tanggalHariIni(tanggal)
         ) {
 
-            pemasukanHariIni += nominal;
+            masukHari += nominal;
 
         }
 
 
-        // ------------------------------
-        // BULAN TERPILIH
-        // ------------------------------
-
         if (
 
-            tanggal.getMonth() + 1 ===
-            bulanDipilih
+            tanggal.getMonth() + 1 === bulan &&
 
-            &&
-
-            tanggal.getFullYear() ===
-            tahunDipilih
+            tanggal.getFullYear() === tahun
 
         ) {
 
-            pemasukanBulan += nominal;
+            masukBulan += nominal;
 
         }
 
 
-        // ------------------------------
-        // TAHUN TERPILIH
-        // ------------------------------
-
         if (
-            tanggal.getFullYear() ===
-            tahunDipilih
+            tanggal.getFullYear() === tahun
         ) {
 
-            pemasukanTahun += nominal;
+            masukTahun += nominal;
 
         }
 
@@ -1620,7 +1455,7 @@ function tampilkanLaporan() {
 
 
     // ==================================
-    // HITUNG PENGELUARAN
+    // PENGELUARAN
     // ==================================
 
     semuaPengeluaran.forEach(data => {
@@ -1629,21 +1464,32 @@ function tampilkanLaporan() {
             bacaTanggal(data);
 
 
-        if (!tanggal) {
-
-            return;
-
-        }
+        if (!tanggal) return;
 
 
         const jenis =
             data.jenis || "";
 
 
-        // Filter jenis
         if (
+
             jenisDipilih !== "semua" &&
+
             jenis !== jenisDipilih
+
+        ) {
+
+            return;
+
+        }
+
+
+        // Jangan masukkan beras liter
+        // ke laporan uang
+
+        if (
+            String(data.satuan || "").toLowerCase()
+            === "liter"
         ) {
 
             return;
@@ -1653,56 +1499,39 @@ function tampilkanLaporan() {
 
         const nominal =
             Number(
-                data.jumlah ||
-                data.nominal ||
+                data.jumlah ??
+                data.nominal ??
                 0
             );
 
-
-        // ------------------------------
-        // HARI INI
-        // ------------------------------
 
         if (
             tanggalHariIni(tanggal)
         ) {
 
-            pengeluaranHariIni += nominal;
+            keluarHari += nominal;
 
         }
 
 
-        // ------------------------------
-        // BULAN TERPILIH
-        // ------------------------------
-
         if (
 
-            tanggal.getMonth() + 1 ===
-            bulanDipilih
+            tanggal.getMonth() + 1 === bulan &&
 
-            &&
-
-            tanggal.getFullYear() ===
-            tahunDipilih
+            tanggal.getFullYear() === tahun
 
         ) {
 
-            pengeluaranBulan += nominal;
+            keluarBulan += nominal;
 
         }
 
 
-        // ------------------------------
-        // TAHUN TERPILIH
-        // ------------------------------
-
         if (
-            tanggal.getFullYear() ===
-            tahunDipilih
+            tanggal.getFullYear() === tahun
         ) {
 
-            pengeluaranTahun += nominal;
+            keluarTahun += nominal;
 
         }
 
@@ -1710,22 +1539,22 @@ function tampilkanLaporan() {
 
 
     // ==================================
-    // HITUNG SALDO
+    // SALDO BULAN
     // ==================================
 
-    const saldoBulan =
-        pemasukanBulan -
-        pengeluaranBulan;
+    const saldo =
+        masukBulan -
+        keluarBulan;
 
 
     // ==================================
-    // TAMPILKAN PEMASUKAN
+    // TAMPILKAN
     // ==================================
 
     if (totalSaldoEl) {
 
         totalSaldoEl.textContent =
-            rupiah(saldoBulan);
+            rupiah(saldo);
 
     }
 
@@ -1733,7 +1562,7 @@ function tampilkanLaporan() {
     if (hariIniEl) {
 
         hariIniEl.textContent =
-            rupiah(pemasukanHariIni);
+            rupiah(masukHari);
 
     }
 
@@ -1741,7 +1570,7 @@ function tampilkanLaporan() {
     if (bulanIniEl) {
 
         bulanIniEl.textContent =
-            rupiah(pemasukanBulan);
+            rupiah(masukBulan);
 
     }
 
@@ -1749,19 +1578,15 @@ function tampilkanLaporan() {
     if (tahunIniEl) {
 
         tahunIniEl.textContent =
-            rupiah(pemasukanTahun);
+            rupiah(masukTahun);
 
     }
 
 
-    // ==================================
-    // TAMPILKAN PENGELUARAN
-    // ==================================
-
     if (pengeluaranHariIniEl) {
 
         pengeluaranHariIniEl.textContent =
-            rupiah(pengeluaranHariIni);
+            rupiah(keluarHari);
 
     }
 
@@ -1769,7 +1594,7 @@ function tampilkanLaporan() {
     if (pengeluaranBulanIniEl) {
 
         pengeluaranBulanIniEl.textContent =
-            rupiah(pengeluaranBulan);
+            rupiah(keluarBulan);
 
     }
 
@@ -1777,7 +1602,7 @@ function tampilkanLaporan() {
     if (pengeluaranTahunIniEl) {
 
         pengeluaranTahunIniEl.textContent =
-            rupiah(pengeluaranTahun);
+            rupiah(keluarTahun);
 
     }
 
@@ -1785,7 +1610,7 @@ function tampilkanLaporan() {
 
 
 // ======================================
-// TAMPILKAN TABEL LAPORAN
+// TABEL LAPORAN
 // ======================================
 
 function tampilkanTabelLaporan() {
@@ -1796,37 +1621,30 @@ function tampilkanTabelLaporan() {
         );
 
 
-    if (!tbody) {
-
-        return;
-
-    }
+    if (!tbody) return;
 
 
-    const bulanEl =
-        document.getElementById("bulan");
-
-
-    const tahunEl =
-        document.getElementById("tahun");
-
-
-    const jenisEl =
-        document.getElementById(
-            "filterJenis"
+    const bulan =
+        Number(
+            document.getElementById(
+                "bulan"
+            )?.value
         );
 
 
-    const bulanDipilih =
-        Number(bulanEl?.value);
-
-
-    const tahunDipilih =
-        Number(tahunEl?.value);
+    const tahun =
+        Number(
+            document.getElementById(
+                "tahun"
+            )?.value
+        );
 
 
     const jenisDipilih =
-        jenisEl?.value || "semua";
+        document.getElementById(
+            "filterJenis"
+        )?.value ||
+        "semua";
 
 
     tbody.innerHTML = "";
@@ -1845,23 +1663,14 @@ function tampilkanTabelLaporan() {
             bacaTanggal(data);
 
 
-        if (!tanggal) {
-
-            return;
-
-        }
+        if (!tanggal) return;
 
 
-        // Filter bulan dan tahun
         if (
 
-            tanggal.getMonth() + 1 !==
-            bulanDipilih
+            tanggal.getMonth() + 1 !== bulan ||
 
-            ||
-
-            tanggal.getFullYear() !==
-            tahunDipilih
+            tanggal.getFullYear() !== tahun
 
         ) {
 
@@ -1870,27 +1679,30 @@ function tampilkanTabelLaporan() {
         }
 
 
-        // Filter jenis
         if (
 
-            jenisDipilih !== "semua"
+            jenisDipilih !== "semua" &&
 
-            &&
-
-            data.jenis !==
-            jenisDipilih
+            data.jenis !== jenisDipilih
 
         ) {
 
             return;
 
         }
+
+
+        const jumlah =
+            Number(
+                data.nominal ??
+                data.jumlah ??
+                0
+            );
 
 
         transaksi.push({
 
-            tanggal: tanggal,
-
+            tanggal,
 
             nama:
                 data.namaSantri ||
@@ -1898,19 +1710,11 @@ function tampilkanTabelLaporan() {
                 data.santri ||
                 "-",
 
-
             jenis:
                 data.jenis ||
                 "-",
 
-
-            jumlah:
-                Number(
-                    data.nominal ||
-                    data.jumlah ||
-                    0
-                ),
-
+            jumlah,
 
             tipe:
                 "Pemasukan"
@@ -1930,23 +1734,14 @@ function tampilkanTabelLaporan() {
             bacaTanggal(data);
 
 
-        if (!tanggal) {
-
-            return;
-
-        }
+        if (!tanggal) return;
 
 
-        // Filter bulan dan tahun
         if (
 
-            tanggal.getMonth() + 1 !==
-            bulanDipilih
+            tanggal.getMonth() + 1 !== bulan ||
 
-            ||
-
-            tanggal.getFullYear() !==
-            tahunDipilih
+            tanggal.getFullYear() !== tahun
 
         ) {
 
@@ -1955,27 +1750,30 @@ function tampilkanTabelLaporan() {
         }
 
 
-        // Filter jenis
         if (
 
-            jenisDipilih !== "semua"
+            jenisDipilih !== "semua" &&
 
-            &&
-
-            data.jenis !==
-            jenisDipilih
+            data.jenis !== jenisDipilih
 
         ) {
 
             return;
 
         }
+
+
+        const jumlah =
+            Number(
+                data.jumlah ??
+                data.nominal ??
+                0
+            );
 
 
         transaksi.push({
 
-            tanggal: tanggal,
-
+            tanggal,
 
             nama:
                 data.keterangan ||
@@ -1984,19 +1782,11 @@ function tampilkanTabelLaporan() {
                 data.santri ||
                 "-",
 
-
             jenis:
                 data.jenis ||
                 "-",
 
-
-            jumlah:
-                Number(
-                    data.jumlah ||
-                    data.nominal ||
-                    0
-                ),
-
+            jumlah,
 
             tipe:
                 "Pengeluaran"
@@ -2010,30 +1800,18 @@ function tampilkanTabelLaporan() {
     // URUTKAN TERBARU
     // ==================================
 
-    transaksi.sort((a, b) => {
-
-        const tanggalA =
-            a.tanggal
-                ? a.tanggal.getTime()
-                : 0;
-
-
-        const tanggalB =
-            b.tanggal
-                ? b.tanggal.getTime()
-                : 0;
-
-
-        return tanggalB - tanggalA;
-
-    });
+    transaksi.sort(
+        (a, b) =>
+            b.tanggal.getTime() -
+            a.tanggal.getTime()
+    );
 
 
     // ==================================
-    // TIDAK ADA DATA
+    // KOSONG
     // ==================================
 
-    if (transaksi.length === 0) {
+    if (!transaksi.length) {
 
         tbody.innerHTML = `
 
@@ -2043,9 +1821,7 @@ function tampilkanTabelLaporan() {
                     colspan="4"
                     class="text-center text-muted py-4">
 
-                    Tidak ada transaksi
-                    pada bulan, tahun,
-                    dan jenis yang dipilih.
+                    Tidak ada transaksi.
 
                 </td>
 
@@ -2053,28 +1829,39 @@ function tampilkanTabelLaporan() {
 
         `;
 
-
         return;
 
     }
 
 
     // ==================================
-    // TAMPILKAN DATA
+    // TAMPILKAN
     // ==================================
 
     transaksi.forEach(item => {
 
-        const tanggal =
-            item.tanggal
-                ? item.tanggal.toLocaleDateString(
-                    "id-ID"
-                )
-                : "-";
-
-
         const tr =
-            document.createElement("tr");
+            document.createElement(
+                "tr"
+            );
+
+
+        const tanggal =
+            item.tanggal.toLocaleDateString(
+                "id-ID"
+            );
+
+
+        const warna =
+            item.tipe === "Pemasukan"
+                ? "text-success"
+                : "text-danger";
+
+
+        const badge =
+            item.tipe === "Pemasukan"
+                ? "bg-success"
+                : "bg-danger";
 
 
         tr.innerHTML = `
@@ -2089,11 +1876,7 @@ function tampilkanTabelLaporan() {
 
             <td>
 
-                <span class="badge ${
-                    item.tipe === "Pemasukan"
-                        ? "bg-success"
-                        : "bg-danger"
-                }">
+                <span class="badge ${badge}">
 
                     ${item.jenis}
 
@@ -2101,11 +1884,7 @@ function tampilkanTabelLaporan() {
 
             </td>
 
-            <td class="${
-                item.tipe === "Pemasukan"
-                    ? "text-success"
-                    : "text-danger"
-            } fw-bold">
+            <td class="${warna} fw-bold">
 
                 ${rupiah(item.jumlah)}
 
@@ -2127,7 +1906,6 @@ function tampilkanTabelLaporan() {
 
 async function simpanPengeluaran(event) {
 
-    // Mencegah reload
     if (event) {
 
         event.preventDefault();
@@ -2184,7 +1962,8 @@ async function simpanPengeluaran(event) {
 
 
     const satuan =
-        satuanEl?.value || "Rupiah";
+        satuanEl?.value ||
+        "Rupiah";
 
 
     // ==================================
@@ -2236,29 +2015,39 @@ async function simpanPengeluaran(event) {
 
 
     // ==================================
-    // SIMPAN FIRESTORE
+    // CEK LOGIN
+    // ==================================
+
+    if (!auth.currentUser) {
+
+        alert(
+            "Silakan login terlebih dahulu."
+        );
+
+        return;
+
+    }
+
+
+    // ==================================
+    // SIMPAN
     // ==================================
 
     try {
 
-        console.log(
-            "Mencoba menyimpan pengeluaran..."
-        );
-
-
         const dataPengeluaran = {
 
-            jenis: jenis,
+            jenis,
 
-            keterangan: keterangan,
+            keterangan,
 
-            tanggal: tanggal,
+            tanggal,
 
             jumlah: nominal,
 
-            nominal: nominal,
+            nominal,
 
-            satuan: satuan,
+            satuan,
 
             createdAt:
                 serverTimestamp()
@@ -2266,28 +2055,15 @@ async function simpanPengeluaran(event) {
         };
 
 
-        console.log(
-            "Data yang dikirim:",
+        await addDoc(
+
+            collection(
+                db,
+                "expenses"
+            ),
+
             dataPengeluaran
-        );
 
-
-        const docRef =
-            await addDoc(
-
-                collection(
-                    db,
-                    "expenses"
-                ),
-
-                dataPengeluaran
-
-            );
-
-
-        console.log(
-            "BERHASIL DISIMPAN!",
-            docRef.id
         );
 
 
@@ -2297,58 +2073,52 @@ async function simpanPengeluaran(event) {
 
 
         // ==================================
-        // KOSONGKAN FORM
+        // RESET FORM
         // ==================================
 
-        if (jenisEl) {
-
+        if (jenisEl)
             jenisEl.value = "";
 
-        }
 
-
-        if (keteranganEl) {
-
+        if (keteranganEl)
             keteranganEl.value = "";
 
-        }
 
-
-        if (tanggalEl) {
-
+        if (tanggalEl)
             tanggalEl.value = "";
 
-        }
 
-
-        if (nominalEl) {
-
+        if (nominalEl)
             nominalEl.value = "";
-
-        }
 
 
         // ==================================
-        // LOAD ULANG
+        // REFRESH
         // ==================================
 
         await loadSemua();
 
+    }
 
-    } catch (error) {
+    catch (error) {
 
         console.error(
-            "ERROR FIRESTORE:",
+            "Gagal menyimpan pengeluaran:",
             error
         );
 
 
         alert(
-            "GAGAL MENYIMPAN!\n\n" +
+
+            "Gagal menyimpan pengeluaran.\n\n" +
+
             "Kode: " +
             (error.code || "-") +
+
             "\n\n" +
+
             error.message
+
         );
 
     }
@@ -2357,7 +2127,7 @@ async function simpanPengeluaran(event) {
 
 
 // ======================================
-// LOAD SEMUA DATA
+// LOAD SEMUA
 // ======================================
 
 async function loadSemua() {
@@ -2368,38 +2138,68 @@ async function loadSemua() {
             await ambilDataFirebase();
 
 
-        // Hitung pemasukan
+        // ------------------------------
+        // HITUNG PEMASUKAN
+        // ------------------------------
+
         hitungPemasukan(
             data.pembayaranSnapshot
         );
 
 
-        // Hitung pengeluaran
+        // ------------------------------
+        // HITUNG PENGELUARAN
+        // ------------------------------
+
         hitungPengeluaran(
             data.pengeluaranSnapshot
         );
 
 
-        // Dashboard
+        // ------------------------------
+        // DASHBOARD
+        // ------------------------------
+
         tampilkanDashboard();
 
 
-        // Filter
+        // ------------------------------
+        // FILTER LAPORAN
+        // ------------------------------
+
         isiFilter();
 
 
-        // Laporan
+        // ------------------------------
+        // LAPORAN
+        // ------------------------------
+
         tampilkanLaporan();
 
 
-        // Tabel
+        // ------------------------------
+        // TABEL
+        // ------------------------------
+
         tampilkanTabelLaporan();
 
 
-    } catch (error) {
+        console.log(
+            "Data berhasil dimuat:",
+            {
+                santri: totalSantri,
+                pemasukan: totalMasuk,
+                pengeluaran: totalKeluar,
+                beras: stokBeras
+            }
+        );
+
+    }
+
+    catch (error) {
 
         console.error(
-            "Gagal memuat data:",
+            "Gagal memuat data Firebase:",
             error
         );
 
@@ -2409,28 +2209,32 @@ async function loadSemua() {
 
 
 // ======================================
-// EVENT GLOBAL
+// EVENT APLIKASI
 // ======================================
 
 function jalankanAplikasi() {
 
-    console.log("Aplikasi siap dijalankan");
+    console.log(
+        "Catatan Kas siap dijalankan."
+    );
+
 
     // ==================================
-    // LOAD AWAL
+    // LOAD
     // ==================================
 
     loadSemua();
 
 
     // ==================================
-    // TOMBOL SIMPAN PENGELUARAN
+    // SIMPAN PENGELUARAN
     // ==================================
 
     const tombolSimpan =
         document.getElementById(
             "simpanPengeluaran"
         );
+
 
     if (tombolSimpan) {
 
@@ -2443,14 +2247,38 @@ function jalankanAplikasi() {
 
 
     // ==================================
-    // DASHBOARD - JENIS
+    // DASHBOARD JENIS
     // ==================================
 
     document
-        .getElementById("jenisDashboard")
+        .getElementById(
+            "jenisDashboard"
+        )
         ?.addEventListener(
             "change",
             () => {
+
+                const jenis =
+                    document.getElementById(
+                        "jenisDashboard"
+                    )?.value;
+
+
+                const modeDiv =
+                    document.getElementById(
+                        "modeBerasDiv"
+                    );
+
+
+                if (modeDiv) {
+
+                    modeDiv.style.display =
+                        jenis === "beras"
+                            ? "block"
+                            : "none";
+
+                }
+
 
                 tampilkanDashboard();
 
@@ -2459,34 +2287,30 @@ function jalankanAplikasi() {
 
 
     // ==================================
-    // DASHBOARD - TAHUN
+    // DASHBOARD TAHUN
     // ==================================
 
     document
-        .getElementById("tahunDashboard")
+        .getElementById(
+            "tahunDashboard"
+        )
         ?.addEventListener(
             "change",
-            () => {
-
-                tampilkanDashboard();
-
-            }
+            tampilkanDashboard
         );
 
 
     // ==================================
-    // DASHBOARD - MODE BERAS
+    // MODE BERAS
     // ==================================
 
     document
-        .getElementById("modeBeras")
+        .getElementById(
+            "modeBeras"
+        )
         ?.addEventListener(
             "change",
-            () => {
-
-                tampilkanDashboard();
-
-            }
+            tampilkanDashboard
         );
 
 
@@ -2495,7 +2319,9 @@ function jalankanAplikasi() {
     // ==================================
 
     document
-        .getElementById("bulan")
+        .getElementById(
+            "bulan"
+        )
         ?.addEventListener(
             "change",
             () => {
@@ -2513,7 +2339,9 @@ function jalankanAplikasi() {
     // ==================================
 
     document
-        .getElementById("tahun")
+        .getElementById(
+            "tahun"
+        )
         ?.addEventListener(
             "change",
             () => {
@@ -2531,7 +2359,9 @@ function jalankanAplikasi() {
     // ==================================
 
     document
-        .getElementById("filterJenis")
+        .getElementById(
+            "filterJenis"
+        )
         ?.addEventListener(
             "change",
             () => {
@@ -2547,12 +2377,12 @@ function jalankanAplikasi() {
 
 
 // ======================================
-// CEK LOGIN FIREBASE
+// FIREBASE AUTH
 // ======================================
 
 onAuthStateChanged(
     auth,
-    (user) => {
+    user => {
 
         if (!user) {
 
@@ -2564,13 +2394,13 @@ onAuthStateChanged(
 
         }
 
+
         console.log(
-            "LOGIN TERDETEKSI:",
+            "Login terdeteksi:",
             user.email
         );
 
 
-        // Jika DOM sudah selesai
         if (
             document.readyState ===
             "loading"
@@ -2584,9 +2414,10 @@ onAuthStateChanged(
                 }
             );
 
-        } else {
+        }
 
-            // DOM sudah selesai
+        else {
+
             jalankanAplikasi();
 
         }
