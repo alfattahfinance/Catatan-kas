@@ -14,14 +14,92 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "17"
           distribution: "temurin"
-          cache: gradle
 
-      - name: Grant execute permission
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Prepare Android project
+        shell: bash
+        run: |
+          set -e
+
+          mkdir -p app/src/main/java/com/catatankas/app
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/assets
+
+          cat > settings.gradle <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+
+          rootProject.name = "CatatanKas"
+          include(":app")
+          EOF
+
+          cat > build.gradle <<'EOF'
+          plugins {
+              id "com.android.application" version "8.7.3" apply false
+          }
+          EOF
+
+          cat > app/build.gradle <<'EOF'
+          plugins {
+              id "com.android.application"
+          }
+
+          android {
+              namespace "com.catatankas.app"
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId "com.catatankas.app"
+                  minSdk 23
+                  targetSdk 35
+                  versionCode 1
+                  versionName "1.0"
+              }
+          }
+
+          dependencies {
+              implementation "androidx.appcompat:appcompat:1.7.0"
+              implementation "androidx.webkit:webkit:1.12.1"
+          }
+          EOF
+
+          cp MainActivity.java app/src/main/java/com/catatankas/app/MainActivity.java
+          cp AndroidManifest.xml app/src/main/AndroidManifest.xml
+          cp styles.xml app/src/main/res/values/styles.xml
+
+          cp *.html app/src/main/assets/ || true
+          cp *.js app/src/main/assets/ || true
+          cp *.css app/src/main/assets/ || true
+          cp *.json app/src/main/assets/ || true
+          cp *.png app/src/main/assets/ || true
+          cp *.jpg app/src/main/assets/ || true
+          cp *.jpeg app/src/main/assets/ || true
+
+      - name: Generate Gradle wrapper
+        run: |
+          gradle wrapper --gradle-version 8.9
+          chmod +x gradlew
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
