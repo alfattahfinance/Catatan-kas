@@ -30,97 +30,122 @@ jobs:
         run: |
           set -e
 
-          echo "Membuat struktur Android..."
+          echo "======================================"
+          echo "MENYIAPKAN PROJECT ANDROID CATATAN KAS"
+          echo "======================================"
 
           mkdir -p app/src/main/java/com/catatankas/app
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/assets
 
-          echo "Membuat settings.gradle..."
+          # ----------------------------------
+          # settings.gradle
+          # ----------------------------------
 
-          printf '%s\n' \
-            'pluginManagement {' \
-            '    repositories {' \
-            '        google()' \
-            '        mavenCentral()' \
-            '        gradlePluginPortal()' \
-            '    }' \
-            '}' \
-            '' \
-            'dependencyResolutionManagement {' \
-            '    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)' \
-            '    repositories {' \
-            '        google()' \
-            '        mavenCentral()' \
-            '    }' \
-            '}' \
-            '' \
-            'rootProject.name = "CatatanKas"' \
-            'include(":app")' \
-            > settings.gradle
+          cat > settings.gradle <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
 
-          echo "Membuat build.gradle..."
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
 
-          printf '%s\n' \
-            'plugins {' \
-            '    id "com.android.application" version "8.7.3" apply false' \
-            '}' \
-            > build.gradle
+          rootProject.name = "CatatanKas"
+          include(":app")
+          EOF
 
-          echo "Membuat app/build.gradle..."
+          # ----------------------------------
+          # build.gradle
+          # ----------------------------------
 
-          printf '%s\n' \
-            'plugins {' \
-            '    id "com.android.application"' \
-            '}' \
-            '' \
-            'android {' \
-            '    namespace "com.catatankas.app"' \
-            '    compileSdk 35' \
-            '' \
-            '    defaultConfig {' \
-            '        applicationId "com.catatankas.app"' \
-            '        minSdk 23' \
-            '        targetSdk 35' \
-            '        versionCode 1' \
-            '        versionName "1.0"' \
-            '    }' \
-            '}' \
-            '' \
-            'dependencies {' \
-            '    implementation "androidx.appcompat:appcompat:1.7.0"' \
-            '    implementation "androidx.webkit:webkit:1.12.1"' \
-            '}' \
-            '' \
-            'configurations.all {' \
-            '    resolutionStrategy.eachDependency { dependency ->' \
-            '        if (dependency.requested.group == "org.jetbrains.kotlin") {' \
-            '            dependency.useVersion "1.8.22"' \
-            '        }' \
-            '    }' \
-            '}' \
-            > app/build.gradle
+          cat > build.gradle <<'EOF'
+          plugins {
+              id "com.android.application" version "8.7.3" apply false
+          }
+          EOF
 
-          echo "Mengaktifkan AndroidX..."
+          # ----------------------------------
+          # app/build.gradle
+          # ----------------------------------
 
-          printf '%s\n' \
-            'android.useAndroidX=true' \
-            'android.enableJetifier=true' \
-            > gradle.properties
+          cat > app/build.gradle <<'EOF'
+          plugins {
+              id "com.android.application"
+          }
 
-          echo "Menyalin MainActivity..."
+          android {
+              namespace "com.catatankas.app"
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId "com.catatankas.app"
+                  minSdk 23
+                  targetSdk 35
+                  versionCode 1
+                  versionName "1.0"
+              }
+          }
+
+          dependencies {
+              implementation "androidx.appcompat:appcompat:1.7.0"
+              implementation "androidx.webkit:webkit:1.12.1"
+          }
+          EOF
+
+          # ----------------------------------
+          # gradle.properties
+          # ----------------------------------
+
+          cat > gradle.properties <<'EOF'
+          android.useAndroidX=true
+          android.enableJetifier=true
+          EOF
+
+          # ----------------------------------
+          # MainActivity
+          # ----------------------------------
+
+          if [ ! -f MainActivity.java ]; then
+            echo "ERROR: MainActivity.java tidak ditemukan!"
+            exit 1
+          fi
 
           cp MainActivity.java \
             app/src/main/java/com/catatankas/app/MainActivity.java
 
-          echo "Menyalin AndroidManifest..."
+          # ----------------------------------
+          # AndroidManifest
+          # ----------------------------------
+
+          if [ ! -f AndroidManifest.xml ]; then
+            echo "ERROR: AndroidManifest.xml tidak ditemukan!"
+            exit 1
+          fi
 
           cp AndroidManifest.xml \
             app/src/main/AndroidManifest.xml
 
+          # ----------------------------------
+          # styles.xml
+          # ----------------------------------
+
           if [ -f styles.xml ]; then
-            cp styles.xml app/src/main/res/values/styles.xml
+            cp styles.xml \
+              app/src/main/res/values/styles.xml
           fi
+
+          # ----------------------------------
+          # HTML
+          # ----------------------------------
 
           echo "Menyalin file HTML..."
 
@@ -128,45 +153,115 @@ jobs:
             \( -name "*.html" -o -name "*.htm" \) \
             -exec cp {} app/src/main/assets/ \;
 
-          echo "Menyalin JavaScript..."
+          # ----------------------------------
+          # JavaScript
+          # ----------------------------------
 
           if [ -d js ]; then
-            cp -r js app/src/main/assets/
+            echo "Menyalin folder js..."
+            cp -R js app/src/main/assets/
           fi
 
-          echo "Menyalin CSS..."
+          # ----------------------------------
+          # CSS
+          # ----------------------------------
 
           if [ -d css ]; then
-            cp -r css app/src/main/assets/
+            echo "Menyalin folder css..."
+            cp -R css app/src/main/assets/
           fi
 
-          echo "Menyalin gambar..."
+          # ----------------------------------
+          # ASSETS
+          # PENTING:
+          # folder assets dipertahankan namanya
+          # ----------------------------------
 
           if [ -d assets ]; then
-            cp -r assets/* app/src/main/assets/ 2>/dev/null || true
+            echo "Menyalin folder assets..."
+            cp -R assets app/src/main/assets/
+          else
+            echo "Folder assets belum ada."
+            mkdir -p app/src/main/assets/assets
           fi
 
-
-      - name: Prepare Android assets
-        run: |
-          echo "Menyiapkan folder assets Android..."
-
-          mkdir -p app/src/main/assets
-
-          if [ -d assets ]; then
-            echo "Menyalin assets..."
-            cp -R assets/. app/src/main/assets/
-          fi
+          # ----------------------------------
+          # LOGO ROOT
+          # Jika logo berada di root repository,
+          # masukkan ke assets/assets/
+          # ----------------------------------
 
           if [ -f logo-catatan-kas.png ]; then
-            echo "Logo PNG ditemukan."
-            cp logo-catatan-kas.png app/src/main/assets/logo-catatan-kas.png
-          elif [ -f logo-catatan-kas.jpg ]; then
-            echo "Logo JPG ditemukan."
-            cp logo-catatan-kas.jpg app/src/main/assets/logo-catatan-kas.jpg
-          else
-            echo "Logo belum ditemukan."
+            echo "Logo PNG ditemukan di root."
+            cp logo-catatan-kas.png \
+              app/src/main/assets/assets/logo-catatan-kas.png
           fi
 
-          echo "Isi folder assets:"
-          ls -lah app/src/main/assets
+          if [ -f logo-catatan-kas.jpg ]; then
+            echo "Logo JPG ditemukan di root."
+
+            # Simpan juga versi JPG
+            cp logo-catatan-kas.jpg \
+              app/src/main/assets/assets/logo-catatan-kas.jpg
+          fi
+
+          # ----------------------------------
+          # CEK LOGO
+          # ----------------------------------
+
+          echo ""
+          echo "======================================"
+          echo "PEMERIKSAAN LOGO"
+          echo "======================================"
+
+          if [ -f app/src/main/assets/assets/logo-catatan-kas.png ]; then
+            echo "OK: logo-catatan-kas.png ditemukan."
+          elif [ -f app/src/main/assets/assets/logo-catatan-kas.jpg ]; then
+            echo "OK: logo-catatan-kas.jpg ditemukan."
+          else
+            echo "PERINGATAN: Logo belum ditemukan!"
+          fi
+
+          echo ""
+          echo "Isi assets Android:"
+          find app/src/main/assets -maxdepth 3 -type f | sort
+
+      - name: Build APK
+        shell: bash
+        run: |
+          set -e
+
+          echo "======================================"
+          echo "MEMBANGUN APK CATATAN KAS"
+          echo "======================================"
+
+          gradle assembleDebug --no-daemon
+
+      - name: Rename APK
+        shell: bash
+        run: |
+          set -e
+
+          mkdir -p output
+
+          APK=$(find app/build/outputs/apk/debug \
+            -type f \
+            -name "*.apk" \
+            | head -n 1)
+
+          if [ -z "$APK" ]; then
+            echo "ERROR: APK tidak ditemukan!"
+            exit 1
+          fi
+
+          cp "$APK" output/Catatan-Kas-APK.apk
+
+          echo "APK berhasil dibuat:"
+          ls -lh output/Catatan-Kas-APK.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Catatan-Kas-APK
+          path: output/Catatan-Kas-APK.apk
+          if-no-files-found: error
