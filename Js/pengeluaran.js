@@ -1,7 +1,7 @@
 // ======================================
-// Pengeluaran Pondok
+// CATATAN KAS
+// Pengeluaran
 // js/pengeluaran.js
-// Versi: 1.0.1
 // ======================================
 
 import { db } from "./firebase-config.js";
@@ -18,263 +18,108 @@ import {
 
 
 // ======================================
-// REFERENSI COLLECTION
-// ======================================
-
-const expensesRef = collection(db, "expenses");
-
-
-// ======================================
-// FORMAT RUPIAH
-// ======================================
-
-function formatRupiah(nilai) {
-
-    return (
-        "Rp " +
-        Number(nilai || 0)
-            .toLocaleString("id-ID")
-    );
-
-}
-
-
-// ======================================
-// ESCAPE HTML
-// ======================================
-
-function escapeHTML(nilai) {
-
-    return String(nilai ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-// ======================================
-// FORMAT TANGGAL
-// ======================================
-
-function formatTanggal(tanggal) {
-
-    if (!tanggal) {
-        return "-";
-    }
-
-    const bagian =
-        String(tanggal).split("-");
-
-    if (bagian.length !== 3) {
-        return tanggal;
-    }
-
-    return (
-        `${bagian[2]}-${bagian[1]}-${bagian[0]}`
-    );
-
-}
-
-
-// ======================================
 // SIMPAN PENGELUARAN
 // ======================================
 
 window.simpanPengeluaran = async function () {
 
-    console.log(
-        "Tombol Simpan Pengeluaran ditekan"
-    );
-
-
-    const jenisEl =
-        document.getElementById("jenis");
-
-    const keteranganEl =
-        document.getElementById("keterangan");
-
-    const tanggalEl =
-        document.getElementById("tanggal");
-
-    const jumlahEl =
-        document.getElementById("jumlah");
-
-    const satuanEl =
-        document.getElementById("satuan");
-
+    const jenisElement = document.getElementById("jenis");
+    const keteranganElement = document.getElementById("keterangan");
+    const tanggalElement = document.getElementById("tanggal");
+    const jumlahElement = document.getElementById("jumlah");
+    const satuanElement = document.getElementById("satuan");
 
     if (
-        !jenisEl ||
-        !keteranganEl ||
-        !tanggalEl ||
-        !jumlahEl ||
-        !satuanEl
+        !jenisElement ||
+        !keteranganElement ||
+        !tanggalElement ||
+        !jumlahElement ||
+        !satuanElement
     ) {
-
-        alert(
-            "❌ Form pengeluaran tidak lengkap."
-        );
-
-        console.error(
-            "Element form pengeluaran tidak ditemukan."
-        );
-
+        console.error("Form pengeluaran tidak lengkap.");
         return;
     }
 
+    const jenis = jenisElement.value;
+    const keterangan = keteranganElement.value.trim();
+    const tanggal = tanggalElement.value;
+    const jumlah = Number(jumlahElement.value);
+    const satuan = satuanElement.value;
 
-    const jenis =
-        jenisEl.value.trim();
-
-    const keterangan =
-        keteranganEl.value.trim();
-
-    const tanggal =
-        tanggalEl.value;
-
-    const jumlah =
-        Number(jumlahEl.value);
-
-    const satuan =
-        satuanEl.value || "Rupiah";
-
-
-    // ======================================
-    // VALIDASI
-    // ======================================
 
     if (!jenis) {
-
-        alert(
-            "Pilih jenis pengeluaran terlebih dahulu."
-        );
-
-        jenisEl.focus();
-
+        alert("Pilih jenis pengeluaran terlebih dahulu.");
         return;
     }
-
 
     if (!keterangan) {
-
-        alert(
-            "Keterangan belum diisi."
-        );
-
-        keteranganEl.focus();
-
+        alert("Keterangan belum diisi.");
         return;
     }
-
 
     if (!tanggal) {
-
-        alert(
-            "Tanggal belum dipilih."
-        );
-
-        tanggalEl.focus();
-
+        alert("Tanggal belum dipilih.");
         return;
     }
 
-
-    if (
-        !Number.isFinite(jumlah) ||
-        jumlah <= 0
-    ) {
-
-        alert(
-            "Masukkan jumlah pengeluaran yang valid."
-        );
-
-        jumlahEl.focus();
-
+    if (!jumlah || jumlah <= 0) {
+        alert("Masukkan jumlah pengeluaran.");
         return;
     }
 
 
     try {
 
-        console.log(
-            "Menyimpan ke Firestore..."
+        console.log("Menyimpan pengeluaran...");
+
+        const docRef = await addDoc(
+            collection(db, "expenses"),
+            {
+                jenis: jenis,
+                keterangan: keterangan,
+                tanggal: tanggal,
+                jumlah: jumlah,
+                satuan: satuan,
+                createdAt: serverTimestamp()
+            }
         );
 
 
-        const docRef =
-            await addDoc(
-                expensesRef,
-                {
-
-                    jenis:
-                        jenis,
-
-                    keterangan:
-                        keterangan,
-
-                    tanggal:
-                        tanggal,
-
-                    jumlah:
-                        jumlah,
-
-                    satuan:
-                        satuan,
-
-                    createdAt:
-                        serverTimestamp()
-
-                }
-            );
-
-
         console.log(
-            "Berhasil disimpan:",
+            "Pengeluaran berhasil disimpan:",
             docRef.id
         );
 
 
-        alert(
-            "✅ Pengeluaran berhasil disimpan!"
-        );
+        alert("✅ Pengeluaran berhasil disimpan!");
 
 
-        // ======================================
-        // RESET FORM
-        // ======================================
-
-        jenisEl.value = "";
-
-        keteranganEl.value = "";
-
-        jumlahEl.value = "";
-
-        satuanEl.value = "Rupiah";
+        // Kosongkan form
+        jenisElement.value = "";
+        keteranganElement.value = "";
+        jumlahElement.value = "";
+        satuanElement.value = "Rupiah";
 
 
-        // Tanggal kembali hari ini
+        // Reset tampilan satuan
+        if (typeof window.ubahSatuan === "function") {
+            window.ubahSatuan();
+        }
 
-        isiTanggalHariIni();
 
-
+        // Tampilkan ulang riwayat
         await tampilkanRiwayatPengeluaran();
 
 
     } catch (error) {
 
         console.error(
-            "ERROR FIREBASE:",
+            "Gagal menyimpan pengeluaran:",
             error
         );
 
-
         alert(
             "❌ Gagal menyimpan pengeluaran!\n\n" +
-            (error.code || "unknown-error") +
-            "\n" +
             error.message
         );
 
@@ -287,345 +132,200 @@ window.simpanPengeluaran = async function () {
 // EDIT PENGELUARAN
 // ======================================
 
-window.editPengeluaran =
-    async function (
-        id,
-        jenisLama,
-        keteranganLama,
-        tanggalLama,
-        jumlahLama,
-        satuanLama
-    ) {
+window.editPengeluaran = async function (id) {
 
-        if (!id) {
+    try {
 
-            alert(
-                "❌ ID pengeluaran tidak ditemukan."
-            );
+        const snapshot = await getDocs(
+            collection(db, "expenses")
+        );
 
-            return;
-        }
+        let dataLama = null;
 
+        snapshot.forEach((item) => {
 
-        // ==================================
-        // JENIS
-        // ==================================
+            if (item.id === id) {
 
-        const jenis =
-            prompt(
-                "Jenis pengeluaran:",
-                jenisLama || ""
-            );
+                dataLama = {
+                    id: item.id,
+                    ...item.data()
+                };
+
+            }
+
+        });
 
 
-        if (jenis === null) {
-            return;
-        }
-
-
-        if (!jenis.trim()) {
+        if (!dataLama) {
 
             alert(
-                "Jenis pengeluaran tidak boleh kosong."
+                "❌ Data pengeluaran tidak ditemukan."
             );
 
             return;
-        }
-
-
-        // ==================================
-        // KETERANGAN
-        // ==================================
-
-        const keterangan =
-            prompt(
-                "Keterangan:",
-                keteranganLama || ""
-            );
-
-
-        if (keterangan === null) {
-            return;
-        }
-
-
-        if (!keterangan.trim()) {
-
-            alert(
-                "Keterangan tidak boleh kosong."
-            );
-
-            return;
-        }
-
-
-        // ==================================
-        // TANGGAL
-        // ==================================
-
-        const tanggal =
-            prompt(
-                "Tanggal (YYYY-MM-DD):",
-                tanggalLama || ""
-            );
-
-
-        if (tanggal === null) {
-            return;
-        }
-
-
-        if (!tanggal.trim()) {
-
-            alert(
-                "Tanggal tidak boleh kosong."
-            );
-
-            return;
-        }
-
-
-        // ==================================
-        // SATUAN
-        // ==================================
-
-        const satuan =
-            prompt(
-                "Satuan (Rupiah / Liter):",
-                satuanLama || "Rupiah"
-            );
-
-
-        if (satuan === null) {
-            return;
-        }
-
-
-        const satuanNormal =
-            satuan.trim().toLowerCase();
-
-
-        let satuanFinal;
-
-
-        if (
-            satuanNormal === "liter"
-        ) {
-
-            satuanFinal = "Liter";
-
-        } else {
-
-            satuanFinal = "Rupiah";
 
         }
 
 
-        // ==================================
-        // JUMLAH
-        // ==================================
+        // Jenis
+        const jenis = prompt(
+            "Jenis pengeluaran:",
+            dataLama.jenis || ""
+        );
 
-        const jumlahInput =
-            prompt(
-                satuanFinal === "Liter"
-                    ? "Jumlah (Liter):"
-                    : "Jumlah (Rupiah):",
-                jumlahLama || 0
-            );
+        if (jenis === null) return;
 
 
-        if (jumlahInput === null) {
-            return;
-        }
+        // Keterangan
+        const keterangan = prompt(
+            "Keterangan:",
+            dataLama.keterangan || ""
+        );
+
+        if (keterangan === null) return;
 
 
-        const jumlah =
-            Number(
-                String(jumlahInput)
-                    .replace(/\./g, "")
-                    .replace(/,/g, ".")
-            );
+        // Tanggal
+        const tanggal = prompt(
+            "Tanggal (YYYY-MM-DD):",
+            dataLama.tanggal || ""
+        );
+
+        if (tanggal === null) return;
 
 
-        if (
-            !Number.isFinite(jumlah) ||
-            jumlah <= 0
-        ) {
+        // Jumlah
+        const jumlahInput = prompt(
+            dataLama.satuan === "Liter"
+                ? "Jumlah (Liter):"
+                : "Jumlah (Rupiah):",
+            dataLama.jumlah || 0
+        );
+
+        if (jumlahInput === null) return;
+
+
+        const jumlah = Number(jumlahInput);
+
+
+        if (!jumlah || jumlah <= 0) {
 
             alert(
                 "❌ Jumlah tidak valid."
             );
 
             return;
-        }
-
-
-        // ==================================
-        // KONFIRMASI
-        // ==================================
-
-        const yakin =
-            confirm(
-                "Apakah data pengeluaran akan diperbarui?"
-            );
-
-
-        if (!yakin) {
-            return;
-        }
-
-
-        try {
-
-            console.log(
-                "Mengubah data:",
-                id
-            );
-
-
-            await updateDoc(
-                doc(
-                    db,
-                    "expenses",
-                    id
-                ),
-                {
-
-                    jenis:
-                        jenis.trim(),
-
-                    keterangan:
-                        keterangan.trim(),
-
-                    tanggal:
-                        tanggal.trim(),
-
-                    jumlah:
-                        jumlah,
-
-                    satuan:
-                        satuanFinal
-
-                }
-            );
-
-
-            console.log(
-                "Berhasil mengubah:",
-                id
-            );
-
-
-            alert(
-                "✅ Pengeluaran berhasil diubah!"
-            );
-
-
-            await tampilkanRiwayatPengeluaran();
-
-
-        } catch (error) {
-
-            console.error(
-                "Gagal mengubah pengeluaran:",
-                error
-            );
-
-
-            alert(
-                "❌ Gagal mengubah pengeluaran!\n\n" +
-                (error.code || "unknown-error") +
-                "\n" +
-                error.message
-            );
 
         }
 
-    };
+
+        // Tentukan satuan berdasarkan jenis
+        const satuan =
+            jenis.trim().toLowerCase() === "beras"
+                ? "Liter"
+                : "Rupiah";
+
+
+        await updateDoc(
+            doc(db, "expenses", id),
+            {
+                jenis: jenis.trim(),
+                keterangan: keterangan.trim(),
+                tanggal: tanggal.trim(),
+                jumlah: jumlah,
+                satuan: satuan
+            }
+        );
+
+
+        alert(
+            "✅ Pengeluaran berhasil diubah!"
+        );
+
+
+        await tampilkanRiwayatPengeluaran();
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal mengubah pengeluaran:",
+            error
+        );
+
+        alert(
+            "❌ Gagal mengubah pengeluaran!\n\n" +
+            error.message
+        );
+
+    }
+
+};
 
 
 // ======================================
 // HAPUS PENGELUARAN
 // ======================================
 
-window.hapusPengeluaran =
-    async function (id) {
+window.hapusPengeluaran = async function (id) {
 
-        if (!id) {
+    const yakin = confirm(
+        "⚠️ Apakah kamu yakin ingin menghapus pengeluaran ini?"
+    );
 
-            alert(
-                "❌ ID pengeluaran tidak ditemukan."
-            );
-
-            return;
-        }
+    if (!yakin) return;
 
 
-        const yakin =
-            confirm(
-                "⚠️ Apakah kamu yakin ingin menghapus pengeluaran ini?\n\n" +
-                "Data yang dihapus tidak dapat dikembalikan."
-            );
+    try {
+
+        await deleteDoc(
+            doc(db, "expenses", id)
+        );
 
 
-        if (!yakin) {
-            return;
-        }
+        alert(
+            "✅ Pengeluaran berhasil dihapus!"
+        );
 
 
-        try {
-
-            console.log(
-                "Menghapus data:",
-                id
-            );
+        await tampilkanRiwayatPengeluaran();
 
 
-            await deleteDoc(
-                doc(
-                    db,
-                    "expenses",
-                    id
-                )
-            );
+    } catch (error) {
 
+        console.error(
+            "Gagal menghapus pengeluaran:",
+            error
+        );
 
-            console.log(
-                "Berhasil menghapus:",
-                id
-            );
+        alert(
+            "❌ Gagal menghapus pengeluaran!\n\n" +
+            error.message
+        );
 
+    }
 
-            alert(
-                "✅ Pengeluaran berhasil dihapus!"
-            );
-
-
-            await tampilkanRiwayatPengeluaran();
-
-
-        } catch (error) {
-
-            console.error(
-                "Gagal menghapus pengeluaran:",
-                error
-            );
-
-
-            alert(
-                "❌ Gagal menghapus pengeluaran!\n\n" +
-                (error.code || "unknown-error") +
-                "\n" +
-                error.message
-            );
-
-        }
-
-    };
+};
 
 
 // ======================================
-// TAMPILKAN RIWAYAT PENGELUARAN
+// FORMAT TEKS AMAN
+// ======================================
+
+function escapeHTML(teks) {
+
+    return String(teks ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+// ======================================
+// TAMPILKAN RIWAYAT
 // ======================================
 
 async function tampilkanRiwayatPengeluaran() {
@@ -639,30 +339,20 @@ async function tampilkanRiwayatPengeluaran() {
     if (!daftar) {
 
         console.error(
-            "Element #daftarPengeluaran tidak ditemukan!"
+            "Element daftarPengeluaran tidak ditemukan."
         );
 
         return;
+
     }
 
 
     try {
 
-        console.log(
-            "Mengambil data expenses..."
-        );
-
-
         const snapshot =
             await getDocs(
-                expensesRef
+                collection(db, "expenses")
             );
-
-
-        console.log(
-            "Jumlah data:",
-            snapshot.size
-        );
 
 
         daftar.innerHTML = "";
@@ -671,335 +361,150 @@ async function tampilkanRiwayatPengeluaran() {
         if (snapshot.empty) {
 
             daftar.innerHTML = `
-
-                <li
-                    class="list-group-item
-                           text-center
-                           text-muted"
-                >
-
+                <li class="list-group-item text-center text-muted">
                     Belum ada pengeluaran.
-
                 </li>
-
             `;
 
             return;
+
         }
 
-
-        // ==================================
-        // AMBIL DATA
-        // ==================================
 
         const dataPengeluaran = [];
 
 
-        snapshot.forEach(
-            (docSnapshot) => {
+        snapshot.forEach((docSnapshot) => {
 
-                const data =
-                    docSnapshot.data();
+            dataPengeluaran.push({
+                id: docSnapshot.id,
+                ...docSnapshot.data()
+            });
 
-
-                dataPengeluaran.push({
-
-                    id:
-                        docSnapshot.id,
-
-                    ...data
-
-                });
-
-            }
-        );
+        });
 
 
-        // ==================================
-        // URUTKAN TANGGAL TERBARU
-        // ==================================
+        // Urutkan tanggal terbaru
+        dataPengeluaran.sort((a, b) => {
 
-        dataPengeluaran.sort(
-            (a, b) => {
-
-                const tanggalA =
-                    new Date(
-                        a.tanggal ||
-                        "1970-01-01"
-                    );
-
-
-                const tanggalB =
-                    new Date(
-                        b.tanggal ||
-                        "1970-01-01"
-                    );
-
-
-                return (
-                    tanggalB -
-                    tanggalA
+            const tanggalA =
+                new Date(
+                    a.tanggal || "1970-01-01"
                 );
 
+            const tanggalB =
+                new Date(
+                    b.tanggal || "1970-01-01"
+                );
+
+            return tanggalB - tanggalA;
+
+        });
+
+
+        // ======================================
+        // TAMPILKAN
+        // ======================================
+
+        dataPengeluaran.forEach((data) => {
+
+            const jumlah =
+                Number(data.jumlah || 0);
+
+
+            let jumlahTampil;
+
+
+            if (data.satuan === "Liter") {
+
+                jumlahTampil =
+                    jumlah.toLocaleString("id-ID") +
+                    " Liter";
+
+            } else {
+
+                jumlahTampil =
+                    "Rp " +
+                    jumlah.toLocaleString("id-ID");
+
             }
-        );
 
 
-        // ==================================
-        // TAMPILKAN DATA
-        // ==================================
-
-        dataPengeluaran.forEach(
-            (data) => {
-
-                const satuan =
-                    data.satuan ||
-                    "Rupiah";
+            const item =
+                document.createElement("li");
 
 
-                let jumlahTampil;
+            item.className =
+                "list-group-item";
 
 
-                if (
-                    satuan === "Liter"
-                ) {
+            item.innerHTML = `
 
-                    jumlahTampil =
-                        Number(
-                            data.jumlah || 0
-                        )
-                        .toLocaleString(
-                            "id-ID"
-                        ) +
-                        " Liter";
+                <div class="d-flex justify-content-between align-items-start gap-2">
 
-                } else {
+                    <div class="me-2">
 
-                    jumlahTampil =
-                        formatRupiah(
-                            data.jumlah
-                        );
+                        <strong>
+                            ${escapeHTML(data.jenis || "-")}
+                        </strong>
 
-                }
+                        <br>
 
+                        <small class="text-muted">
+                            ${escapeHTML(data.keterangan || "-")}
+                        </small>
 
-                const item =
-                    document.createElement(
-                        "li"
-                    );
+                        <br>
+
+                        <small class="text-muted">
+                            📅 ${escapeHTML(data.tanggal || "-")}
+                        </small>
+
+                    </div>
 
 
-                item.className =
-                    "list-group-item";
+                    <div class="text-end">
 
+                        <div class="text-danger fw-bold mb-2">
 
-                // ==================================
-                // DATA AMAN UNTUK HTML
-                // ==================================
-
-                const id =
-                    escapeHTML(
-                        data.id
-                    );
-
-
-                const jenis =
-                    escapeHTML(
-                        data.jenis || "-"
-                    );
-
-
-                const keterangan =
-                    escapeHTML(
-                        data.keterangan || "-"
-                    );
-
-
-                const tanggal =
-                    escapeHTML(
-                        data.tanggal || "-"
-                    );
-
-
-                const tanggalTampil =
-                    escapeHTML(
-                        formatTanggal(
-                            data.tanggal
-                        )
-                    );
-
-
-                const jumlah =
-                    escapeHTML(
-                        data.jumlah || 0
-                    );
-
-
-                const satuanAman =
-                    escapeHTML(
-                        satuan
-                    );
-
-
-                // ==================================
-                // HTML
-                // ==================================
-
-                item.innerHTML = `
-
-                    <div
-                        class="d-flex
-                               justify-content-between
-                               align-items-start
-                               gap-2"
-                    >
-
-                        <div class="me-2">
-
-                            <strong>
-                                ${jenis}
-                            </strong>
-
-                            <br>
-
-                            <small
-                                class="text-muted"
-                            >
-                                ${keterangan}
-                            </small>
-
-                            <br>
-
-                            <small
-                                class="text-muted"
-                            >
-                                📅 ${tanggalTampil}
-                            </small>
+                            ${jumlahTampil}
 
                         </div>
 
 
-                        <div class="text-end">
+                        <div class="d-flex gap-1">
 
-                            <div
-                                class="text-danger
-                                       fw-bold
-                                       mb-2"
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-warning"
+                                data-action="edit"
+                                data-id="${escapeHTML(data.id)}"
                             >
-                                ${jumlahTampil}
-                            </div>
+                                ✏️ Edit
+                            </button>
 
 
-                            <div
-                                class="d-flex
-                                       gap-1
-                                       justify-content-end"
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-danger"
+                                data-action="hapus"
+                                data-id="${escapeHTML(data.id)}"
                             >
-
-                                <button
-                                    type="button"
-                                    class="btn
-                                           btn-sm
-                                           btn-warning"
-                                    data-action="edit"
-                                    data-id="${id}"
-                                    data-jenis="${escapeHTML(data.jenis || "")}"
-                                    data-keterangan="${escapeHTML(data.keterangan || "")}"
-                                    data-tanggal="${escapeHTML(data.tanggal || "")}"
-                                    data-jumlah="${jumlah}"
-                                    data-satuan="${satuanAman}"
-                                >
-                                    ✏️ Edit
-                                </button>
-
-
-                                <button
-                                    type="button"
-                                    class="btn
-                                           btn-sm
-                                           btn-danger"
-                                    data-action="hapus"
-                                    data-id="${id}"
-                                >
-                                    🗑️ Hapus
-                                </button>
-
-                            </div>
+                                🗑️ Hapus
+                            </button>
 
                         </div>
 
                     </div>
 
-                `;
+                </div>
+
+            `;
 
 
-                daftar.appendChild(
-                    item
-                );
+            daftar.appendChild(item);
 
-
-            }
-        );
-
-
-        // ==================================
-        // EVENT EDIT / HAPUS
-        // ==================================
-
-        daftar
-            .querySelectorAll(
-                '[data-action="edit"]'
-            )
-            .forEach(
-                (button) => {
-
-                    button.addEventListener(
-                        "click",
-                        () => {
-
-                            window.editPengeluaran(
-
-                                button.dataset.id,
-
-                                button.dataset.jenis,
-
-                                button.dataset.keterangan,
-
-                                button.dataset.tanggal,
-
-                                button.dataset.jumlah,
-
-                                button.dataset.satuan
-
-                            );
-
-                        }
-                    );
-
-                }
-            );
-
-
-        daftar
-            .querySelectorAll(
-                '[data-action="hapus"]'
-            )
-            .forEach(
-                (button) => {
-
-                    button.addEventListener(
-                        "click",
-                        () => {
-
-                            window.hapusPengeluaran(
-                                button.dataset.id
-                            );
-
-                        }
-                    );
-
-                }
-            );
+        });
 
 
     } catch (error) {
@@ -1012,21 +517,14 @@ async function tampilkanRiwayatPengeluaran() {
 
         daftar.innerHTML = `
 
-            <li
-                class="list-group-item
-                       text-center
-                       text-danger"
-            >
+            <li class="list-group-item text-center text-danger">
 
-                ❌ Gagal memuat
-                riwayat pengeluaran.
+                ❌ Gagal memuat riwayat pengeluaran.
 
                 <br>
 
                 <small>
-                    ${escapeHTML(
-                        error.message
-                    )}
+                    ${escapeHTML(error.message)}
                 </small>
 
             </li>
@@ -1039,63 +537,91 @@ async function tampilkanRiwayatPengeluaran() {
 
 
 // ======================================
-// TANGGAL HARI INI
+// EVENT EDIT / HAPUS
 // ======================================
 
-function isiTanggalHariIni() {
+document.addEventListener(
+    "click",
+    function (event) {
 
-    const tanggal =
-        document.getElementById(
-            "tanggal"
-        );
+        const tombol =
+            event.target.closest(
+                "[data-action]"
+            );
 
 
-    if (!tanggal) {
-        return;
+        if (!tombol) return;
+
+
+        const action =
+            tombol.dataset.action;
+
+
+        const id =
+            tombol.dataset.id;
+
+
+        if (!id) return;
+
+
+        if (action === "edit") {
+
+            window.editPengeluaran(id);
+
+        }
+
+
+        if (action === "hapus") {
+
+            window.hapusPengeluaran(id);
+
+        }
+
     }
-
-
-    const sekarang =
-        new Date();
-
-
-    const tahun =
-        sekarang.getFullYear();
-
-
-    const bulan =
-        String(
-            sekarang.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    const hari =
-        String(
-            sekarang.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    tanggal.value =
-        `${tahun}-${bulan}-${hari}`;
-
-}
+);
 
 
 // ======================================
-// SAAT HALAMAN SIAP
+// TANGGAL HARI INI
 // ======================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
+    function () {
 
-        isiTanggalHariIni();
+        const tanggal =
+            document.getElementById(
+                "tanggal"
+            );
+
+
+        if (tanggal && !tanggal.value) {
+
+            const sekarang =
+                new Date();
+
+
+            const tahun =
+                sekarang.getFullYear();
+
+
+            const bulan =
+                String(
+                    sekarang.getMonth() + 1
+                ).padStart(2, "0");
+
+
+            const hari =
+                String(
+                    sekarang.getDate()
+                ).padStart(2, "0");
+
+
+            tanggal.value =
+                `${tahun}-${bulan}-${hari}`;
+
+        }
+
 
         tampilkanRiwayatPengeluaran();
 
