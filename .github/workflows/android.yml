@@ -284,13 +284,16 @@ jobs:
           package com.catatankas.app;
 
           import android.annotation.SuppressLint;
+          import android.net.Uri;
           import android.os.Bundle;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebResourceResponse;
           import android.webkit.WebSettings;
           import android.webkit.WebView;
+          import android.webkit.WebViewClient;
 
           import androidx.appcompat.app.AppCompatActivity;
           import androidx.webkit.WebViewAssetLoader;
-          import androidx.webkit.WebViewClient;
 
           public class MainActivity extends AppCompatActivity {
 
@@ -313,9 +316,6 @@ jobs:
                   settings.setAllowFileAccess(false);
                   settings.setAllowContentAccess(false);
 
-                  settings.setJavaScriptCanOpenWindowsAutomatically(true);
-                  settings.setSupportMultipleWindows(true);
-
                   WebViewAssetLoader assetLoader =
                           new WebViewAssetLoader.Builder()
                                   .addPathHandler(
@@ -328,9 +328,9 @@ jobs:
                           new WebViewClient() {
 
                               @Override
-                              public android.webkit.WebResourceResponse shouldInterceptRequest(
+                              public WebResourceResponse shouldInterceptRequest(
                                       WebView view,
-                                      android.webkit.WebResourceRequest request
+                                      WebResourceRequest request
                               ) {
                                   return assetLoader.shouldInterceptRequest(
                                           request.getUrl()
@@ -338,11 +338,13 @@ jobs:
                               }
 
                               @Override
-                              public android.webkit.WebResourceResponse shouldInterceptRequest(
+                              public WebResourceResponse shouldInterceptRequest(
                                       WebView view,
                                       String url
                               ) {
-                                  return assetLoader.shouldInterceptRequest(url);
+                                  return assetLoader.shouldInterceptRequest(
+                                          Uri.parse(url)
+                                  );
                               }
                           }
                   );
@@ -361,9 +363,7 @@ jobs:
                   }
               }
           }
-          EOF
-
-
+          EOF 
       # ==========================================
       # CEK PROJECT
       # ==========================================
