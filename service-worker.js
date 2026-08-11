@@ -1,18 +1,10 @@
-// ==========================================
-// CATATAN KAS - SERVICE WORKER
-// ==========================================
-
 const CACHE_NAME = "catatan-kas-v3";
-
 const BASE = self.registration.scope;
-
-// ==========================================
-// FILE YANG DI-CACHE
-// ==========================================
 
 const urlsToCache = [
     BASE,
     BASE + "index.html",
+    BASE + "manifest.json",
 
     // CSS
     BASE + "css/style.css",
@@ -24,10 +16,7 @@ const urlsToCache = [
     BASE + "js/auth-guard.js",
     BASE + "js/firebase-config.js",
 
-    // Manifest
-    BASE + "manifest.json",
-
-    // LOGO
+    // Logo
     BASE + "assets/logo-catatan-kas.png"
 ];
 
@@ -41,25 +30,11 @@ self.addEventListener("install", event => {
     event.waitUntil(
 
         caches.open(CACHE_NAME)
-
             .then(cache => {
-
-                console.log(
-                    "Catatan Kas: menyimpan cache..."
-                );
-
                 return cache.addAll(urlsToCache);
-
             })
-
             .then(() => {
-
-                console.log(
-                    "Catatan Kas: cache berhasil."
-                );
-
                 return self.skipWaiting();
-
             })
 
     );
@@ -76,25 +51,15 @@ self.addEventListener("activate", event => {
     event.waitUntil(
 
         caches.keys()
-
             .then(cacheNames => {
 
                 return Promise.all(
 
                     cacheNames.map(cacheName => {
 
-                        if (
-                            cacheName !== CACHE_NAME
-                        ) {
+                        if (cacheName !== CACHE_NAME) {
 
-                            console.log(
-                                "Menghapus cache lama:",
-                                cacheName
-                            );
-
-                            return caches.delete(
-                                cacheName
-                            );
+                            return caches.delete(cacheName);
 
                         }
 
@@ -103,7 +68,6 @@ self.addEventListener("activate", event => {
                 );
 
             })
-
             .then(() => {
 
                 return self.clients.claim();
@@ -121,7 +85,6 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
 
-    // Hanya tangani request GET
     if (event.request.method !== "GET") {
         return;
     }
@@ -132,30 +95,21 @@ self.addEventListener("fetch", event => {
 
             .then(cachedResponse => {
 
-                // Jika ada di cache
                 if (cachedResponse) {
-
                     return cachedResponse;
-
                 }
 
-                // Jika belum ada → ambil dari internet
                 return fetch(event.request)
 
                     .then(networkResponse => {
 
-                        // Jangan cache response yang tidak valid
                         if (
                             !networkResponse ||
-                            networkResponse.status !== 200 ||
-                            networkResponse.type === "opaque"
+                            networkResponse.status !== 200
                         ) {
-
                             return networkResponse;
-
                         }
 
-                        // Simpan salinan ke cache
                         const responseClone =
                             networkResponse.clone();
 
@@ -175,8 +129,6 @@ self.addEventListener("fetch", event => {
 
                     .catch(() => {
 
-                        // Jika offline dan halaman tidak ada
-                        // di cache
                         if (
                             event.request.mode ===
                             "navigate"
@@ -198,18 +150,14 @@ self.addEventListener("fetch", event => {
 
 
 // ==========================================
-// PESAN DARI HALAMAN
+// UPDATE SERVICE WORKER
 // ==========================================
 
 self.addEventListener("message", event => {
 
-    if (!event.data) {
-        return;
-    }
-
     if (
-        event.data.type ===
-        "SKIP_WAITING"
+        event.data &&
+        event.data.type === "SKIP_WAITING"
     ) {
 
         self.skipWaiting();
