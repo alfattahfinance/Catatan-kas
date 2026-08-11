@@ -1244,35 +1244,33 @@
 
 <script>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+document.addEventListener("DOMContentLoaded", function () {
 
-        const logo =
-            document.getElementById(
-                "logoDashboard"
-            );
+    const logo = document.getElementById("logoDashboard");
 
-        if (!logo) return;
+    if (!logo) return;
 
+    const tersimpan = localStorage.getItem("logoDashboard");
 
-        const tersimpan =
-            localStorage.getItem(
-                "logoDashboard"
-            );
-
-
-        if (tersimpan) {
-
-            logo.src = tersimpan;
-
-        }
-
+    if (tersimpan) {
+        logo.src = tersimpan;
     }
-);
+
+    // Jika logo dari localStorage rusak,
+    // kembali ke logo bawaan aplikasi
+    logo.onerror = function () {
+
+        console.warn("Logo gagal dimuat. Menggunakan logo bawaan.");
+
+        localStorage.removeItem("logoDashboard");
+
+        logo.src = "assets/logo-catatan-kas.png";
+
+    };
+
+});
 
 </script>
-
 
 
 <!-- =====================================================
