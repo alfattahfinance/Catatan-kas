@@ -99,12 +99,14 @@
             background: rgba(255,255,255,.92) !important;
         }
         .app-logo {
-            width: 68px !important;
-            height: 68px !important;
-            object-fit: cover;
-            border-radius: 18px !important;
-            flex: 0 0 68px;
-        }
+    width: 68px !important;
+    height: 68px !important;
+    object-fit: contain;
+    border-radius: 18px !important;
+    flex: 0 0 68px;
+    display: block;
+    background: #ffffff;
+}
         .app-name {
             font-size: 1.15rem;
             letter-spacing: -.2px;
@@ -145,9 +147,10 @@
     <!-- Header -->
     <div class="card custom-card app-header mb-4">
         <div class="card-body d-flex align-items-center p-3">
-            <img src="assets/logo-catatan-kas.jpg"
-                 class="app-logo shadow-sm"
-                 id="logoDashboard" alt="Logo Catatan Kas">
+            <img src="assets/logo-catatan-kas.png"
+               class="app-logo shadow-sm"
+                  id="logoDashboard"
+                 alt="Logo Catatan Kas">
             <div class="ms-3">
                 <div class="text-success fw-bold app-name">Catatan Kas</div>
                 <h5 id="namaPondokDashboard" class="mb-1 fw-bold">
