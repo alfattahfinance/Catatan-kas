@@ -79,9 +79,19 @@ jobs:
           }
 
           dependencies {
-              implementation "androidx.appcompat:appcompat:1.7.0"
-              implementation "androidx.webkit:webkit:1.12.1"
-          }
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.webkit:webkit:1.12.1"
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { dependency ->
+        if (dependency.requested.group == "org.jetbrains.kotlin") {
+            dependency.useVersion "1.8.22"
+        }
+    }
+}
+
+          
           EOF
 
           cp MainActivity.java app/src/main/java/com/catatankas/app/MainActivity.java
