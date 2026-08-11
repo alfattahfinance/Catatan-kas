@@ -1,9 +1,6 @@
 name: Build Catatan Kas APK
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -11,252 +8,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+
+      - name: Checkout project
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v5
+
+      - name: Cek file aplikasi
+        run: |
+          echo "=== CEK ASSETS ==="
+
+          ls -la app/src/main/assets || true
+
+          echo ""
+          echo "=== CEK FILE HTML ==="
+
+          test -f app/src/main/assets/index.html
+          test -f app/src/main/assets/pengeluaran.html
+          test -f app/src/main/assets/santri.html
+          test -f app/src/main/assets/pembayaran.html
+          test -f app/src/main/assets/laporan.html
+
+          echo ""
+          echo "Semua file HTML ditemukan."
+
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
+
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.9"
+          gradle-version: '8.10'
 
-      - name: Prepare Android project
-        shell: bash
-        run: |
-          set -e
-
-          echo "===================================="
-          echo "MEMBANGUN APK CATATAN KAS"
-          echo "===================================="
-
-          # Struktur folder
-          mkdir -p app/src/main/java/com/catatankas/app
-          mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/assets
-
-          # settings.gradle
-          cat > settings.gradle <<'EOF'
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-
-          rootProject.name = "CatatanKas"
-          include(":app")
-          EOF
-
-          # build.gradle
-          cat > build.gradle <<'EOF'
-          plugins {
-              id 'com.android.application' version '8.7.3' apply false
-          }
-          EOF
-
-          # gradle.properties
-          cat > gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-          EOF
-
-          # app/build.gradle
-          cat > app/build.gradle <<'EOF'
-          plugins {
-              id 'com.android.application'
-          }
-
-          android {
-              namespace 'com.catatankas.app'
-              compileSdk 35
-
-              defaultConfig {
-                  applicationId 'com.catatankas.app'
-                  minSdk 23
-                  targetSdk 35
-                  versionCode 1
-                  versionName '1.0'
-              }
-          }
-          EOF
-
-          # AndroidManifest.xml
-          cat > app/src/main/AndroidManifest.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-              <uses-permission android:name="android.permission.INTERNET" />
-
-              <application
-                  android:allowBackup="true"
-                  android:label="Catatan Kas"
-                  android:theme="@style/AppTheme"
-                  android:usesCleartextTraffic="true">
-
-                  <activity
-                      android:name=".MainActivity"
-                      android:exported="true">
-
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LAUNCHER" />
-                      </intent-filter>
-
-                  </activity>
-
-              </application>
-
-          </manifest>
-          EOF
-
-          # MainActivity.java
-          cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
-          package com.catatankas.app;
-
-          import android.app.Activity;
-          import android.os.Bundle;
-          import android.webkit.WebSettings;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-
-          public class MainActivity extends Activity {
-
-              private WebView webView;
-
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-
-                  webView = new WebView(this);
-
-                  WebSettings settings = webView.getSettings();
-                  settings.setJavaScriptEnabled(true);
-                  settings.setDomStorageEnabled(true);
-                  settings.setAllowFileAccess(true);
-                  settings.setAllowContentAccess(true);
-                  settings.setBuiltInZoomControls(false);
-                  settings.setDisplayZoomControls(false);
-                  settings.setLoadWithOverviewMode(true);
-                  settings.setUseWideViewPort(true);
-
-                  webView.setWebViewClient(new WebViewClient());
-
-                  setContentView(webView);
-
-                  webView.loadUrl("file:///android_asset/index.html");
-              }
-
-              @Override
-              public void onBackPressed() {
-                  if (webView.canGoBack()) {
-                      webView.goBack();
-                  } else {
-                      super.onBackPressed();
-                  }
-              }
-          }
-          EOF
-
-          # styles.xml
-          cat > app/src/main/res/values/styles.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-
-              <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
-                  <item name="android:fontFamily">sans</item>
-                  <item name="android:colorAccent">#164c3d</item>
-                  <item name="android:navigationBarColor">#ffffff</item>
-                  <item name="android:statusBarColor">#ffffff</item>
-                  <item name="android:windowLightStatusBar">true</item>
-              </style>
-
-          </resources>
-          EOF
-
-          # Salin HTML utama
-          if [ -f index.html ]; then
-              cp index.html app/src/main/assets/index.html
-          else
-              echo "ERROR: index.html tidak ditemukan!"
-              exit 1
-          fi
-
-          # Salin JS
-          if [ -d js ]; then
-              cp -R js app/src/main/assets/
-          fi
-
-          # Salin CSS
-          if [ -d css ]; then
-              cp -R css app/src/main/assets/
-          fi
-
-          # Salin seluruh folder assets
-          if [ -d assets ]; then
-              cp -R assets/. app/src/main/assets/
-          fi
-
-          # Pastikan logo tersedia
-          if [ -f logo-catatan-kas.png ]; then
-              cp logo-catatan-kas.png \
-                app/src/main/assets/logo-catatan-kas.png
-              echo "Logo PNG ditemukan dan disalin."
-          elif [ -f logo-catatan-kas.jpg ]; then
-              cp logo-catatan-kas.jpg \
-                app/src/main/assets/logo-catatan-kas.jpg
-              echo "Logo JPG ditemukan dan disalin."
-          else
-              echo "PERINGATAN: logo-catatan-kas.png tidak ditemukan."
-          fi
-
-          echo ""
-          echo "===================================="
-          echo "ISI ASSETS:"
-          echo "===================================="
-          find app/src/main/assets -maxdepth 3 -type f -print
 
       - name: Build APK
-        shell: bash
         run: |
-          set -e
+          gradle --no-daemon :app:assembleDebug
 
-          echo "===================================="
-          echo "BUILD APK CATATAN KAS"
-          echo "===================================="
-
-          gradle --no-daemon \
-            --stacktrace \
-            assembleDebug
-
-      - name: Rename APK
-        shell: bash
-        run: |
-          set -e
-
-          mkdir -p output
-
-          cp app/build/outputs/apk/debug/app-debug.apk \
-            output/Catatan-Kas-APK.apk
-
-          echo "APK berhasil dibuat:"
-          ls -lh output/Catatan-Kas-APK.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Catatan-Kas-APK
-          path: output/Catatan-Kas-APK.apk
-          if-no-files-found: error
+          name: Catatan-Kas-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
