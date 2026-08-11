@@ -1,4 +1,31 @@
-      - name: Prepare Android project
+name: Build Catatan Kas APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Create Android project
         shell: bash
         run: |
           set -e
@@ -7,73 +34,94 @@
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/assets
 
-          cat > settings.gradle <<'EOF'
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
+          printf '%s\n' \
+            'pluginManagement {' \
+            '    repositories {' \
+            '        google()' \
+            '        mavenCentral()' \
+            '        gradlePluginPortal()' \
+            '    }' \
+            '}' \
+            '' \
+            'dependencyResolutionManagement {' \
+            '    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)' \
+            '    repositories {' \
+            '        google()' \
+            '        mavenCentral()' \
+            '    }' \
+            '}' \
+            '' \
+            'rootProject.name = "CatatanKas"' \
+            'include(":app")' \
+            > settings.gradle
 
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
+          printf '%s\n' \
+            'plugins {' \
+            '    id "com.android.application" version "8.7.3" apply false' \
+            '}' \
+            > build.gradle
 
-          rootProject.name = "CatatanKas"
-          include(":app")
-          EOF
+          printf '%s\n' \
+            'plugins {' \
+            '    id "com.android.application"' \
+            '}' \
+            '' \
+            'android {' \
+            '    namespace "com.catatankas.app"' \
+            '    compileSdk 35' \
+            '' \
+            '    defaultConfig {' \
+            '        applicationId "com.catatankas.app"' \
+            '        minSdk 23' \
+            '        targetSdk 35' \
+            '        versionCode 1' \
+            '        versionName "1.0"' \
+            '    }' \
+            '}' \
+            '' \
+            'dependencies {' \
+            '    implementation "androidx.appcompat:appcompat:1.7.0"' \
+            '    implementation "androidx.webkit:webkit:1.12.1"' \
+            '}' \
+            '' \
+            'configurations.all {' \
+            '    resolutionStrategy.eachDependency { dependency ->' \
+            '        if (dependency.requested.group == "org.jetbrains.kotlin") {' \
+            '            dependency.useVersion "1.8.22"' \
+            '        }' \
+            '    }' \
+            '}' \
+            > app/build.gradle
 
-          cat > build.gradle <<'EOF'
-          plugins {
-              id "com.android.application" version "8.7.3" apply false
-          }
-          EOF
-
-          cat > app/build.gradle <<'EOF'
-          plugins {
-              id "com.android.application"
-          }
-
-          android {
-              namespace "com.catatankas.app"
-              compileSdk 35
-
-              defaultConfig {
-                  applicationId "com.catatankas.app"
-                  minSdk 23
-                  targetSdk 35
-                  versionCode 1
-                  versionName "1.0"
-              }
-          }
-
-          dependencies {
-              implementation "androidx.appcompat:appcompat:1.7.0"
-              implementation "androidx.webkit:webkit:1.12.1"
-          }
-
-          configurations.all {
-              resolutionStrategy.eachDependency { dependency ->
-                  if (dependency.requested.group == "org.jetbrains.kotlin") {
-                      dependency.useVersion "1.8.22"
-                  }
-              }
-          }
-          EOF
+          printf '%s\n' \
+            'android.useAndroidX=true' \
+            'android.enableJetifier=true' \
+            > gradle.properties
 
           cp MainActivity.java app/src/main/java/com/catatankas/app/MainActivity.java
           cp AndroidManifest.xml app/src/main/AndroidManifest.xml
-          cp styles.xml app/src/main/res/values/styles.xml
 
-          cp *.html app/src/main/assets/ || true
-          cp *.js app/src/main/assets/ || true
-          cp *.css app/src/main/assets/ || true
-          cp *.json app/src/main/assets/ || true
-          cp *.png app/src/main/assets/ || true
-          cp *.jpg app/src/main/assets/ || true
-          cp *.jpeg app/src/main/assets/ || true
+          if [ -f styles.xml ]; then
+            cp styles.xml app/src/main/res/values/styles.xml
+          fi
+
+          cp *.html app/src/main/assets/ 2>/dev/null || true
+          cp *.js app/src/main/assets/ 2>/dev/null || true
+          cp *.css app/src/main/assets/ 2>/dev/null || true
+          cp *.png app/src/main/assets/ 2>/dev/null || true
+          cp *.jpg app/src/main/assets/ 2>/dev/null || true
+          cp *.jpeg app/src/main/assets/ 2>/dev/null || true
+
+      - name: Generate Gradle wrapper
+        run: |
+          gradle wrapper --gradle-version 8.9
+          chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Catatan-Kas-APK
+          path: app/build/outputs/apk/debug/*.apk
