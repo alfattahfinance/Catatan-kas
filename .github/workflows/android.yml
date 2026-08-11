@@ -148,23 +148,26 @@ jobs:
 
           - name: Prepare Android assets
         run: |
+          echo "Menyiapkan folder assets Android..."
+
           mkdir -p app/src/main/assets
 
-          LOGO=$(find . -type f \( \
-            -iname "logo-catatan-kas.png" -o \
-            -iname "logo-catatan-kas.jpg" -o \
-            -iname "logo-catatan-kas.jpeg" \
-          \) | head -n 1)
-
-          if [ -n "$LOGO" ]; then
-            cp -f "$LOGO" app/src/main/assets/logo-catatan-kas.png
-            echo "✅ Logo ditemukan: $LOGO"
-            echo "✅ Logo disalin ke app/src/main/assets/logo-catatan-kas.png"
-          else
-            echo "❌ Logo Catatan Kas tidak ditemukan!"
-            find . -maxdepth 4 -type f | sort
-            exit 1
+          echo "Menyalin folder assets..."
+          if [ -d assets ]; then
+            cp -R assets/. app/src/main/assets/
           fi
 
-          echo "=== Isi folder assets ==="
+          echo "Menyalin logo Catatan Kas..."
+
+          if [ -f logo-catatan-kas.png ]; then
+            cp logo-catatan-kas.png app/src/main/assets/logo-catatan-kas.png
+            echo "Logo PNG berhasil disalin."
+          elif [ -f logo-catatan-kas.jpg ]; then
+            cp logo-catatan-kas.jpg app/src/main/assets/logo-catatan-kas.jpg
+            echo "Logo JPG berhasil disalin."
+          else
+            echo "PERINGATAN: Logo tidak ditemukan."
+          fi
+
+          echo "Isi folder Android assets:"
           ls -lah app/src/main/assets
