@@ -7,17 +7,11 @@
 
     <title>Pengaturan | Catatan Kas</title>
 
-    <!-- Bootstrap -->
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Bootstrap Icons -->
-    <link
-        rel="stylesheet"
+    <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
-    <!-- CSS Aplikasi -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/theme.css">
 
@@ -25,17 +19,8 @@
         body {
             margin: 0;
             min-height: 100vh;
-            background: linear-gradient(
-                135deg,
-                #d8e2dc 0%,
-                #f5f1e6 100%
-            );
             font-family: Arial, sans-serif;
-        }
-
-        body.dark-mode {
-            background: #121212 !important;
-            color: #f1f1f1;
+            background: linear-gradient(135deg, #D8E2DC 0%, #F5F1E6 100%);
         }
 
         .mobile-container {
@@ -47,13 +32,9 @@
         .custom-card {
             border: none;
             border-radius: 18px;
-            box-shadow: 0 4px 14px rgba(0,0,0,.06);
-            background: rgba(255,255,255,.92);
-        }
-
-        body.dark-mode .custom-card {
-            background: #1e1e1e;
-            color: #f1f1f1;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
+            background: rgba(255, 255, 255, .90);
+            backdrop-filter: blur(6px);
         }
 
         .setting-item {
@@ -66,10 +47,6 @@
             border-bottom: none;
         }
 
-        body.dark-mode .setting-item {
-            border-bottom-color: #333;
-        }
-
         .back-btn {
             text-decoration: none;
             color: #198754;
@@ -80,28 +57,21 @@
             word-break: break-word;
         }
 
-        /* ==============================
-           HEADER
-        ============================== */
-
+        /* HEADER */
         .ck-topbar {
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 15px;
-            margin-bottom: 20px;
             background: rgba(255,255,255,.92);
             border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 14px rgba(0,0,0,.05);
         }
 
-        body.dark-mode .ck-topbar {
-            background: #1e1e1e;
-        }
-
         .ck-logo {
-            width: 58px;
-            height: 58px;
+            width: 64px;
+            height: 64px;
             object-fit: contain;
             border-radius: 16px;
             background: white;
@@ -110,49 +80,38 @@
 
         .ck-title {
             margin: 0;
-            font-size: 1.1rem;
-            font-weight: 800;
             color: #198754;
+            font-weight: 800;
+            font-size: 1.15rem;
         }
 
         .ck-subtitle {
+            color: #6c757d;
             font-size: .82rem;
-            color: #777;
         }
 
-        /* ==============================
-           LOGO PREVIEW
-        ============================== */
-
+        /* LOGO */
         .logo-preview {
             width: 110px;
             height: 110px;
             object-fit: contain;
             border-radius: 22px;
             border: 1px solid #ddd;
-            background: #fff;
+            background: white;
             padding: 5px;
         }
 
-        /* ==============================
-           BOTTOM NAV
-        ============================== */
-
+        /* BOTTOM NAV */
         .ck-bottom {
             position: fixed;
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 999;
+            z-index: 1000;
             padding: 8px 10px;
-            background: rgba(255,255,255,.96);
-            border-top: 1px solid #ddd;
+            background: rgba(255,255,255,.94);
             backdrop-filter: blur(10px);
-        }
-
-        body.dark-mode .ck-bottom {
-            background: rgba(25,25,25,.97);
-            border-top-color: #333;
+            border-top: 1px solid rgba(0,0,0,.08);
         }
 
         .ck-bottom-inner {
@@ -165,7 +124,7 @@
 
         .ck-bottom a {
             text-decoration: none;
-            color: #666;
+            color: #6c757d;
             text-align: center;
             font-size: .68rem;
             font-weight: 600;
@@ -182,41 +141,89 @@
             color: #198754;
         }
 
+        /* DARK MODE */
+        body.dark-mode {
+            background: #121212 !important;
+            color: #eee;
+        }
+
+        body.dark-mode .custom-card,
+        body.dark-mode .ck-topbar,
+        body.dark-mode .ck-bottom {
+            background: #1e1e1e !important;
+            color: #eee;
+        }
+
+        body.dark-mode .text-muted {
+            color: #aaa !important;
+        }
+
+        body.dark-mode .setting-item {
+            border-color: #333;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background: #2a2a2a;
+            color: #fff;
+            border-color: #444;
+        }
+
+        body.dark-mode .form-control::placeholder {
+            color: #aaa;
+        }
+
+        body.dark-mode .ck-bottom a {
+            color: #aaa;
+        }
+
+        body.dark-mode .ck-bottom a:hover {
+            color: #63d99a;
+        }
+
         @media (max-width: 380px) {
+
             .mobile-container {
                 padding-left: 10px !important;
                 padding-right: 10px !important;
             }
 
             .ck-logo {
-                width: 50px;
-                height: 50px;
+                width: 56px;
+                height: 56px;
             }
 
             .ck-title {
                 font-size: 1rem;
             }
+
+            .ck-subtitle {
+                font-size: .75rem;
+            }
         }
     </style>
 </head>
+
 
 <body>
 
 <div class="container-fluid mobile-container py-4">
 
+
     <!-- ================================= -->
-    <!-- HEADER -->
+    <!-- HEADER LOGO -->
     <!-- ================================= -->
 
     <div class="ck-topbar">
 
         <img
             id="logoPreviewV2"
-            src="assets/logo-catatan-kas.png"
+            src="assets/logo-catatan-kas.jpg"
             class="ck-logo"
             alt="Logo Catatan Kas">
 
         <div>
+
             <p class="ck-title">
                 Catatan Kas
             </p>
@@ -224,6 +231,7 @@
             <span class="ck-subtitle">
                 Pengaturan aplikasi
             </span>
+
         </div>
 
     </div>
@@ -235,9 +243,7 @@
 
     <div class="d-flex align-items-center mb-4">
 
-        <a
-            href="index.html"
-            class="back-btn me-3">
+        <a href="index.html" class="back-btn me-3">
 
             <i class="bi bi-arrow-left fs-4"></i>
 
@@ -285,6 +291,7 @@
 
                     </div>
 
+
                     <div class="flex-grow-1">
 
                         <small class="text-muted d-block">
@@ -309,11 +316,11 @@
             <div class="d-grid mt-3">
 
                 <button
-                    type="button"
                     id="tombolLoginLogout"
                     class="btn btn-outline-danger">
 
                     <i class="bi bi-box-arrow-right"></i>
+
                     Keluar
 
                 </button>
@@ -344,11 +351,8 @@
 
             <div class="setting-item">
 
-                <label
-                    class="form-label fw-semibold">
-
+                <label class="form-label fw-semibold">
                     Nama Pondok
-
                 </label>
 
                 <input
@@ -362,18 +366,15 @@
 
             <div class="setting-item">
 
-                <label
-                    class="form-label fw-semibold">
-
+                <label class="form-label fw-semibold">
                     Keterangan Dashboard
-
                 </label>
 
                 <input
                     type="text"
                     class="form-control"
                     id="subJudul"
-                    placeholder="Contoh: Dashboard Keuangan Pondok">
+                    placeholder="Dashboard Keuangan Pondok">
 
             </div>
 
@@ -401,11 +402,8 @@
 
             <div class="setting-item">
 
-                <label
-                    class="form-label fw-semibold">
-
+                <label class="form-label fw-semibold">
                     Mata Uang
-
                 </label>
 
                 <select
@@ -448,11 +446,8 @@
 
             <div class="setting-item">
 
-                <label
-                    class="form-label fw-semibold">
-
+                <label class="form-label fw-semibold">
                     Tema Aplikasi
-
                 </label>
 
                 <select
@@ -501,7 +496,7 @@
 
                 <small class="text-muted d-block mb-3">
 
-                    Logo bawaan: Catatan Kas.
+                    Logo bawaan Catatan Kas.
                     Kamu dapat menggantinya kapan saja.
 
                 </small>
@@ -509,7 +504,7 @@
 
                 <img
                     id="previewLogoDashboard"
-                    src="assets/logo-catatan-kas.png"
+                    src="assets/logo-catatan-kas.jpg"
                     alt="Logo Dashboard"
                     class="logo-preview mb-3">
 
@@ -518,13 +513,13 @@
                     type="file"
                     id="logoDashboardInput"
                     class="form-control"
-                    accept="image/png,image/jpeg,image/webp">
+                    accept="image/*">
 
 
                 <button
                     type="button"
-                    id="resetLogoButton"
-                    class="btn btn-outline-secondary mt-2">
+                    class="btn btn-outline-secondary mt-2"
+                    id="resetLogoButton">
 
                     <i class="bi bi-arrow-counterclockwise"></i>
 
@@ -543,10 +538,9 @@
     <!-- TOMBOL -->
     <!-- ================================= -->
 
-    <div class="d-grid gap-2 mb-5">
+    <div class="d-grid gap-2 mb-4">
 
         <button
-            type="button"
             class="btn btn-success btn-lg"
             id="simpanPengaturanButton">
 
@@ -558,13 +552,24 @@
 
 
         <button
-            type="button"
             class="btn btn-outline-danger"
             id="resetPengaturanButton">
 
             <i class="bi bi-arrow-counterclockwise"></i>
 
             Kembalikan Pengaturan Awal
+
+        </button>
+
+
+        <button
+            type="button"
+            class="btn btn-danger"
+            id="logoutButton">
+
+            <i class="bi bi-box-arrow-right"></i>
+
+            Logout
 
         </button>
 
@@ -582,28 +587,47 @@
     <div class="ck-bottom-inner">
 
         <a href="index.html">
+
             <i class="bi bi-house-fill"></i>
+
             Beranda
+
         </a>
+
 
         <a href="santri.html">
+
             <i class="bi bi-people-fill"></i>
+
             Santri
+
         </a>
+
 
         <a href="pembayaran.html">
+
             <i class="bi bi-cash-stack"></i>
+
             Bayar
+
         </a>
+
 
         <a href="pengeluaran.html">
+
             <i class="bi bi-wallet2"></i>
+
             Keluar
+
         </a>
 
+
         <a href="laporan.html">
+
             <i class="bi bi-bar-chart-fill"></i>
+
             Laporan
+
         </a>
 
     </div>
@@ -612,7 +636,7 @@
 
 
 <!-- ================================= -->
-<!-- PENGATURAN LOCAL STORAGE -->
+<!-- PENGATURAN APLIKASI -->
 <!-- ================================= -->
 
 <script>
@@ -634,37 +658,38 @@ const pengaturanDefault = {
 };
 
 
-// ======================================
-// MUAT PENGATURAN
-// ======================================
-
-function muatPengaturan() {
-
-    let data;
+function ambilPengaturan() {
 
     try {
 
-        data =
-            JSON.parse(
-                localStorage.getItem(
-                    "pengaturanAplikasi"
-                )
-            );
+        return JSON.parse(
+            localStorage.getItem(
+                "pengaturanAplikasi"
+            )
+        ) || {
+            ...pengaturanDefault
+        };
 
     } catch (error) {
 
-        data = null;
+        console.error(
+            "Pengaturan rusak:",
+            error
+        );
 
-    }
-
-
-    if (!data) {
-
-        data = {
+        return {
             ...pengaturanDefault
         };
 
     }
+
+}
+
+
+function muatPengaturan() {
+
+    const data =
+        ambilPengaturan();
 
 
     document.getElementById(
@@ -694,42 +719,43 @@ function muatPengaturan() {
         data.tema ||
         pengaturanDefault.tema;
 
+
+    terapkanTema(
+        data.tema ||
+        "light"
+    );
+
 }
 
 
-// ======================================
-// SIMPAN PENGATURAN
-// ======================================
-
 function simpanPengaturan() {
 
-    const namaPondok =
-        document
-            .getElementById("namaPondok")
-            .value
-            .trim();
+    const data = {
+
+        namaPondok:
+            document.getElementById(
+                "namaPondok"
+            ).value.trim(),
+
+        subJudul:
+            document.getElementById(
+                "subJudul"
+            ).value.trim(),
+
+        mataUang:
+            document.getElementById(
+                "mataUang"
+            ).value,
+
+        tema:
+            document.getElementById(
+                "tema"
+            ).value
+
+    };
 
 
-    const subJudul =
-        document
-            .getElementById("subJudul")
-            .value
-            .trim();
-
-
-    const mataUang =
-        document
-            .getElementById("mataUang")
-            .value;
-
-
-    const tema =
-        document
-            .getElementById("tema")
-            .value;
-
-
-    if (!namaPondok) {
+    if (!data.namaPondok) {
 
         alert(
             "Nama pondok belum diisi."
@@ -740,31 +766,18 @@ function simpanPengaturan() {
     }
 
 
-    const data = {
-
-        namaPondok:
-            namaPondok,
-
-        subJudul:
-            subJudul ||
-            "Dashboard Keuangan Pondok",
-
-        mataUang:
-            mataUang,
-
-        tema:
-            tema
-
-    };
-
-
     localStorage.setItem(
+
         "pengaturanAplikasi",
+
         JSON.stringify(data)
+
     );
 
 
-    terapkanTema(tema);
+    terapkanTema(
+        data.tema
+    );
 
 
     alert(
@@ -773,10 +786,6 @@ function simpanPengaturan() {
 
 }
 
-
-// ======================================
-// TERAPKAN TEMA
-// ======================================
 
 function terapkanTema(tema) {
 
@@ -807,15 +816,11 @@ function terapkanTema(tema) {
 }
 
 
-// ======================================
-// RESET PENGATURAN
-// ======================================
-
 function resetPengaturan() {
 
     const yakin =
         confirm(
-            "Apakah kamu yakin ingin mengembalikan semua pengaturan ke awal?"
+            "Apakah kamu yakin ingin mengembalikan pengaturan awal?"
         );
 
 
@@ -826,17 +831,18 @@ function resetPengaturan() {
     }
 
 
-    localStorage.removeItem(
-        "pengaturanAplikasi"
+    localStorage.setItem(
+
+        "pengaturanAplikasi",
+
+        JSON.stringify(
+            pengaturanDefault
+        )
+
     );
 
 
     muatPengaturan();
-
-
-    terapkanTema(
-        "light"
-    );
 
 
     alert(
@@ -845,28 +851,6 @@ function resetPengaturan() {
 
 }
 
-
-// ======================================
-// TEMA BERUBAH LANGSUNG
-// ======================================
-
-document
-    .getElementById("tema")
-    .addEventListener(
-        "change",
-        function () {
-
-            terapkanTema(
-                this.value
-            );
-
-        }
-    );
-
-
-// ======================================
-// TOMBOL
-// ======================================
 
 document
     .getElementById(
@@ -888,42 +872,18 @@ document
     );
 
 
-// ======================================
-// LOAD AWAL
-// ======================================
+document
+    .getElementById("tema")
+    .addEventListener(
+        "change",
+        function () {
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        muatPengaturan();
-
-
-        let data;
-
-        try {
-
-            data =
-                JSON.parse(
-                    localStorage.getItem(
-                        "pengaturanAplikasi"
-                    )
-                );
-
-        } catch (error) {
-
-            data = null;
+            terapkanTema(
+                this.value
+            );
 
         }
-
-
-        terapkanTema(
-            data?.tema ||
-            pengaturanDefault.tema
-        );
-
-    }
-);
+    );
 
 </script>
 
@@ -934,8 +894,8 @@ document.addEventListener(
 
 <script>
 
-const DEFAULT_LOGO =
-    "assets/logo-catatan-kas.png";
+const LOGO_DEFAULT =
+    "assets/logo-catatan-kas.jpg";
 
 
 function muatLogoDashboard() {
@@ -952,7 +912,7 @@ function muatLogoDashboard() {
         );
 
 
-    const headerPreview =
+    const headerLogo =
         document.getElementById(
             "logoPreviewV2"
         );
@@ -960,160 +920,102 @@ function muatLogoDashboard() {
 
     const logo =
         saved ||
-        DEFAULT_LOGO;
+        LOGO_DEFAULT;
 
 
     if (preview) {
 
-        preview.src = logo;
+        preview.src =
+            logo;
 
     }
 
 
-    if (headerPreview) {
+    if (headerLogo) {
 
-        headerPreview.src = logo;
+        headerLogo.src =
+            logo;
 
     }
 
 }
 
 
-// ======================================
-// PILIH LOGO
-// ======================================
+function simpanLogoDashboard(file) {
 
-document
-    .getElementById(
-        "logoDashboardInput"
-    )
-    .addEventListener(
-        "change",
-        function () {
+    if (!file) {
 
-            const file =
-                this.files &&
-                this.files[0];
+        return;
+
+    }
 
 
-            if (!file) {
+    if (!file.type.startsWith("image/")) {
 
-                return;
+        alert(
+            "Silakan pilih file gambar."
+        );
 
-            }
+        return;
 
-
-            if (
-                !file.type.startsWith(
-                    "image/"
-                )
-            ) {
-
-                alert(
-                    "Silakan pilih file gambar."
-                );
-
-                this.value = "";
-
-                return;
-
-            }
+    }
 
 
-            // Batas 2 MB
-            if (
-                file.size >
-                2 * 1024 * 1024
-            ) {
+    /*
+     * Ukuran file dibatasi agar
+     * localStorage tidak cepat penuh.
+     */
 
-                alert(
-                    "Ukuran logo maksimal 2 MB."
-                );
+    if (file.size > 3 * 1024 * 1024) {
 
-                this.value = "";
+        alert(
+            "Ukuran logo maksimal 3 MB."
+        );
 
-                return;
+        return;
 
-            }
-
-
-            const reader =
-                new FileReader();
+    }
 
 
-            reader.onload =
-                function (event) {
-
-                    const logo =
-                        event.target.result;
+    const reader =
+        new FileReader();
 
 
-                    try {
+    reader.onload = function (event) {
 
-                        localStorage.setItem(
-                            "logoDashboard",
-                            logo
-                        );
-
-                    } catch (error) {
-
-                        console.error(
-                            error
-                        );
-
-                        alert(
-                            "Logo terlalu besar untuk disimpan."
-                        );
-
-                        return;
-
-                    }
+        const dataURL =
+            event.target.result;
 
 
-                    const preview =
-                        document.getElementById(
-                            "previewLogoDashboard"
-                        );
+        localStorage.setItem(
+            "logoDashboard",
+            dataURL
+        );
 
 
-                    const headerPreview =
-                        document.getElementById(
-                            "logoPreviewV2"
-                        );
+        muatLogoDashboard();
 
 
-                    if (preview) {
+        alert(
+            "✅ Logo Dashboard berhasil diganti."
+        );
 
-                        preview.src =
-                            logo;
-
-                    }
-
-
-                    if (headerPreview) {
-
-                        headerPreview.src =
-                            logo;
-
-                    }
+    };
 
 
-                    alert(
-                        "✅ Logo Dashboard berhasil diganti."
-                    );
+    reader.onerror = function () {
 
-                };
+        alert(
+            "Gagal membaca file logo."
+        );
 
-
-            reader.readAsDataURL(file);
-
-        }
-    );
+    };
 
 
-// ======================================
-// RESET LOGO
-// ======================================
+    reader.readAsDataURL(file);
+
+}
+
 
 function resetLogoDashboard() {
 
@@ -1135,28 +1037,33 @@ function resetLogoDashboard() {
     );
 
 
-    document.getElementById(
-        "previewLogoDashboard"
-    ).src =
-        DEFAULT_LOGO;
-
-
-    document.getElementById(
-        "logoPreviewV2"
-    ).src =
-        DEFAULT_LOGO;
-
-
-    document.getElementById(
-        "logoDashboardInput"
-    ).value = "";
+    muatLogoDashboard();
 
 
     alert(
-        "✅ Logo Dashboard dikembalikan ke logo bawaan."
+        "✅ Logo Dashboard dikembalikan."
     );
 
 }
+
+
+document
+    .getElementById(
+        "logoDashboardInput"
+    )
+    .addEventListener(
+        "change",
+        function () {
+
+            const file =
+                this.files?.[0];
+
+            simpanLogoDashboard(
+                file
+            );
+
+        }
+    );
 
 
 document
@@ -1167,12 +1074,6 @@ document
         "click",
         resetLogoDashboard
     );
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    muatLogoDashboard
-);
 
 </script>
 
@@ -1200,15 +1101,17 @@ const emailAkun =
     );
 
 
-const tombol =
+const tombolLoginLogout =
     document.getElementById(
         "tombolLoginLogout"
     );
 
 
-// ======================================
-// CEK STATUS LOGIN
-// ======================================
+const logoutButton =
+    document.getElementById(
+        "logoutButton"
+    );
+
 
 onAuthStateChanged(
     auth,
@@ -1216,110 +1119,146 @@ onAuthStateChanged(
 
         if (user) {
 
-            // ==========================
-            // SUDAH LOGIN
-            // ==========================
+            if (emailAkun) {
 
-            emailAkun.textContent =
-                user.email ||
-                "Akun Firebase";
+                emailAkun.textContent =
+                    user.email ||
+                    "Akun Firebase";
 
-
-            tombol.innerHTML =
-                '<i class="bi bi-box-arrow-right"></i> Keluar';
+            }
 
 
-            tombol.className =
-                "btn btn-outline-danger";
+            if (tombolLoginLogout) {
 
+                tombolLoginLogout.innerHTML =
+                    '<i class="bi bi-box-arrow-right"></i> Keluar';
 
-            tombol.onclick =
-                async function () {
+                tombolLoginLogout.className =
+                    "btn btn-outline-danger";
 
-                    const yakin =
-                        confirm(
-                            "Apakah kamu yakin ingin keluar?"
-                        );
+                tombolLoginLogout.onclick =
+                    logout;
 
-
-                    if (!yakin) {
-
-                        return;
-
-                    }
-
-
-                    try {
-
-                        await signOut(
-                            auth
-                        );
-
-
-                        window.location.replace(
-                            "login.html"
-                        );
-
-
-                    } catch (error) {
-
-                        console.error(
-                            "Gagal logout:",
-                            error
-                        );
-
-
-                        alert(
-                            "Gagal keluar dari akun."
-                        );
-
-                    }
-
-                };
+            }
 
         }
 
         else {
 
-            // ==========================
-            // BELUM LOGIN
-            // ==========================
+            if (emailAkun) {
 
-            emailAkun.textContent =
-                "Belum login";
+                emailAkun.textContent =
+                    "Belum login";
 
-
-            tombol.innerHTML =
-                '<i class="bi bi-box-arrow-in-right"></i> Login';
+            }
 
 
-            tombol.className =
-                "btn btn-success";
+            if (tombolLoginLogout) {
 
+                tombolLoginLogout.innerHTML =
+                    '<i class="bi bi-box-arrow-in-right"></i> Login';
 
-            tombol.onclick =
-                function () {
+                tombolLoginLogout.className =
+                    "btn btn-success";
 
-                    window.location.replace(
-                        "login.html"
-                    );
+                tombolLoginLogout.onclick =
+                    function () {
 
-                };
+                        window.location.replace(
+                            "Login.html"
+                        );
+
+                    };
+
+            }
 
         }
 
     }
 );
 
+
+async function logout() {
+
+    const yakin =
+        confirm(
+            "Apakah kamu yakin ingin keluar?"
+        );
+
+
+    if (!yakin) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await signOut(auth);
+
+
+        window.location.replace(
+            "Login.html"
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Logout gagal:",
+            error
+        );
+
+
+        alert(
+            "Logout gagal. Silakan coba lagi."
+        );
+
+    }
+
+}
+
+
+if (logoutButton) {
+
+    logoutButton.addEventListener(
+        "click",
+        logout
+    );
+
+}
+
 </script>
 
 
 <!-- ================================= -->
-<!-- THEME JS -->
+<!-- THEME.JS -->
 <!-- ================================= -->
 
 <script src="js/theme.js"></script>
 
+
+<!-- ================================= -->
+<!-- INIT -->
+<!-- ================================= -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        muatPengaturan();
+
+        muatLogoDashboard();
+
+    }
+);
+
+</script>
 
 </body>
 </html>
