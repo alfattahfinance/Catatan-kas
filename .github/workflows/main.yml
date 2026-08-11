@@ -1,4 +1,4 @@
-name: Build Catatan Kas APK
+name: Build Catatan Keuangan APK
 
 on:
   workflow_dispatch:
@@ -8,25 +8,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # ==========================================
+      # CHECKOUT PROJECT
+      # ==========================================
+
       - name: Checkout project
         uses: actions/checkout@v4
+
+
+      # ==========================================
+      # SETUP JAVA
+      # ==========================================
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
+
+
+      # ==========================================
+      # SETUP GRADLE
+      # ==========================================
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10'
 
+
+      # ==========================================
+      # BUILD APK
+      # ==========================================
+
       - name: Build APK
-        run: gradle --no-daemon :app:assembleDebug
+        run: |
+          gradle --no-daemon :app:assembleDebug
+
+
+      # ==========================================
+      # UPLOAD APK
+      # ==========================================
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Catatan-Kas-debug-apk
+          name: Catatan-Keuangan-v1.0.1-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
