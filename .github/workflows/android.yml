@@ -8,18 +8,8 @@ build:
 runs-on: ubuntu-latest
 
 steps:
-
-  # ==========================================
-  # CHECKOUT PROJECT
-  # ==========================================
-
   - name: Checkout project
     uses: actions/checkout@v5
-
-
-  # ==========================================
-  # SETUP JAVA
-  # ==========================================
 
   - name: Setup Java
     uses: actions/setup-java@v5
@@ -28,116 +18,30 @@ steps:
       java-version: '17'
       cache: gradle
 
-
-  # ==========================================
-  # SETUP ANDROID SDK
-  # ==========================================
-
   - name: Setup Android SDK
     uses: android-actions/setup-android@v4
 
   - name: Install Android SDK
     run: |
-      yes | sdkmanager --licenses > /dev/null || true
-      sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      sdkmanager "platform-tools"
+      sdkmanager "platforms;android-35"
+      sdkmanager "build-tools;35.0.0"
 
-
-  # ==========================================
-  # BUAT STRUKTUR PROJECT ANDROID
-  # ==========================================
-
-  - name: Buat project Android
+  - name: Buat struktur project
     run: |
       mkdir -p app/src/main/java/com/catatankas/app
       mkdir -p app/src/main/res/values
       mkdir -p app/src/main/assets
 
-
-  # ==========================================
-  # SALIN FILE APLIKASI WEB
-  # ==========================================
-
-  - name: Salin file aplikasi ke assets
+  - name: Salin file aplikasi
     run: |
-      echo "=== MENYALIN FILE WEB ==="
+      find . -maxdepth 1 -type f -name "*.html" -o -name "*.js" -o -name "*.css" -exec cp {} app/src/main/assets/ \;
 
-      # HTML
-      find . -maxdepth 1 -type f -name "*.html" \
-        -exec cp {} app/src/main/assets/ \;
-
-      # JavaScript
-      find . -maxdepth 1 -type f -name "*.js" \
-        -exec cp {} app/src/main/assets/ \;
-
-      # CSS
-      find . -maxdepth 1 -type f -name "*.css" \
-        -exec cp {} app/src/main/assets/ \;
-
-      # Folder js
-      if [ -d "js" ]; then
-        cp -r js app/src/main/assets/
-      fi
-
-      # Folder Js
-      if [ -d "Js" ]; then
-        cp -r Js app/src/main/assets/
-      fi
-
-      # Folder css
-      if [ -d "css" ]; then
-        cp -r css app/src/main/assets/
-      fi
-
-      # Folder images
-      if [ -d "images" ]; then
-        cp -r images app/src/main/assets/
-      fi
-
-      # Folder img
-      if [ -d "img" ]; then
-        cp -r img app/src/main/assets/
-      fi
-
-      echo ""
-      echo "=== ISI ASSETS ==="
-      find app/src/main/assets -maxdepth 4 -type f | sort
-
-
-  # ==========================================
-  # CEK FILE APLIKASI
-  # ==========================================
-
-  - name: Cek file aplikasi
-    run: |
-      echo "=== CEK ASSETS ==="
-
-      ls -lah app/src/main/assets
-
-      echo ""
-      echo "=== CEK HTML ==="
-
-      if [ ! -f "app/src/main/assets/index.html" ]; then
-        echo "ERROR: index.html tidak ditemukan"
-        exit 1
-      fi
-
-      if [ ! -f "app/src/main/assets/pengeluaran.html" ]; then
-        echo "ERROR: pengeluaran.html tidak ditemukan"
-        exit 1
-      fi
-
-      if [ ! -f "app/src/main/assets/laporan.html" ]; then
-        echo "ERROR: laporan.html tidak ditemukan"
-        exit 1
-      fi
-
-      echo ""
-      echo "Semua file utama ditemukan."
-
-
-  # ==========================================
-  # SETTINGS GRADLE
-  # ==========================================
+      if [ -d "js" ]; then cp -r js app/src/main/assets/; fi
+      if [ -d "Js" ]; then cp -r Js app/src/main/assets/; fi
+      if [ -d "css" ]; then cp -r css app/src/main/assets/; fi
+      if [ -d "images" ]; then cp -r images app/src/main/assets/; fi
+      if [ -d "img" ]; then cp -r img app/src/main/assets/; fi
 
   - name: Buat settings.gradle
     run: |
@@ -152,7 +56,6 @@ steps:
 
       dependencyResolutionManagement {
           repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-
           repositories {
               google()
               mavenCentral()
@@ -160,14 +63,8 @@ steps:
       }
 
       rootProject.name = "CatatanKas"
-
       include(":app")
       EOF
-
-
-  # ==========================================
-  # ROOT BUILD GRADLE
-  # ==========================================
 
   - name: Buat build.gradle
     run: |
@@ -177,12 +74,7 @@ steps:
       }
       EOF
 
-
-  # ==========================================
-  # APP BUILD GRADLE
-  # ==========================================
-
-  - name: Buat app/build.gradle
+  - name: Buat app build.gradle
     run: |
       cat > app/build.gradle <<'EOF'
       plugins {
@@ -191,15 +83,12 @@ steps:
 
       android {
           namespace 'com.catatankas.app'
-
           compileSdk 35
 
           defaultConfig {
               applicationId 'com.catatankas.app'
-
               minSdk 24
               targetSdk 35
-
               versionCode 1
               versionName '1.0'
           }
@@ -211,26 +100,15 @@ steps:
           }
       }
 
-      configurations.configureEach {
-          exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
-          exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
-      }
-
       dependencies {
           implementation 'androidx.webkit:webkit:1.16.0'
       }
       EOF
 
-
-  # ==========================================
-  # ANDROID MANIFEST
-  # ==========================================
-
   - name: Buat AndroidManifest.xml
     run: |
       cat > app/src/main/AndroidManifest.xml <<'EOF'
       <?xml version="1.0" encoding="utf-8"?>
-
       <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
           <uses-permission android:name="android.permission.INTERNET" />
@@ -257,37 +135,21 @@ steps:
       </manifest>
       EOF
 
-
-  # ==========================================
-  # THEME
-  # ==========================================
-
-  - name: Buat theme
+  - name: Buat styles.xml
     run: |
       cat > app/src/main/res/values/styles.xml <<'EOF'
       <?xml version="1.0" encoding="utf-8"?>
-
       <resources>
 
-          <style
-              name="AppTheme"
-              parent="android:style/Theme.Material.Light.NoActionBar">
-
+          <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
               <item name="android:fontFamily">sans</item>
-              <item name="android:windowActionModeOverlay">true</item>
               <item name="android:colorAccent">#dc3545</item>
               <item name="android:navigationBarColor">#000000</item>
               <item name="android:statusBarColor">#000000</item>
-
           </style>
 
       </resources>
       EOF
-
-
-  # ==========================================
-  # MAIN ACTIVITY
-  # ==========================================
 
   - name: Buat MainActivity.java
     run: |
@@ -316,7 +178,6 @@ steps:
               super.onCreate(savedInstanceState);
 
               webView = new WebView(this);
-
               setContentView(webView);
 
               WebSettings settings = webView.getSettings();
@@ -324,12 +185,8 @@ steps:
               settings.setJavaScriptEnabled(true);
               settings.setDomStorageEnabled(true);
               settings.setDatabaseEnabled(true);
-
               settings.setAllowFileAccess(false);
               settings.setAllowContentAccess(false);
-
-              settings.setJavaScriptCanOpenWindowsAutomatically(true);
-              settings.setSupportMultipleWindows(true);
 
               final WebViewAssetLoader assetLoader =
                       new WebViewAssetLoader.Builder()
@@ -339,20 +196,17 @@ steps:
                               )
                               .build();
 
-              webView.setWebViewClient(
-                      new WebViewClient() {
+              webView.setWebViewClient(new WebViewClient() {
 
-                          @Override
-                          public WebResourceResponse shouldInterceptRequest(
-                                  WebView view,
-                                  WebResourceRequest request
-                          ) {
-                              Uri uri = request.getUrl();
-
-                              return assetLoader.shouldInterceptRequest(uri);
-                          }
-                      }
-              );
+                  @Override
+                  public WebResourceResponse shouldInterceptRequest(
+                          WebView view,
+                          WebResourceRequest request
+                  ) {
+                      Uri uri = request.getUrl();
+                      return assetLoader.shouldInterceptRequest(uri);
+                  }
+              });
 
               webView.loadUrl(
                       "https://appassets.androidplatform.net/assets/index.html"
@@ -361,7 +215,6 @@ steps:
 
           @Override
           public void onBackPressed() {
-
               if (webView != null && webView.canGoBack()) {
                   webView.goBack();
               } else {
@@ -371,73 +224,30 @@ steps:
       }
       EOF
 
-
-  # ==========================================
-  # CEK PROJECT
-  # ==========================================
-
-  - name: Cek struktur Android
+  - name: Cek index.html
     run: |
-      echo "=== STRUKTUR PROJECT ==="
+      if [ ! -f "app/src/main/assets/index.html" ]; then
+        echo "ERROR: index.html tidak ditemukan"
+        exit 1
+      fi
 
-      find app/src/main -maxdepth 5 -type f | sort
-
-      echo ""
-      echo "=== CEK INDEX ==="
-
-      test -f app/src/main/assets/index.html
-
-      echo ""
-      echo "INDEX.HTML OK"
-
-
-  # ==========================================
-  # SETUP GRADLE
-  # ==========================================
+      echo "index.html ditemukan."
 
   - name: Setup Gradle
     uses: gradle/actions/setup-gradle@v6
     with:
       gradle-version: '8.10'
 
-
-  # ==========================================
-  # CLEAN BUILD
-  # ==========================================
-
-  - name: Clean Gradle
-    run: |
-      gradle --no-daemon clean
-
-
-  # ==========================================
-  # BUILD APK
-  # ==========================================
-
   - name: Build APK
     run: |
+      gradle --no-daemon clean
       gradle --no-daemon :app:assembleDebug
 
-
-  # ==========================================
-  # CEK HASIL APK
-  # ==========================================
-
-  - name: Cek hasil APK
+  - name: Cek APK
     run: |
-      echo "=== HASIL APK ==="
-
       ls -lah app/build/outputs/apk/debug/
-
       test -f app/build/outputs/apk/debug/app-debug.apk
-
-      echo ""
-      echo "APK BERHASIL DIBUAT"
-
-
-  # ==========================================
-  # UPLOAD APK
-  # ==========================================
+      echo "APK berhasil dibuat."
 
   - name: Upload APK
     uses: actions/upload-artifact@v4
