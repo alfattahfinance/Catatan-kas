@@ -1,0 +1,17 @@
+CATATAN KAS — ANDROID PROJECT
+Nama aplikasi : Catatan Kas
+Application ID: com.catatankas.app
+
+Project ini membungkus web Catatan Kas V3 ke dalam Android WebView.
+Untuk menghasilkan APK diperlukan Android Studio/Gradle dengan Android SDK.
+
+Langkah:
+1. Buka folder android/ di Android Studio.
+2. Tunggu Gradle Sync selesai.
+3. Build > Build APK(s).
+4. APK debug akan berada di app/build/outputs/apk/debug/.
+
+Catatan:
+- Firebase/CDN tetap membutuhkan internet.
+- Web app yang sudah ada disimpan di app/src/main/assets/.
+- Nama aplikasi Android adalah Catatan Kas.

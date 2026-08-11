@@ -1,0 +1,378 @@
+/* ======================================
+   SYAHRIYYAH APP - DARK MODE
+   ====================================== */
+
+body.dark-mode {
+    background-color: #121212 !important;
+    color: #f1f1f1 !important;
+}
+
+
+/* Semua kartu */
+
+body.dark-mode .card,
+body.dark-mode .custom-card {
+    background-color: #1e1e1e !important;
+    color: #f1f1f1 !important;
+    border-color: #333 !important;
+}
+
+
+/* Teks */
+
+body.dark-mode .text-muted,
+body.dark-mode .text-secondary {
+    color: #adb5bd !important;
+}
+
+
+/* Input */
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: #2b2b2b !important;
+    color: #fff !important;
+    border-color: #555 !important;
+}
+
+
+/* Placeholder */
+
+body.dark-mode .form-control::placeholder {
+    color: #aaa;
+}
+
+
+/* Dropdown */
+
+body.dark-mode .form-select option {
+    background-color: #2b2b2b;
+    color: #fff;
+}
+
+
+/* List */
+
+body.dark-mode .list-group-item {
+    background-color: #1e1e1e !important;
+    color: #f1f1f1 !important;
+    border-color: #333 !important;
+}
+
+
+/* Tombol menu */
+
+body.dark-mode .menu-btn {
+    background-color: #1e1e1e !important;
+    color: #f1f1f1 !important;
+    border-color: #333 !important;
+}
+
+
+/* Hover menu */
+
+body.dark-mode .menu-btn:hover {
+    background-color: #2a2a2a !important;
+}
+
+
+/* Garis */
+
+body.dark-mode hr {
+    border-color: #444;
+}
+
+
+/* Link */
+
+body.dark-mode a {
+    color: #75b798;
+}
+
+
+/* Navbar */
+
+body.dark-mode .navbar {
+    background-color: #1e1e1e !important;
+}
+
+
+/* Modal */
+
+body.dark-mode .modal-content {
+    background-color: #1e1e1e;
+    color: #fff;
+    border-color: #444;
+}
+
+
+/* Alert */
+
+body.dark-mode .alert {
+    background-color: #2b2b2b;
+    color: #fff;
+    border-color: #444;
+}
+
+
+/* Tabel */
+
+body.dark-mode .table {
+    color: #f1f1f1;
+}
+
+body.dark-mode .table-light {
+    background-color: #2b2b2b !important;
+    color: #fff !important;
+}
+
+
+/* Tombol outline */
+
+body.dark-mode .btn-outline-secondary {
+    color: #ccc;
+    border-color: #666;
+}
+
+
+/* Footer */
+
+body.dark-mode footer {
+    background-color: #1e1e1e !important;
+    color: #aaa;
+}
+
+/* ======================================
+   BACKGROUND UTAMA DARK MODE
+   ====================================== */
+
+html:has(body.dark-mode),
+body.dark-mode {
+    background-color: #121212 !important;
+}
+
+body.dark-mode.bg-light {
+    background-color: #121212 !important;
+}
+
+body.dark-mode {
+    min-height: 100vh;
+}
+
+/* ======================================
+   DARK MODE - GLOBAL
+   ====================================== */
+
+html {
+    background-color: #f8f9fa;
+}
+
+html:has(body.dark-mode) {
+    background-color: #121212 !important;
+}
+
+body.dark-mode,
+body.dark-mode.bg-light {
+    background-color: #121212 !important;
+    color: #f1f1f1 !important;
+}
+
+
+/* Container utama */
+
+body.dark-mode .container,
+body.dark-mode .container-fluid {
+    color: #f1f1f1;
+}
+
+
+/* Card */
+
+body.dark-mode .card,
+body.dark-mode .custom-card {
+    background-color: #1e1e1e !important;
+    color: #f1f1f1 !important;
+}
+
+
+/* Input */
+
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+    background-color: #2b2b2b !important;
+    color: #fff !important;
+    border-color: #555 !important;
+}
+
+
+/* Option dropdown */
+
+body.dark-mode option {
+    background-color: #2b2b2b;
+    color: #fff;
+}
+
+
+/* List */
+
+body.dark-mode .list-group-item {
+    background-color: #1e1e1e !important;
+    color: #f1f1f1 !important;
+    border-color: #444 !important;
+}
+
+
+/* Menu */
+
+body.dark-mode .menu-btn {
+    background-color: #1e1e1e !important;
+    color: #f1f1f1 !important;
+    border-color: #444 !important;
+}
+
+
+/* Teks */
+
+body.dark-mode .text-dark {
+    color: #fff !important;
+}
+
+body.dark-mode .text-muted,
+body.dark-mode .text-secondary {
+    color: #adb5bd !important;
+}
+
+
+/* Tabel */
+
+body.dark-mode table {
+    color: #fff !important;
+}
+
+body.dark-mode .table-light {
+    background-color: #2b2b2b !important;
+    color: #fff !important;
+}
+
+
+/* Modal */
+
+body.dark-mode .modal-content {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+}
+
+
+/* Dropdown */
+
+body.dark-mode .dropdown-menu {
+    background-color: #1e1e1e !important;
+}
+
+body.dark-mode .dropdown-item {
+    color: #fff !important;
+}
+
+body.dark-mode .dropdown-item:hover {
+    background-color: #333 !important;
+}
+
+
+/* Garis */
+
+body.dark-mode hr {
+    border-color: #444 !important;
+}
+
+/* ======================================
+   PAKSA BACKGROUND DARK MODE
+   ====================================== */
+
+html,
+body {
+    min-height: 100%;
+}
+
+html:has(body.dark-mode) {
+    background-color: #121212 !important;
+}
+
+body.dark-mode {
+    background-color: #121212 !important;
+    color: #f1f1f1 !important;
+}
+
+body.dark-mode.bg-light {
+    background-color: #121212 !important;
+}
+
+html {
+    background-color: #f8f9fa;
+}
+
+html:has(body.dark-mode) {
+    background-color: #121212 !important;
+}
+
+body.dark-mode {
+    background-color: #121212 !important;
+    min-height: 100vh;
+}
+
+/* =================================
+   DARK MODE - LAPORAN KEUANGAN
+   ================================= */
+
+body.dark-mode .card {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+    border-color: #333 !important;
+}
+
+body.dark-mode .card-body {
+    color: #ffffff !important;
+}
+
+/* Teks abu-abu Bootstrap */
+body.dark-mode .text-muted {
+    color: #aaaaaa !important;
+}
+
+/* Tabel transaksi */
+body.dark-mode .table {
+    --bs-table-bg: #1e1e1e;
+    --bs-table-color: #ffffff;
+    --bs-table-border-color: #444;
+    color: #ffffff !important;
+}
+
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #252525 !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .table-hover > tbody > tr:hover > * {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+
+/* Header tabel */
+body.dark-mode .table-success {
+    --bs-table-bg: #198754 !important;
+    --bs-table-color: #ffffff !important;
+    background-color: #198754 !important;
+    color: #ffffff !important;
+}
+
+/* Input dan pilihan filter */
+body.dark-mode .form-select {
+    background-color: #2b2b2b !important;
+    color: #ffffff !important;
+    border-color: #555 !important;
+}
+
+/* Label */
+body.dark-mode .form-label {
+    color: #ffffff !important;
+}

@@ -1,0 +1,128 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FFF8DC 0%, #FFFFFF 100%);
+}
+
+/* DARK MODE */
+body.dark-mode {
+    background: #121212 !important;
+    color: #ffffff !important;
+}
+
+/* Container mengikuti layar */
+.mobile-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+    padding: 10px;
+}
+
+
+/* Card responsive */
+.custom-card {
+    width: 100%;
+    border-radius: 15px;
+}
+
+
+/* Input & tombol nyaman di HP */
+input,
+select,
+button {
+    width: 100%;
+    min-height: 45px;
+    font-size: 16px;
+}
+
+
+/* Tabel bisa digeser di HP */
+.table-responsive {
+    overflow-x: auto;
+}
+
+
+/* Jangan rusak grid Bootstrap */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+
+/* HP */
+@media (max-width: 576px){
+
+    .mobile-container {
+        padding: 10px;
+    }
+
+    h4 {
+        font-size: 20px;
+    }
+
+    h5 {
+        font-size: 18px;
+    }
+
+    .custom-card {
+        margin-bottom: 15px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+}
+
+
+/* Tablet */
+@media (min-width:577px) and (max-width:992px){
+
+    .mobile-container {
+        padding: 15px;
+    }
+
+}
+
+
+/* Laptop */
+@media (min-width:993px){
+
+    .mobile-container {
+        padding: 20px;
+    }
+
+}
+
+/* ========================= */
+/* DARK MODE */
+/* ========================= */
+
+html,
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode {
+    background: #121212 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+}
+
+
+/* Catatan Kas V2 — konsistensi tampilan mobile */
+.ck-page { max-width: 600px; margin: 0 auto; padding-bottom: 90px; }
+.ck-topbar { display:flex; align-items:center; gap:12px; padding:14px 0 18px; }
+.ck-logo { width:48px; height:48px; border-radius:14px; object-fit:cover; box-shadow:0 3px 10px rgba(0,0,0,.08); }
+.ck-title { margin:0; font-size:1.05rem; font-weight:800; color:#198754; }
+.ck-subtitle { display:block; font-size:.75rem; color:#6c757d; margin-top:2px; }
+.ck-back { display:inline-flex; align-items:center; gap:6px; color:#198754; text-decoration:none; font-weight:700; margin:2px 0 12px; }
+.ck-back:hover { color:#146c43; }
+.ck-bottom { position:fixed; left:0; right:0; bottom:0; z-index:1000; background:rgba(255,255,255,.96); border-top:1px solid #e9ecef; padding:9px 12px calc(9px + env(safe-area-inset-bottom)); backdrop-filter:blur(8px); }
+.ck-bottom-inner { max-width:600px; margin:auto; display:flex; justify-content:space-around; }
+.ck-bottom a { color:#6c757d; text-decoration:none; font-size:.68rem; text-align:center; min-width:58px; }
+.ck-bottom a i { display:block; font-size:1.15rem; line-height:1.1; }
+.ck-bottom a.active { color:#198754; font-weight:800; }

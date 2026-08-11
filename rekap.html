@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Keuangan | Catatan Kas</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/theme.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa; /* Warna latar sedikit abu-abu */
+            font-family: Arial, sans-serif;
+        }
+
+        /* Membatasi lebar agar tampil rapi seperti di HP */
+        .mobile-container {
+            max-width: 600px;
+            margin: auto;
+        }
+
+        /* Styling Form Filter */
+        .custom-select {
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+    
+        
+        /* Styling Tabel Rekap */
+        .rekap-wrapper {
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            overflow: hidden;
+        }
+        .rekap-header {
+            background-color: #198754; /* Hijau sesuai gambar */
+            color: white;
+            padding: 12px 15px;
+            font-weight: 500;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.9rem;
+            padding: 12px 15px;
+        }
+        .table td {
+            font-size: 0.9rem;
+            vertical-align: middle;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        /* Styling Tombol Menu Navigasi */
+        .menu-btn {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 15px 10px;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            color: #333;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .menu-btn:active, .menu-btn:hover {
+            background-color: #f1f8f5;
+            border-color: #198754;
+        }
+        .menu-btn i {
+            font-size: 1.8rem;
+            color: #198754; /* Warna ikon hijau */
+        }
+        .menu-btn.red-icon i {
+            color: #dc3545; /* Ikon merah untuk pengeluaran */
+        }
+        .menu-btn h6 {
+            margin: 0;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container ck-page">
+<div class="ck-topbar">
+    <img src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
+    <div>
+        <p class="ck-title">Catatan Kas</p>
+        <span class="ck-subtitle">Madrasah Al-Fattah</span>
+    </div>
+</div>
+
+<div class="container mobile-container py-4 mb-5">
+
+    <!-- Filter Bulan & Tahun -->
+    <div class="row g-2 mb-4">
+        <div class="col-6">
+            <select id="bulan" class="form-select custom-select px-3 py-2">
+                <!-- Data ini biasanya akan otomatis terisi oleh script JS Anda -->
+                <option value="8" selected>Agustus</option>
+            </select>
+        </div>
+        <div class="col-6">
+            <select id="tahun" class="form-select custom-select px-3 py-2">
+                <!-- Data ini biasanya akan otomatis terisi oleh script JS Anda -->
+                <option value="2026" selected>2026</option>
+            </select>
+        </div>
+    </div>
+
+<div class="row align-items-end mb-4">
+
+    <div class="col-6">
+        <label class="form-label fw-semibold">
+            <i class="bi bi-funnel"></i> Jenis
+        </label>
+
+        <select class="form-select" id="jenisDashboard">
+            <option value="syahriyyah">Syahriyyah</option>
+            <option value="kas">Kas</option>
+            <option value="beras">Beras</option>
+        </select>
+    </div>
+
+    <div class="col-6" id="modeBerasDiv" style="display:none;">
+        <label class="form-label fw-semibold">
+            <i class="bi bi-box-seam"></i> Mode Beras
+        </label>
+
+        <select class="form-select" id="modeBeras">
+            <option value="liter">Liter</option>
+            <option value="uang">Uang (Rp)</option>
+        </select>
+    </div>
+
+</div>
+    
+    <!-- Tabel Rekap Keuangan -->
+    <div class="rekap-wrapper shadow-sm mb-4">
+        <div class="rekap-header">
+            Rekap Keuangan
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Jenis</th>
+                        <th>Masuk</th>
+                        <th>Keluar</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+
+                <tbody id="rekap">
+    <tr>
+        <td id="judulJenis">Syahriyyah</td>
+        <td id="masuk">Rp 0</td>
+        <td id="keluar">Rp 0</td>
+        <td id="saldo">Rp 0</td>
+    </tr>
+   </tbody>
+</table>
+</div>
+</div>
+
+    <!-- Menu Navigasi Bawah -->
+    <div class="row g-3">
+        <div class="col-6">
+            <a href="santri.html" class="menu-btn">
+                <i class="bi bi-people-fill"></i>
+                <h6>Data Santri</h6>
+            </a>
+        </div>
+        <div class="col-6">
+            <a href="pengeluaran.html" class="menu-btn red-icon">
+                <i class="bi bi-wallet2"></i>
+                <h6>Pengeluaran</h6>
+            </a>
+        </div>
+        <div class="col-6">
+            <a href="pembayaran.html" class="menu-btn">
+                <i class="bi bi-cash-stack"></i>
+                <h6>Pembayaran Santri</h6>
+            </a>
+        </div>
+        <div class="col-6">
+            <a href="laporan.html" class="menu-btn">
+                <i class="bi bi-bar-chart-fill"></i>
+                <h6>Laporan Keuangan</h6>
+            </a>
+        </div>
+        <div class="col-6">
+            <a href="pengaturan.html" class="menu-btn">
+                <i class="bi bi-gear-fill"></i>
+                <h6>Pengaturan</h6>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<!-- Script Logika UI / Firebase Anda (Tetap aman dan tidak diubah) -->
+<script type="module" src="js/app.js"></script>
+
+<script>
+const jenisDashboard = document.getElementById("jenisDashboard");
+const modeBerasDiv = document.getElementById("modeBerasDiv");
+
+function updateJenis() {
+    if (jenisDashboard.value === "beras") {
+        modeBerasDiv.style.display = "block";
+    } else {
+        modeBerasDiv.style.display = "none";
+    }
+
+    // Nanti di sini akan menghitung ulang saldo
+    updateDashboard();
+}
+
+jenisDashboard.addEventListener("change", updateJenis);
+
+document.getElementById("modeBeras")
+    .addEventListener("change", updateDashboard);
+    
+// Jalankan saat halaman pertama dibuka
+updateJenis();
+
+function updateDashboard() {
+
+    const jenis = jenisDashboard.value;
+    const mode = document.getElementById("modeBeras").value;
+
+    document.getElementById("judulJenis").innerText =
+        jenis.charAt(0).toUpperCase() + jenis.slice(1);
+
+    let masuk = 0;
+    let keluar = 0;
+    let saldo = 0;
+
+    if (jenis === "syahriyyah") {
+
+        masuk = 240000;
+        keluar = 30000;
+        saldo = masuk - keluar;
+
+        document.getElementById("masuk").innerHTML = "Rp " + masuk.toLocaleString("id-ID");
+        document.getElementById("keluar").innerHTML = "Rp " + keluar.toLocaleString("id-ID");
+        document.getElementById("saldo").innerHTML = "Rp " + saldo.toLocaleString("id-ID");
+
+    }
+
+    else if (jenis === "kas") {
+
+        masuk = 50000;
+        keluar = 10000;
+        saldo = masuk - keluar;
+
+        document.getElementById("masuk").innerHTML = "Rp " + masuk.toLocaleString("id-ID");
+        document.getElementById("keluar").innerHTML = "Rp " + keluar.toLocaleString("id-ID");
+        document.getElementById("saldo").innerHTML = "Rp " + saldo.toLocaleString("id-ID");
+
+    }
+
+    else if (jenis === "beras") {
+
+        if (mode === "liter") {
+
+            document.getElementById("judulJenis").innerText = "Beras (Liter)";
+
+            masuk = 80;
+            keluar = 12;
+            saldo = masuk - keluar;
+
+            document.getElementById("masuk").innerHTML = masuk + " Liter";
+            document.getElementById("keluar").innerHTML = keluar + " Liter";
+            document.getElementById("saldo").innerHTML = saldo + " Liter";
+
+        } else {
+
+            document.getElementById("judulJenis").innerText = "Beras (Uang)";
+
+            masuk = 1200000;
+            keluar = 180000;
+            saldo = masuk - keluar;
+
+            document.getElementById("masuk").innerHTML = "Rp " + masuk.toLocaleString("id-ID");
+            document.getElementById("keluar").innerHTML = "Rp " + keluar.toLocaleString("id-ID");
+            document.getElementById("saldo").innerHTML = "Rp " + saldo.toLocaleString("id-ID");
+
+        }
+
+    }
+
+}
+    
+</script>
+
+<script src="js/theme.js"></script>
+    
+<div class="ck-bottom">
+  <div class="ck-bottom-inner">
+    <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
+    <a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
+    <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
+    <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
+    <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
+  </div>
+</div>
+</div>
+</body>
+</html>

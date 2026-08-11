@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Santri | Catatan Kas</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+     <link rel="stylesheet" href="css/theme.css">
+    
+    <style>
+        /* Tambahan styling agar tampilan lebih responsif ala mobile */
+        body { background-color: #f8f9fa; }
+        .mobile-container { max-width: 600px; margin: auto; }
+        .custom-card { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+<div class="container ck-page">
+<div class="ck-topbar">
+    <img src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
+    <div>
+        <p class="ck-title">Catatan Kas</p>
+        <span class="ck-subtitle">Madrasah Al-Fattah</span>
+    </div>
+</div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-success shadow-sm mb-4">
+        <div class="container mobile-container">
+            <span class="navbar-brand fw-bold">
+                💰 Pembayaran Santri
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mobile-container py-2 mb-5">
+
+        <!-- Form Pembayaran -->
+        <div class="card custom-card p-2 mb-4">
+            <div class="card-body">
+                <a href="index.html" class="ck-back"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
+<h4 class="mb-4 fw-bold">Input Pembayaran</h4>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Nama Santri</label>
+                    <select id="santri" class="form-select border-0 bg-light px-3 py-2">
+                        <option value="">Pilih Santri</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Jenis Pembayaran</label>
+                    <select id="jenis" class="form-select border-0 bg-light px-3 py-2" onchange="pilihPembayaran()">
+                        <option value="">Pilih Pembayaran</option>
+                        <option value="SPP">SPP</option>
+                        <option value="Syahriyyah">Syahriyyah</option>
+                        <option value="Infaq">Infaq</option>
+                        <option value="Kas">Kas</option>
+                        <option value="Beras">Beras</option>
+                    </select>
+                </div>
+
+                <div id="berasPilihan" class="mb-3" style="display:none;">
+                    <label class="form-label text-muted small">Metode Beras</label>
+                    <select id="tipeBeras" class="form-select border-0 bg-light px-3 py-2" onchange="aturBeras()">
+                        <option value="uang">💵 Uang</option>
+                        <option value="liter">🌾 Beras (Liter)</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted small">Nominal</label>
+                    <input type="number" id="nominal" class="form-control border-0 bg-light px-3 py-2" placeholder="Masukkan nominal">
+                </div>
+
+                <button class="btn btn-success w-100 py-2 rounded-pill fw-bold" onclick="simpanPembayaran()">
+                    Simpan Pembayaran
+                </button>
+            </div>
+        </div>
+
+        <!-- Riwayat Pembayaran -->
+        <div class="card custom-card p-2">
+            <div class="card-body">
+                <h5 class="mb-3 fw-bold">📜 Riwayat Pembayaran</h5>
+                <ul id="riwayat" class="list-group list-group-flush mt-3">
+                    <li class="list-group-item text-center text-muted border-0 py-3">
+                        Memuat data...
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- UI Logic Script (Dibungkus agar tidak bocor ke layar) -->
+    <script>
+        // Dropdown santri
+        let selectSantri = document.getElementById("santri");
+
+        // Asumsi 'daftarSantri' dan 'pembayaran' dideklarasikan di module atau localStorage
+        if (typeof daftarSantri !== 'undefined') {
+            daftarSantri.forEach((item) => {
+                let option = document.createElement("option");
+                option.value = item.nama;
+                option.textContent = item.nama;
+                selectSantri.appendChild(option);
+            });
+        }
+
+        function pilihPembayaran() {
+            let jenis = document.getElementById("jenis").value;
+            let nominal = document.getElementById("nominal");
+            let beras = document.getElementById("berasPilihan");
+
+            beras.style.display = "none";
+
+            if (jenis == "SPP") {
+                nominal.value = 50000;
+            } else if (jenis == "Syahriyyah") {
+                nominal.value = 80000;
+            } else if (jenis == "Kas") {
+                nominal.value = 30000;
+            } else if (jenis == "Beras") {
+                nominal.value = "";
+                beras.style.display = "block";
+            } else {
+                nominal.value = "";
+            }
+        }
+
+        function aturBeras() {
+            let tipe = document.getElementById("tipeBeras").value;
+            let nominal = document.getElementById("nominal");
+
+            if (tipe == "uang") {
+                nominal.placeholder = "Masukkan nominal";
+                nominal.value = 120000;
+            } else {
+                nominal.value = "";
+                nominal.placeholder = "Masukkan jumlah liter";
+            }
+        }
+
+        function simpanPembayaran() {
+            let nama = document.getElementById("santri").value;
+            let jenis = document.getElementById("jenis").value;
+            let nominal = document.getElementById("nominal").value;
+
+            if (!nama || !jenis || !nominal) {
+                alert("Data belum lengkap");
+                return;
+            }
+
+            if (typeof window.pembayaran === 'undefined') {
+                window.pembayaran = JSON.parse(localStorage.getItem("pembayaran")) || [];
+            }
+
+            window.pembayaran.push({
+                nama,
+                jenis,
+                nominal,
+                tanggal: new Date().toLocaleDateString("id-ID")
+            });
+
+            localStorage.setItem("pembayaran", JSON.stringify(window.pembayaran));
+            alert("Pembayaran berhasil disimpan");
+            tampilkanRiwayat();
+        }
+
+        function tampilkanRiwayat() {
+            let box = document.getElementById("riwayat");
+            box.innerHTML = "";
+
+            if (typeof window.pembayaran === 'undefined') {
+                window.pembayaran = JSON.parse(localStorage.getItem("pembayaran")) || [];
+            }
+
+            if (window.pembayaran.length === 0) {
+                box.innerHTML = `
+                <li class="list-group-item text-muted text-center border-0 py-3">
+                    Belum ada transaksi
+                </li>`;
+                return;
+            }
+
+            window.pembayaran.forEach((item) => {
+                box.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center border-0 border-bottom py-3">
+                    <div>
+                        <b class="d-block text-dark">${item.nama}</b>
+                        <small class="text-muted">${item.jenis} • ${item.tanggal}</small>
+                    </div>
+                    <div class="text-success fw-bold">
+                        Rp ${Number(item.nominal).toLocaleString("id-ID")}
+                    </div>
+                </li>`;
+            });
+        }
+
+        // Panggil saat halaman dimuat
+        setTimeout(tampilkanRiwayat, 500);
+    </script>
+
+    <!-- Script Firebase/Module Utama Anda (Tidak Diubah) -->
+    <script type="module" src="js/pembayaran.js?v=3"></script>
+
+<script src="js/theme.js"></script>
+
+
+    <script type="module" src="js/auth-guard.js"></script>
+<div class="ck-bottom">
+  <div class="ck-bottom-inner">
+    <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
+    <a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
+    <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
+    <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
+    <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
+  </div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+CARA BUILD APK CATATAN KAS DARI HP
+
+1. Upload folder/project ini ke repository GitHub.
+2. Pastikan file .github/workflows/build-apk.yml ikut ter-upload.
+3. Buka tab Actions di repository.
+4. Pilih "Build Catatan Kas APK".
+5. Tekan "Run workflow".
+6. Setelah selesai, buka hasil workflow dan download artifact:
+   Catatan-Kas-debug-apk
+7. Di dalamnya ada app-debug.apk untuk dipasang di Android.
+
+Project ini menggunakan Android WebView + WebViewAssetLoader.
+Nama aplikasi: Catatan Kas
+Application ID: com.catatankas.app
+
+Catatan: Firebase/CDN membutuhkan koneksi internet.
