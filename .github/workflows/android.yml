@@ -1,257 +1,239 @@
 name: Build Catatan Kas APK
 
 on:
-workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v5
 
-steps:
-  - name: Checkout project
-    uses: actions/checkout@v5
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
 
-  - name: Setup Java
-    uses: actions/setup-java@v5
-    with:
-      distribution: temurin
-      java-version: '17'
-      cache: gradle
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
 
-  - name: Setup Android SDK
-    uses: android-actions/setup-android@v4
+      - name: Install Android SDK
+        run: |
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-35"
+          sdkmanager "build-tools;35.0.0"
 
-  - name: Install Android SDK
-    run: |
-      sdkmanager "platform-tools"
-      sdkmanager "platforms;android-35"
-      sdkmanager "build-tools;35.0.0"
+      - name: Create project folders
+        run: |
+          mkdir -p app/src/main/java/com/catatankas/app
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/assets
 
-  - name: Buat struktur project
-    run: |
-      mkdir -p app/src/main/java/com/catatankas/app
-      mkdir -p app/src/main/res/values
-      mkdir -p app/src/main/assets
+      - name: Copy web files
+        run: |
+          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" \) -exec cp {} app/src/main/assets/ \;
+          if [ -d "js" ]; then cp -r js app/src/main/assets/; fi
+          if [ -d "Js" ]; then cp -r Js app/src/main/assets/; fi
+          if [ -d "css" ]; then cp -r css app/src/main/assets/; fi
+          if [ -d "images" ]; then cp -r images app/src/main/assets/; fi
+          if [ -d "img" ]; then cp -r img app/src/main/assets/; fi
 
-  - name: Salin file aplikasi
-    run: |
-      find . -maxdepth 1 -type f -name "*.html" -o -name "*.js" -o -name "*.css" -exec cp {} app/src/main/assets/ \;
-
-      if [ -d "js" ]; then cp -r js app/src/main/assets/; fi
-      if [ -d "Js" ]; then cp -r Js app/src/main/assets/; fi
-      if [ -d "css" ]; then cp -r css app/src/main/assets/; fi
-      if [ -d "images" ]; then cp -r images app/src/main/assets/; fi
-      if [ -d "img" ]; then cp -r img app/src/main/assets/; fi
-
-  - name: Buat settings.gradle
-    run: |
-      cat > settings.gradle <<'EOF'
-      pluginManagement {
-          repositories {
-              google()
-              mavenCentral()
-              gradlePluginPortal()
-          }
-      }
-
-      dependencyResolutionManagement {
-          repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-          repositories {
-              google()
-              mavenCentral()
-          }
-      }
-
-      rootProject.name = "CatatanKas"
-      include(":app")
-      EOF
-
-  - name: Buat build.gradle
-    run: |
-      cat > build.gradle <<'EOF'
-      plugins {
-          id 'com.android.application' version '8.7.3' apply false
-      }
-      EOF
-
-  - name: Buat app build.gradle
-    run: |
-      cat > app/build.gradle <<'EOF'
-      plugins {
-          id 'com.android.application'
-      }
-
-      android {
-          namespace 'com.catatankas.app'
-          compileSdk 35
-
-          defaultConfig {
-              applicationId 'com.catatankas.app'
-              minSdk 24
-              targetSdk 35
-              versionCode 1
-              versionName '1.0'
-          }
-
-          buildTypes {
-              release {
-                  minifyEnabled false
+      - name: Create settings.gradle
+        run: |
+          cat > settings.gradle <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
               }
           }
-      }
 
-      dependencies {
-          implementation 'androidx.webkit:webkit:1.16.0'
-      }
-      EOF
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
 
-  - name: Buat AndroidManifest.xml
-    run: |
-      cat > app/src/main/AndroidManifest.xml <<'EOF'
-      <?xml version="1.0" encoding="utf-8"?>
-      <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+          rootProject.name = "CatatanKas"
+          include(":app")
+          EOF
 
-          <uses-permission android:name="android.permission.INTERNET" />
+      - name: Create root build.gradle
+        run: |
+          cat > build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application' version '8.7.3' apply false
+          }
+          EOF
 
-          <application
-              android:allowBackup="true"
-              android:label="Catatan Kas"
-              android:theme="@style/AppTheme"
-              android:usesCleartextTraffic="true">
+      - name: Create app/build.gradle
+        run: |
+          cat > app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application'
+          }
 
-              <activity
-                  android:name=".MainActivity"
-                  android:exported="true">
+          android {
+              namespace 'com.catatankas.app'
+              compileSdk 35
 
-                  <intent-filter>
-                      <action android:name="android.intent.action.MAIN" />
-                      <category android:name="android.intent.category.LAUNCHER" />
-                  </intent-filter>
+              defaultConfig {
+                  applicationId 'com.catatankas.app'
+                  minSdk 24
+                  targetSdk 35
+                  versionCode 1
+                  versionName '1.0'
+              }
 
-              </activity>
-
-          </application>
-
-      </manifest>
-      EOF
-
-  - name: Buat styles.xml
-    run: |
-      cat > app/src/main/res/values/styles.xml <<'EOF'
-      <?xml version="1.0" encoding="utf-8"?>
-      <resources>
-
-          <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
-              <item name="android:fontFamily">sans</item>
-              <item name="android:colorAccent">#dc3545</item>
-              <item name="android:navigationBarColor">#000000</item>
-              <item name="android:statusBarColor">#000000</item>
-          </style>
-
-      </resources>
-      EOF
-
-  - name: Buat MainActivity.java
-    run: |
-      cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
-      package com.catatankas.app;
-
-      import android.annotation.SuppressLint;
-      import android.app.Activity;
-      import android.net.Uri;
-      import android.os.Bundle;
-      import android.webkit.WebResourceRequest;
-      import android.webkit.WebResourceResponse;
-      import android.webkit.WebSettings;
-      import android.webkit.WebView;
-      import android.webkit.WebViewClient;
-
-      import androidx.webkit.WebViewAssetLoader;
-
-      public class MainActivity extends Activity {
-
-          private WebView webView;
-
-          @SuppressLint("SetJavaScriptEnabled")
-          @Override
-          protected void onCreate(Bundle savedInstanceState) {
-              super.onCreate(savedInstanceState);
-
-              webView = new WebView(this);
-              setContentView(webView);
-
-              WebSettings settings = webView.getSettings();
-
-              settings.setJavaScriptEnabled(true);
-              settings.setDomStorageEnabled(true);
-              settings.setDatabaseEnabled(true);
-              settings.setAllowFileAccess(false);
-              settings.setAllowContentAccess(false);
-
-              final WebViewAssetLoader assetLoader =
-                      new WebViewAssetLoader.Builder()
-                              .addPathHandler(
-                                      "/assets/",
-                                      new WebViewAssetLoader.AssetsPathHandler(this)
-                              )
-                              .build();
-
-              webView.setWebViewClient(new WebViewClient() {
-
-                  @Override
-                  public WebResourceResponse shouldInterceptRequest(
-                          WebView view,
-                          WebResourceRequest request
-                  ) {
-                      Uri uri = request.getUrl();
-                      return assetLoader.shouldInterceptRequest(uri);
+              buildTypes {
+                  release {
+                      minifyEnabled false
                   }
-              });
-
-              webView.loadUrl(
-                      "https://appassets.androidplatform.net/assets/index.html"
-              );
-          }
-
-          @Override
-          public void onBackPressed() {
-              if (webView != null && webView.canGoBack()) {
-                  webView.goBack();
-              } else {
-                  super.onBackPressed();
               }
           }
-      }
-      EOF
 
-  - name: Cek index.html
-    run: |
-      if [ ! -f "app/src/main/assets/index.html" ]; then
-        echo "ERROR: index.html tidak ditemukan"
-        exit 1
-      fi
+          dependencies {
+              implementation 'androidx.webkit:webkit:1.16.0'
+          }
+          EOF
 
-      echo "index.html ditemukan."
+      - name: Create AndroidManifest.xml
+        run: |
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
 
-  - name: Setup Gradle
-    uses: gradle/actions/setup-gradle@v6
-    with:
-      gradle-version: '8.10'
+              <application
+                  android:allowBackup="true"
+                  android:label="Catatan Kas"
+                  android:theme="@style/AppTheme"
+                  android:usesCleartextTraffic="true">
 
-  - name: Build APK
-    run: |
-      gradle --no-daemon clean
-      gradle --no-daemon :app:assembleDebug
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
 
-  - name: Cek APK
-    run: |
-      ls -lah app/build/outputs/apk/debug/
-      test -f app/build/outputs/apk/debug/app-debug.apk
-      echo "APK berhasil dibuat."
+      - name: Create styles.xml
+        run: |
+          cat > app/src/main/res/values/styles.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+                  <item name="android:fontFamily">sans</item>
+                  <item name="android:colorAccent">#dc3545</item>
+                  <item name="android:navigationBarColor">#000000</item>
+                  <item name="android:statusBarColor">#000000</item>
+              </style>
+          </resources>
+          EOF
 
-  - name: Upload APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: Catatan-Kas-debug-apk
-      path: app/build/outputs/apk/debug/app-debug.apk
-      if-no-files-found: error
+      - name: Create MainActivity.java
+        run: |
+          cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
+          package com.catatankas.app;
+
+          import android.annotation.SuppressLint;
+          import android.app.Activity;
+          import android.net.Uri;
+          import android.os.Bundle;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebResourceResponse;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          import androidx.webkit.WebViewAssetLoader;
+
+          public class MainActivity extends Activity {
+              private WebView webView;
+
+              @SuppressLint("SetJavaScriptEnabled")
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  webView = new WebView(this);
+                  setContentView(webView);
+
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setDatabaseEnabled(true);
+                  settings.setAllowFileAccess(false);
+                  settings.setAllowContentAccess(false);
+
+                  final WebViewAssetLoader assetLoader =
+                          new WebViewAssetLoader.Builder()
+                                  .addPathHandler(
+                                          "/assets/",
+                                          new WebViewAssetLoader.AssetsPathHandler(this)
+                                  )
+                                  .build();
+
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public WebResourceResponse shouldInterceptRequest(
+                              WebView view,
+                              WebResourceRequest request) {
+                          Uri uri = request.getUrl();
+                          return assetLoader.shouldInterceptRequest(uri);
+                      }
+                  });
+
+                  webView.loadUrl(
+                          "https://appassets.androidplatform.net/assets/index.html"
+                  );
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) {
+                      webView.goBack();
+                  } else {
+                      super.onBackPressed();
+                  }
+              }
+          }
+          EOF
+
+      - name: Check web files
+        run: |
+          test -f app/src/main/assets/index.html
+          echo "index.html ditemukan."
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.10'
+
+      - name: Build APK
+        run: |
+          gradle --no-daemon clean
+          gradle --no-daemon :app:assembleDebug
+
+      - name: Check APK
+        run: |
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Catatan-Kas-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
