@@ -172,81 +172,49 @@ jobs:
       # ==========================================
       # 7. CEK FILE WAJIB
       # ==========================================
-      - name: Validate web files
+          - name: Copy web files
         run: |
-          echo "======================================"
-          echo "MEMERIKSA FILE WAJIB"
-          echo "======================================"
+          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" \) -exec cp {} app/src/main/assets/ \;
 
-          REQUIRED_FILES="
-          index.html
-          "
-
-          for file in $REQUIRED_FILES; do
-            if [ ! -f "app/src/main/assets/$file" ]; then
-              echo "ERROR: $file tidak ditemukan!"
-              exit 1
-            fi
-
-            echo "OK: $file"
-          done
-
-          echo ""
-          echo "======================================"
-          echo "MEMERIKSA HALAMAN TAMBAHAN"
-          echo "======================================"
-
-          for file in \
-            pengaturan.html \
-            santri.html \
-            pembayaran.html \
-            pengeluaran.html \
-            laporan.html
-          do
-            if [ -f "app/src/main/assets/$file" ]; then
-              echo "OK: $file"
-            else
-              echo "INFO: $file tidak ditemukan"
-            fi
-          done
-
-          echo ""
-          echo "======================================"
-          echo "MEMERIKSA JAVASCRIPT"
-          echo "======================================"
-
-          if [ -f "app/src/main/assets/app.js" ]; then
-            echo "OK: app.js"
+          if [ -d "js" ]; then
+            cp -r js app/src/main/assets/
           fi
 
-          if [ -f "app/src/main/assets/firebase-config.js" ]; then
-            echo "OK: firebase-config.js"
+          if [ -d "Js" ]; then
+            cp -r Js app/src/main/assets/
           fi
 
-          if [ -f "app/src/main/assets/js/app.js" ]; then
-            echo "OK: js/app.js"
+          if [ -d "css" ]; then
+            cp -r css app/src/main/assets/
           fi
 
-          if [ -f "app/src/main/assets/js/firebase-config.js" ]; then
-            echo "OK: js/firebase-config.js"
+          if [ -d "images" ]; then
+            cp -r images app/src/main/assets/
+          fi
+
+          if [ -d "img" ]; then
+            cp -r img app/src/main/assets/
+          fi
+
+          # Logo Catatan Kas
+          mkdir -p app/src/main/assets/assets
+
+          if [ -f "logo-catatan-kas.jpg" ]; then
+            cp logo-catatan-kas.jpg app/src/main/assets/assets/logo-catatan-kas.jpg
+            echo "OK: Logo Catatan Kas berhasil disalin."
+          else
+            echo "WARNING: Logo tidak ditemukan."
           fi
 
           echo ""
-          echo "======================================"
-          echo "MEMERIKSA ASSETS / LOGO"
-          echo "======================================"
+          echo "=== VALIDASI LOGO ==="
 
           if [ -f "app/src/main/assets/assets/logo-catatan-kas.jpg" ]; then
             echo "OK: assets/logo-catatan-kas.jpg"
-          elif [ -f "app/src/main/assets/assets/logo-catatan-keuangan.png" ]; then
-            echo "OK: assets/logo-catatan-keuangan.png"
           else
-            echo "INFO: Logo tidak ditemukan di folder assets."
+            echo "ERROR: Logo tidak ditemukan di APK assets."
           fi
-
-          echo ""
-          echo "Validasi file selesai."
-
+      
 
       # ==========================================
       # 8. SETTINGS GRADLE
