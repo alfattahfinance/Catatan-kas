@@ -96,7 +96,7 @@ jobs:
           cp *.jpg app/src/main/assets/ || true
           cp *.jpeg app/src/main/assets/ || true
 
-               - name: Enable AndroidX
+      - name: Enable AndroidX
         run: |
           cat > gradle.properties <<'EOF'
           android.useAndroidX=true
