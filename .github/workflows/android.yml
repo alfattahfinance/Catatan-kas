@@ -10,7 +10,7 @@ jobs:
     steps:
 
       # ==========================================
-      # CHECKOUT
+      # CHECKOUT PROJECT
       # ==========================================
 
       - name: Checkout project
@@ -73,7 +73,7 @@ jobs:
           find . -maxdepth 1 -type f -name "*.css" \
             -exec cp {} app/src/main/assets/ \;
 
-          # Folder JS
+          # Folder js
           if [ -d "js" ]; then
             cp -r js app/src/main/assets/
           fi
@@ -88,22 +88,23 @@ jobs:
             cp -r css app/src/main/assets/
           fi
 
-          # Folder images/assets jika ada
+          # Folder images
           if [ -d "images" ]; then
             cp -r images app/src/main/assets/
           fi
 
+          # Folder img
           if [ -d "img" ]; then
             cp -r img app/src/main/assets/
           fi
 
           echo ""
           echo "=== ISI ASSETS ==="
-          find app/src/main/assets -maxdepth 3 -type f | sort
+          find app/src/main/assets -maxdepth 4 -type f | sort
 
 
       # ==========================================
-      # CEK FILE HTML
+      # CEK FILE APLIKASI
       # ==========================================
 
       - name: Cek file aplikasi
@@ -151,6 +152,7 @@ jobs:
 
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+
               repositories {
                   google()
                   mavenCentral()
@@ -158,6 +160,7 @@ jobs:
           }
 
           rootProject.name = "CatatanKas"
+
           include(":app")
           EOF
 
@@ -188,12 +191,14 @@ jobs:
 
           android {
               namespace 'com.catatankas.app'
+
               compileSdk 35
 
               defaultConfig {
                   applicationId 'com.catatankas.app'
                   minSdk 23
                   targetSdk 35
+
                   versionCode 1
                   versionName '1.0'
               }
@@ -205,9 +210,13 @@ jobs:
               }
           }
 
+          configurations.configureEach {
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+          }
+
           dependencies {
-              implementation 'androidx.appcompat:appcompat:1.7.0'
-              implementation 'androidx.webkit:webkit:1.12.1'
+              implementation 'androidx.webkit:webkit:1.16.0'
           }
           EOF
 
@@ -259,7 +268,8 @@ jobs:
 
           <resources>
 
-              <style name="AppTheme"
+              <style
+                  name="AppTheme"
                   parent="android:style/Theme.Material.Light.NoActionBar">
 
                   <item name="android:fontFamily">sans</item>
@@ -292,10 +302,11 @@ jobs:
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
 
-          import androidx.appcompat.app.AppCompatActivity;
+          import android.app.Activity;
+
           import androidx.webkit.WebViewAssetLoader;
 
-          public class MainActivity extends AppCompatActivity {
+          public class MainActivity extends Activity {
 
               private WebView webView;
 
@@ -305,6 +316,7 @@ jobs:
                   super.onCreate(savedInstanceState);
 
                   webView = new WebView(this);
+
                   setContentView(webView);
 
                   WebSettings settings = webView.getSettings();
@@ -316,7 +328,10 @@ jobs:
                   settings.setAllowFileAccess(false);
                   settings.setAllowContentAccess(false);
 
-                  WebViewAssetLoader assetLoader =
+                  settings.setJavaScriptCanOpenWindowsAutomatically(true);
+                  settings.setSupportMultipleWindows(true);
+
+                  final WebViewAssetLoader assetLoader =
                           new WebViewAssetLoader.Builder()
                                   .addPathHandler(
                                           "/assets/",
@@ -332,19 +347,9 @@ jobs:
                                       WebView view,
                                       WebResourceRequest request
                               ) {
-                                  return assetLoader.shouldInterceptRequest(
-                                          request.getUrl()
-                                  );
-                              }
+                                  Uri uri = request.getUrl();
 
-                              @Override
-                              public WebResourceResponse shouldInterceptRequest(
-                                      WebView view,
-                                      String url
-                              ) {
-                                  return assetLoader.shouldInterceptRequest(
-                                          Uri.parse(url)
-                                  );
+                                  return assetLoader.shouldInterceptRequest(uri);
                               }
                           }
                   );
@@ -356,14 +361,17 @@ jobs:
 
               @Override
               public void onBackPressed() {
-                  if (webView.canGoBack()) {
+
+                  if (webView != null && webView.canGoBack()) {
                       webView.goBack();
                   } else {
                       super.onBackPressed();
                   }
               }
           }
-          EOF 
+          EOF
+
+
       # ==========================================
       # CEK PROJECT
       # ==========================================
@@ -371,13 +379,17 @@ jobs:
       - name: Cek struktur Android
         run: |
           echo "=== STRUKTUR PROJECT ==="
-          find app/src/main -maxdepth 4 -type f | sort
+
+          find app/src/main -maxdepth 5 -type f | sort
 
           echo ""
+
           echo "=== CEK INDEX ==="
+
           test -f app/src/main/assets/index.html
 
           echo ""
+
           echo "INDEX.HTML OK"
 
 
@@ -392,6 +404,15 @@ jobs:
 
 
       # ==========================================
+      # CLEAN BUILD
+      # ==========================================
+
+      - name: Clean Gradle
+        run: |
+          gradle --no-daemon clean
+
+
+      # ==========================================
       # BUILD APK
       # ==========================================
 
@@ -401,14 +422,19 @@ jobs:
 
 
       # ==========================================
-      # CEK APK
+      # CEK HASIL APK
       # ==========================================
 
       - name: Cek hasil APK
         run: |
+          echo "=== HASIL APK ==="
+
           ls -lah app/build/outputs/apk/debug/
 
           test -f app/build/outputs/apk/debug/app-debug.apk
+
+          echo ""
+          echo "APK BERHASIL DIBUAT"
 
 
       # ==========================================
