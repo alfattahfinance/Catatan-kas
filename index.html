@@ -196,18 +196,15 @@
            CONTAINER
         ================================================= */
 
-        .mobile-container {
-
-            width: 100%;
-
-            max-width: 600px;
-
-            margin-left: auto;
-
-            margin-right: auto;
-
-        }
-
+     .mobile-container, 
+.container-fluid.mobile-container {
+    width: 100% !important;
+    max-width: 100% !important; /* Membuatnya melebar penuh mengikuti ukuran layar tablet */
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    margin-left: auto;
+    margin-right: auto;
+}
 
         /* =================================================
            CARD
@@ -610,26 +607,27 @@
         ================================================= */
 
         .ck-bottom {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1050;
-            background: rgba(255, 255, 255, .97);
-            border-top: 1px solid #dee2e6;
-            box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
-            padding: 6px 8px;
-            backdrop-filter: blur(8px);
-        }
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1050;
+    background: rgba(255, 255, 255, .97);
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
+    padding: 6px 15px; /* Sesuaikan padding kiri-kanan */
+    backdrop-filter: blur(8px);
+}
 
-        .ck-bottom-inner {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-        }
+.ck-bottom-inner {
+    width: 100% !important;
+    max-width: 100% !important; /* Diubah dari pembatas sebelumnya agar full */
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+
 
         .ck-bottom a {
             text-decoration: none !important;
