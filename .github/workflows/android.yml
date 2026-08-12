@@ -28,19 +28,13 @@ jobs:
           sdkmanager "build-tools;35.0.0"
 
       - name: Create Android project folders
-       run: |
+        run: |
           mkdir -p app/src/main/java/com/catatankas/app
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/assets
-      - name: Copy web files
+              - name: Copy web files
         run: |
-
-      - name: Pasang ikon Keuangan
-        run: |
-         test -f "keuangan-icon.png"
-         cp "keuangan-icon.png" app/src/main/res/drawable/ic_keuangan.png
-        
           find . -maxdepth 1 -type f -name "*.html" -exec cp {} app/src/main/assets/ \;
           find . -maxdepth 1 -type f -name "*.js" -exec cp {} app/src/main/assets/ \;
           find . -maxdepth 1 -type f -name "*.css" -exec cp {} app/src/main/assets/ \;
@@ -69,11 +63,16 @@ jobs:
             cp -r img app/src/main/assets/
           fi
 
-              mkdir -p app/src/main/assets/assets
+          mkdir -p app/src/main/assets/assets
 
           if [ -f "logo-catatan-kas.jpg" ]; then
             cp logo-catatan-kas.jpg app/src/main/assets/assets/logo-catatan-kas.jpg
           fi
+
+      - name: Pasang ikon Keuangan
+        run: |
+          test -f "keuangan-icon.png"
+          cp "keuangan-icon.png" app/src/main/res/drawable/ic_keuangan.png
 
       - name: Prepare Firebase config
         run: |
