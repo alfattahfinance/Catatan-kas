@@ -1,271 +1,290 @@
+/* =====================================================
+   CATATAN KAS
+   UPDATE CHECK SYSTEM - TAHAP 2
+===================================================== */
+
 (function () {
 
     "use strict";
 
-    // ==========================================
-    // PENGATURAN UPDATE
-    // ==========================================
-   const VERSION_URL =
-    "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/version.json";
-    
+
+    /* =================================================
+       KONFIGURASI
+    ================================================= */
+
+    const VERSION_URL =
+        "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/version.json";
+
+
+    /* =================================================
+       VERSI APLIKASI SAAT INI
+    ================================================= */
+
     const CURRENT_VERSION =
         window.APP_VERSION || "2.0";
 
 
-    // ==========================================
-    // BANDINGKAN VERSI
-    // ==========================================
+    /* =================================================
+       FUNGSI MEMBANDINGKAN VERSI
+    ================================================= */
 
-    function versiLebihBaru(versiTerbaru, versiSekarang) {
+    function versionToNumber(version) {
 
-        const terbaru =
-            String(versiTerbaru)
-                .split(".")
-                .map(Number);
-
-        const sekarang =
-            String(versiSekarang)
-                .split(".")
-                .map(Number);
-
-
-        const panjang =
-            Math.max(
-                terbaru.length,
-                sekarang.length
-            );
-
-
-        for (let i = 0; i < panjang; i++) {
-
-            const a =
-                terbaru[i] || 0;
-
-            const b =
-                sekarang[i] || 0;
-
-
-            if (a > b) {
-                return true;
-            }
-
-
-            if (a < b) {
-                return false;
-            }
-
+        if (!version) {
+            return 0;
         }
 
+        return version
+            .toString()
+            .replace(/^v/i, "")
+            .split(".")
+            .map(function (number) {
 
-        return false;
+                return parseInt(number, 10) || 0;
+
+            })
+            .reduce(function (total, number) {
+
+                return total * 1000 + number;
+
+            }, 0);
+    }
+
+
+    /* =================================================
+       CEK APAKAH VERSI BARU
+    ================================================= */
+
+    function isNewerVersion(
+        latestVersion,
+        currentVersion
+    ) {
+
+        return (
+            versionToNumber(latestVersion) >
+            versionToNumber(currentVersion)
+        );
 
     }
 
 
-    // ==========================================
-    // TAMPILKAN NOTIFIKASI UPDATE
-    // ==========================================
+    /* =================================================
+       NOTIFIKASI UPDATE
+    ================================================= */
 
-    function tampilkanUpdate(data) {
+    function showUpdateNotification(data) {
 
-        const lama =
+        const oldNotification =
             document.getElementById(
-                "updateAppModal"
+                "updateNotification"
             );
 
-
-        if (lama) {
-            lama.remove();
+        if (oldNotification) {
+            oldNotification.remove();
         }
 
 
-        const modal =
+        const notification =
             document.createElement("div");
 
 
-        modal.id =
-            "updateAppModal";
+        notification.id =
+            "updateNotification";
 
 
-        modal.innerHTML = `
+        notification.innerHTML = `
 
             <div style="
                 position:fixed;
-                inset:0;
+                left:15px;
+                right:15px;
+                bottom:85px;
                 z-index:99999;
-                background:rgba(0,0,0,.55);
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                padding:20px;
+                background:#ffffff;
+                color:#212529;
+                border-radius:18px;
+                padding:18px;
+                box-shadow:
+                    0 10px 35px rgba(0,0,0,.20);
+                border:1px solid #e2e8e5;
             ">
 
                 <div style="
-                    width:100%;
-                    max-width:420px;
-                    background:white;
-                    border-radius:22px;
-                    padding:25px;
-                    box-shadow:0 15px 50px rgba(0,0,0,.25);
-                    text-align:center;
+                    display:flex;
+                    align-items:center;
+                    gap:12px;
+                    margin-bottom:10px;
                 ">
 
                     <div style="
-                        width:65px;
-                        height:65px;
-                        margin:0 auto 15px;
-                        border-radius:18px;
-                        background:#198754;
-                        color:white;
+                        width:44px;
+                        height:44px;
+                        border-radius:14px;
+                        background:#e8f5ee;
+                        color:#198754;
                         display:flex;
                         align-items:center;
                         justify-content:center;
-                        font-size:30px;
+                        font-size:22px;
                     ">
-                        ↑
+
+                        <i class="bi bi-arrow-down-circle-fill"></i>
+
                     </div>
 
-                    <h4 style="
-                        font-weight:800;
-                        margin-bottom:8px;
-                    ">
-                        Update Tersedia
-                    </h4>
 
-                    <p style="
-                        color:#6c757d;
-                        margin-bottom:8px;
-                    ">
-                        Versi baru Keuangan tersedia.
-                    </p>
+                    <div style="flex:1;">
 
-                    <div style="
-                        background:#f1f8f4;
-                        border-radius:12px;
-                        padding:12px;
-                        margin:15px 0;
-                    ">
+                        <div style="
+                            font-weight:800;
+                            font-size:16px;
+                        ">
 
-                        <div>
-                            Versi sekarang:
-                            <strong>${CURRENT_VERSION}</strong>
+                            Update Tersedia
+
                         </div>
 
-                        <div>
-                            Versi terbaru:
-                            <strong>${data.version}</strong>
+
+                        <div style="
+                            color:#6c757d;
+                            font-size:13px;
+                            margin-top:2px;
+                        ">
+
+                            Versi ${data.version} tersedia
+
                         </div>
 
                     </div>
 
-                    <p style="
-                        font-size:.9rem;
-                        color:#6c757d;
-                    ">
-                        ${data.message || "Versi terbaru tersedia."}
-                    </p>
 
-                    <div style="
-                        display:flex;
-                        gap:10px;
-                        margin-top:20px;
-                    ">
+                    <button
+                        id="closeUpdateNotification"
+                        type="button"
+                        style="
+                            border:0;
+                            background:transparent;
+                            font-size:22px;
+                            color:#6c757d;
+                        "
+                    >
 
-                        <button
-                            id="updateLaterButton"
-                            style="
-                                flex:1;
-                                border:1px solid #dee2e6;
-                                background:white;
-                                border-radius:12px;
-                                padding:12px;
-                            "
-                        >
-                            Nanti
-                        </button>
+                        &times;
 
-                        <button
-                            id="updateNowButton"
-                            style="
-                                flex:1;
-                                border:0;
-                                background:#198754;
-                                color:white;
-                                border-radius:12px;
-                                padding:12px;
-                                font-weight:700;
-                            "
-                        >
-                            Update
-                        </button>
-
-                    </div>
+                    </button>
 
                 </div>
+
+
+                <div style="
+                    font-size:14px;
+                    line-height:1.5;
+                    margin-bottom:14px;
+                ">
+
+                    ${data.message || "Versi terbaru aplikasi tersedia."}
+
+                </div>
+
+
+                <button
+                    id="updateLaterButton"
+                    type="button"
+                    style="
+                        width:100%;
+                        border:1px solid #198754;
+                        background:#ffffff;
+                        color:#198754;
+                        border-radius:12px;
+                        padding:10px;
+                        font-weight:700;
+                    "
+                >
+
+                    Nanti
+
+                </button>
 
             </div>
 
         `;
 
 
-        document.body.appendChild(modal);
+        document.body.appendChild(
+            notification
+        );
 
 
-        const nanti =
+        const closeButton =
+            document.getElementById(
+                "closeUpdateNotification"
+            );
+
+
+        const laterButton =
             document.getElementById(
                 "updateLaterButton"
             );
 
 
-        const update =
-            document.getElementById(
-                "updateNowButton"
+        function closeNotification() {
+
+            const element =
+                document.getElementById(
+                    "updateNotification"
+                );
+
+            if (element) {
+                element.remove();
+            }
+
+        }
+
+
+        if (closeButton) {
+
+            closeButton.addEventListener(
+                "click",
+                closeNotification
             );
 
-
-        nanti.addEventListener(
-            "click",
-            function () {
-
-                modal.remove();
-
-            }
-        );
+        }
 
 
-        update.addEventListener(
-            "click",
-            function () {
+        if (laterButton) {
 
-                if (
-                    data.downloadUrl &&
-                    data.downloadUrl.trim() !== ""
-                ) {
+            laterButton.addEventListener(
+                "click",
+                closeNotification
+            );
 
-                    window.open(
-                        data.downloadUrl,
-                        "_blank"
-                    );
+        }
 
-                } else {
+    }
 
-                    alert(
-                        "Link update belum tersedia. APK versi terbaru belum dipublikasikan."
-                    );
 
-                }
+    /* =================================================
+       APLIKASI SUDAH TERBARU
+    ================================================= */
 
-            }
+    function showLatestMessage() {
+
+        alert(
+            "Aplikasi sudah menggunakan versi terbaru (" +
+            CURRENT_VERSION +
+            ")."
         );
 
     }
 
 
-    // ==========================================
-    // CEK UPDATE
-    // ==========================================
+    /* =================================================
+       CEK UPDATE
+    ================================================= */
 
-    async function cekUpdate() {
+    async function checkForUpdate(
+        showLatest = false
+    ) {
 
         try {
 
@@ -293,57 +312,198 @@
                 await response.json();
 
 
-            if (!data.version) {
-                return;
+            const latestVersion =
+                data.version;
+
+
+            if (!latestVersion) {
+
+                throw new Error(
+                    "Versi pada version.json tidak ditemukan"
+                );
+
             }
 
 
+            console.log(
+                "Versi aplikasi:",
+                CURRENT_VERSION
+            );
+
+
+            console.log(
+                "Versi terbaru:",
+                latestVersion
+            );
+
+
+            /* =========================================
+               ADA UPDATE
+            ========================================= */
+
             if (
-                versiLebihBaru(
-                    data.version,
+                isNewerVersion(
+                    latestVersion,
                     CURRENT_VERSION
                 )
             ) {
 
-                tampilkanUpdate(data);
+                showUpdateNotification(
+                    data
+                );
+
+
+                return {
+                    updateAvailable: true,
+                    data: data
+                };
 
             }
 
+
+            /* =========================================
+               SUDAH TERBARU
+            ========================================= */
+
+            if (showLatest) {
+
+                showLatestMessage();
+
+            }
+
+
+            return {
+                updateAvailable: false,
+                data: data
+            };
+
+
         } catch (error) {
 
-            console.warn(
-                "Pengecekan update gagal:",
+            console.error(
+                "Update check error:",
                 error
             );
+
+
+            if (showLatest) {
+
+                alert(
+                    "Tidak dapat memeriksa update.\n\n" +
+                    "Pastikan koneksi internet tersedia."
+                );
+
+            }
+
+
+            return {
+                updateAvailable: false,
+                error: error
+            };
 
         }
 
     }
 
 
-    // ==========================================
-    // JALANKAN SETELAH HALAMAN SIAP
-    // ==========================================
+    /* =================================================
+       TOMBOL CEK UPDATE
+    ================================================= */
+
+    function setupUpdateButton() {
+
+        const button =
+            document.getElementById(
+                "cekUpdateButton"
+            );
+
+
+        if (!button) {
+
+            console.log(
+                "Tombol cek update belum tersedia."
+            );
+
+            return;
+
+        }
+
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                button.disabled = true;
+
+
+                const text =
+                    button.innerHTML;
+
+
+                button.innerHTML =
+                    '<i class="bi bi-arrow-repeat"></i> Memeriksa...';
+
+
+                checkForUpdate(true)
+                    .finally(function () {
+
+                        button.disabled = false;
+
+                        button.innerHTML =
+                            text;
+
+                    });
+
+            }
+        );
+
+    }
+
+
+    /* =================================================
+       JALANKAN SAAT APLIKASI DIBUKA
+    ================================================= */
 
     document.addEventListener(
         "DOMContentLoaded",
         function () {
 
+            setupUpdateButton();
+
+
+            /*
+             * Cek update otomatis.
+             *
+             * Tidak menampilkan alert jika
+             * aplikasi sudah terbaru.
+             */
+
             setTimeout(
-                cekUpdate,
-                1500
+                function () {
+
+                    checkForUpdate(false);
+
+                },
+                2500
             );
 
         }
     );
 
 
-    // ==========================================
-    // GLOBAL
-    // ==========================================
+    /* =================================================
+       PUBLIC FUNCTION
+    ================================================= */
 
-    window.cekUpdateAplikasi =
-        cekUpdate;
+    window.CatatanKasUpdate = {
+
+        check: function () {
+
+            return checkForUpdate(true);
+
+        }
+
+    };
 
 
 })();
