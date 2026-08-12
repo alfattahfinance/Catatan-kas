@@ -28,13 +28,19 @@ jobs:
           sdkmanager "build-tools;35.0.0"
 
       - name: Create Android project folders
-        run: |
+       run: |
           mkdir -p app/src/main/java/com/catatankas/app
           mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/assets
-
       - name: Copy web files
         run: |
+
+      - name: Pasang ikon Keuangan
+        run: |
+         test -f "keuangan-icon.png"
+         cp "keuangan-icon.png" app/src/main/res/drawable/ic_keuangan.png
+        
           find . -maxdepth 1 -type f -name "*.html" -exec cp {} app/src/main/assets/ \;
           find . -maxdepth 1 -type f -name "*.js" -exec cp {} app/src/main/assets/ \;
           find . -maxdepth 1 -type f -name "*.css" -exec cp {} app/src/main/assets/ \;
@@ -150,8 +156,8 @@ jobs:
                   applicationId 'com.catatankas.app'
                   minSdk 24
                   targetSdk 35
-                  versionCode 1
-                  versionName '1.0'
+                  versionCode 2
+                  versionName '2.0'
               }
 
               buildTypes {
@@ -174,12 +180,13 @@ jobs:
 
               <uses-permission android:name="android.permission.INTERNET" />
 
-              <application
-                  android:allowBackup="true"
-                  android:label="Catatan Kas"
-                  android:theme="@style/AppTheme"
-                  android:usesCleartextTraffic="true">
-
+             <application
+                 android:allowBackup="true"
+                 android:label="Keuangan"
+                 android:icon="@drawable/ic_keuangan"
+                 android:roundIcon="@drawable/ic_keuangan"
+                 android:theme="@style/AppTheme"
+                 android:usesCleartextTraffic="true">
                   <activity
                       android:name=".MainActivity"
                       android:exported="true">
