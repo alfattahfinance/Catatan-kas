@@ -24,6 +24,7 @@
             background-size: 200% 200%;
             animation: gradientShift 15s ease infinite;
             color: #212529;
+            padding-bottom: 100px;
         }
 
         @keyframes gradientShift {
@@ -36,7 +37,6 @@
             max-width: 600px;
             margin: auto;
             padding: 15px;
-            padding-bottom: 100px;
         }
 
         .custom-card {
@@ -91,57 +91,57 @@
             margin-bottom: 15px;
         }
 
-        <!-- =====================================================
-     BOTTOM NAVIGATION (DIPERBAIKI)
-====================================================== -->
-<div class="ck-bottom">
-    <div class="ck-bottom-inner">
-        <a href="index.html" style="text-decoration: none; color: inherit;">
-            <i class="bi bi-house-fill"></i>
-            <span>Beranda</span>
-        </a>
-        <a href="santri.html" style="text-decoration: none; color: inherit;">
-            <i class="bi bi-people-fill"></i>
-            <span>Santri</span>
-        </a>
-        <a href="pembayaran.html" style="text-decoration: none; color: inherit;">
-            <i class="bi bi-cash-stack"></i>
-            <span>Bayar</span>
-        </a>
-        <a href="pengeluaran.html" class="active" style="text-decoration: none; color: inherit;">
-            <i class="bi bi-wallet2"></i>
-            <span>Keluar</span>
-        </a>
-        <a href="laporan.html" style="text-decoration: none; color: inherit;">
-            <i class="bi bi-bar-chart-fill"></i>
-            <span>Laporan</span>
-        </a>
-    </div>
-</div>
+        /* BOTTOM NAVIGATION STYLING */
+        .ck-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1050;
+            background: rgba(255, 255, 255, .97);
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
+            padding: 6px 8px;
+            backdrop-filter: blur(8px);
+        }
 
-<style>
-    /* Pastikan CSS ini ada di dalam tag <style> anda */
-    .ck-bottom a {
-        text-decoration: none !important; /* Menghilangkan garis bawah */
-        color: #6c757d;                   /* Warna abu-abu standar */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        font-size: .68rem;
-        padding: 5px 2px;
-        border-radius: 10px;
-        transition: .2s ease;
-    }
+        .ck-bottom-inner {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
 
-    .ck-bottom a.active {
-        color: #dc3545 !important;        /* Warna merah saat aktif */
-        font-weight: 700;
-    }
-</style>
+        .ck-bottom a {
+            text-decoration: none !important;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            font-size: .68rem;
+            padding: 5px 2px;
+            border-radius: 10px;
+            transition: .2s ease;
+        }
 
-      
+        .ck-bottom a i {
+            font-size: 1.15rem;
+        }
+
+        .ck-bottom a:hover {
+            color: #198754;
+            background: rgba(25, 135, 84, .08);
+        }
+
+        .ck-bottom a.active {
+            color: #198754 !important;
+            font-weight: 700;
+        }
+
         /* DARK MODE */
         body.dark-mode {
             background: #121212 !important;
@@ -166,6 +166,15 @@
 
         body.dark-mode .text-muted {
             color: #aaa !important;
+        }
+
+        body.dark-mode .ck-bottom a {
+            color: #adb5bd;
+        }
+
+        body.dark-mode .ck-bottom a:hover,
+        body.dark-mode .ck-bottom a.active {
+            color: #51cf66 !important;
         }
     </style>
 </head>
@@ -246,11 +255,26 @@
 <!-- BOTTOM NAVIGATION -->
 <div class="ck-bottom">
     <div class="ck-bottom-inner">
-        <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
-        <a href="santri.html" class="active"><i class="bi bi-people-fill"></i>Santri</a>
-        <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
-        <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
-        <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
+        <a href="index.html">
+            <i class="bi bi-house-fill"></i>
+            <span>Beranda</span>
+        </a>
+        <a href="santri.html" class="active">
+            <i class="bi bi-people-fill"></i>
+            <span>Santri</span>
+        </a>
+        <a href="pembayaran.html">
+            <i class="bi bi-cash-stack"></i>
+            <span>Bayar</span>
+        </a>
+        <a href="pengeluaran.html">
+            <i class="bi bi-wallet2"></i>
+            <span>Keluar</span>
+        </a>
+        <a href="laporan.html">
+            <i class="bi bi-bar-chart-fill"></i>
+            <span>Laporan</span>
+        </a>
     </div>
 </div>
 
@@ -267,6 +291,9 @@
         }
     });
 </script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
