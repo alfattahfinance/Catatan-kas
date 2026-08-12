@@ -1,5 +1,7 @@
 {
-    "version": "1.0.2",
-    "title": "Catatan Keuangan",
-    "message": "Pembaruan aplikasi tersedia."
+  "version": "2.0",
+  "versionCode": 2,
+  "name": "Keuangan",
+  "message": "Anda sudah menggunakan versi terbaru.",
+  "downloadUrl": ""
 }
