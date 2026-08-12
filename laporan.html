@@ -24,11 +24,12 @@
             margin: 0;
             min-height: 100vh;
             font-family: Arial, sans-serif;
-            /* Gradasi 2 Warna Beranimasi yang Konsisten */
+            /* Background Gradasi 2 Warna Beranimasi */
             background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
             background-size: 200% 200%;
             animation: gradientShift 15s ease infinite;
             color: #212529;
+            padding-bottom: 90px;
         }
 
         @keyframes gradientShift {
@@ -40,7 +41,6 @@
         .mobile-container {
             max-width: 600px;
             margin: auto;
-            padding-bottom: 90px;
         }
 
         .custom-card {
@@ -229,7 +229,7 @@
 
 <div class="container mobile-container py-4">
 
-    <!-- Topbar Header -->
+    <!-- Topbar Header (Logo & Nama Pondok) -->
     <div class="ck-topbar">
         <img id="logoPreviewV2" src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
         <div>
@@ -238,7 +238,7 @@
         </div>
     </div>
 
-    <div class="container py-2">
+    <div class="py-2">
 
         <!-- Judul -->
         <div class="mb-4">
