@@ -85,6 +85,8 @@
                 Helvetica,
                 sans-serif;
 
+            padding-bottom: 90px; /* Ruang agar konten tidak tertutup Bottom Navigation */
+
             background:
                 linear-gradient(
                     135deg,
@@ -134,7 +136,8 @@
         }
 
 
-        body.dark-mode .custom-card {
+        body.dark-mode .custom-card,
+        body.dark-mode .ck-bottom {
 
             background:
                 rgba(30, 30, 30, .95) !important;
@@ -603,6 +606,70 @@
 
 
         /* =================================================
+           BOTTOM NAVIGATION
+        ================================================= */
+
+        .ck-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1050;
+            background: rgba(255, 255, 255, .97);
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
+            padding: 6px 8px;
+            backdrop-filter: blur(8px);
+        }
+
+        .ck-bottom-inner {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
+
+        .ck-bottom a {
+            text-decoration: none !important;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            font-size: .68rem;
+            padding: 5px 2px;
+            border-radius: 10px;
+            transition: .2s ease;
+        }
+
+        .ck-bottom a i {
+            font-size: 1.15rem;
+        }
+
+        .ck-bottom a:hover {
+            color: #198754;
+            background: rgba(25, 135, 84, .08);
+        }
+
+        .ck-bottom a.active {
+            color: #198754 !important;
+            font-weight: 700;
+        }
+
+        body.dark-mode .ck-bottom a {
+            color: #adb5bd;
+        }
+
+        body.dark-mode .ck-bottom a:hover,
+        body.dark-mode .ck-bottom a.active {
+            color: #51cf66 !important;
+        }
+
+
+        /* =================================================
            MOBILE
         ================================================= */
 
@@ -662,6 +729,16 @@
 
                 font-size: 1.55rem;
 
+            }
+
+
+            .ck-bottom a {
+                font-size: .62rem;
+            }
+
+
+            .ck-bottom a i {
+                font-size: 1.05rem;
             }
 
         }
@@ -1232,6 +1309,37 @@
     </div>
 
 
+</div>
+
+
+
+<!-- =====================================================
+     BOTTOM NAVIGATION
+====================================================== -->
+
+<div class="ck-bottom">
+    <div class="ck-bottom-inner">
+        <a href="index.html" class="active">
+            <i class="bi bi-house-fill"></i>
+            <span>Beranda</span>
+        </a>
+        <a href="santri.html">
+            <i class="bi bi-people-fill"></i>
+            <span>Santri</span>
+        </a>
+        <a href="pembayaran.html">
+            <i class="bi bi-cash-stack"></i>
+            <span>Bayar</span>
+        </a>
+        <a href="pengeluaran.html">
+            <i class="bi bi-wallet2"></i>
+            <span>Keluar</span>
+        </a>
+        <a href="laporan.html">
+            <i class="bi bi-bar-chart-fill"></i>
+            <span>Laporan</span>
+        </a>
+    </div>
 </div>
 
 
