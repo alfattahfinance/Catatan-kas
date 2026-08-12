@@ -5,10 +5,9 @@
     // ==========================================
     // PENGATURAN UPDATE
     // ==========================================
-
-    const VERSION_URL =
-        "https://raw.githubusercontent.com/alfattahfinance/REPOSITORY_ANDA/main/version.json";
-
+   const VERSION_URL =
+    "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/version.json";
+    
     const CURRENT_VERSION =
         window.APP_VERSION || "2.0";
 
