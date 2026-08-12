@@ -20,12 +20,82 @@
             background-color: #f8f9fa; /* Warna latar sedikit abu-abu */
             font-family: Arial, sans-serif;
         }
-
-        /* Membatasi lebar agar tampil rapi seperti di HP */
+                /* =================================================
+           CONTAINER UTAMA (Agar Full di Tablet/Layar Lebar)
+        ================================================= */
         .mobile-container {
-            max-width: 600px;
-            margin: auto;
+            width: 100%;
+            max-width: 100%;
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-left: auto;
+            margin-right: auto;
         }
+
+
+        /* =================================================
+           BOTTOM NAVIGATION (Agar Tombol Navigasi Ikut Full)
+        ================================================= */
+        .ck-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1050;
+            background: rgba(255, 255, 255, .97);
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
+            padding: 6px 15px;
+            backdrop-filter: blur(8px);
+        }
+
+        .ck-bottom-inner {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
+
+        .ck-bottom a {
+            text-decoration: none !important;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            font-size: .68rem;
+            padding: 5px 2px;
+            border-radius: 10px;
+            transition: .2s ease;
+        }
+
+        .ck-bottom a i {
+            font-size: 1.15rem;
+        }
+
+        .ck-bottom a:hover {
+            color: #198754;
+            background: rgba(25, 135, 84, .08);
+        }
+
+        .ck-bottom a.active {
+            color: #198754 !important;
+            font-weight: 700;
+        }
+
+        body.dark-mode .ck-bottom a {
+            color: #adb5bd;
+        }
+
+        body.dark-mode .ck-bottom a:hover,
+        body.dark-mode .ck-bottom a.active {
+            color: #51cf66 !important;
+        }
+
+
 
         /* Styling Form Filter */
         .custom-select {
