@@ -14,7 +14,33 @@ jobs:
       # ==========================================
       - name: Checkout project
         uses: actions/checkout@v4
+ 
+           # ==========================================
+      # BUAT KEYSTORE PERMANEN
+      # ==========================================
+      - name: Buat keystore permanen
+        run: |
+          keytool -genkeypair \
+            -v \
+            -keystore keuangan-release.jks \
+            -alias keuangan \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass keuangan123 \
+            -keypass keuangan123 \
+            -dname "CN=Keuangan, OU=Madrasah Al-Fattah, O=Al-Fattah, L=Indonesia, ST=Indonesia, C=ID"
 
+          echo "Keystore berhasil dibuat."
+
+      # ==========================================
+      # SIMPAN KEYSTORE SEBAGAI ARTIFACT
+      # ==========================================
+      - name: Simpan keystore
+        uses: actions/upload-artifact@v4
+        with:
+          name: keuangan-release-keystore
+          path: keuangan-release.jks
 
       # ==========================================
       # SETUP JAVA
