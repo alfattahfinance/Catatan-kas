@@ -4,13 +4,30 @@
 
 body {
     min-height: 100vh;
-    background: linear-gradient(135deg, #FFF8DC 0%, #FFFFFF 100%);
+    /* Gradasi 2 Warna Beranimasi (Hijau Muda Lembut & Putih Kekuningan) */
+    background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 /* DARK MODE */
 body.dark-mode {
     background: #121212 !important;
+    background-image: none !important;
     color: #ffffff !important;
+    animation: none !important;
 }
 
 /* Container mengikuti layar */
@@ -98,18 +115,12 @@ button {
 }
 
 /* ========================= */
-/* DARK MODE */
+/* TRANSISI DARK MODE */
 /* ========================= */
 
 html,
 body {
     transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body.dark-mode {
-    background: #121212 !important;
-    background-image: none !important;
-    color: #ffffff !important;
 }
 
 
