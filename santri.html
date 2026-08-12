@@ -24,7 +24,7 @@
             background-size: 200% 200%;
             animation: gradientShift 15s ease infinite;
             color: #212529;
-            padding-bottom: 100px;
+            padding-bottom: 90px;
         }
 
         @keyframes gradientShift {
@@ -91,7 +91,7 @@
             margin-bottom: 15px;
         }
 
-        /* BOTTOM NAVIGATION STYLING */
+        /* BOTTOM NAVIGATION */
         .ck-bottom {
             position: fixed;
             left: 0;
@@ -279,7 +279,6 @@
 </div>
 
 <script>
-    // Memuat nama pondok & logo dari pengaturan tersimpan jika ada
     document.addEventListener("DOMContentLoaded", function() {
         const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
         if (pengaturan && pengaturan.namaPondok) {
@@ -292,7 +291,6 @@
     });
 </script>
 
-<!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
