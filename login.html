@@ -3,297 +3,172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Login | Alfattah Finance</title>
 
+<!-- Bootstrap 5 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
 <style>
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: linear-gradient(145deg, #f8fff9, #eef7f0);
-    font-family: Arial, sans-serif;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-}
-
-/* =========================
-   CONTAINER
-========================= */
-
-.login-container {
-    width: 100%;
-    max-width: 420px;
-    text-align: center;
-}
-
-/* =========================
-   LOGO
-========================= */
-
-.logo-wrapper {
-    animation: logoMasuk 1s ease forwards;
-    opacity: 0;
-}
-
-.logo {
-    width: 95px;
-    height: 95px;
-
-    object-fit: cover;
-
-    border-radius: 50%;
-
-    box-shadow:
-        0 8px 25px rgba(25,135,84,0.18);
-
-    border: 4px solid white;
-}
-
-/* =========================
-   JUDUL
-========================= */
-
-.welcome {
-    margin-top: 22px;
-
-    animation: munculAtas 1s ease 0.3s forwards;
-    opacity: 0;
-}
-
-.welcome h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #198754;
-    margin-bottom: 8px;
-}
-
-.welcome p {
-    color: #6c757d;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-/* =========================
-   CARD LOGIN
-========================= */
-
-.login-card {
-    margin-top: 28px;
-
-    background: white;
-
-    padding: 28px 24px;
-
-    border-radius: 22px;
-
-    box-shadow:
-        0 10px 35px rgba(0,0,0,0.07);
-
-    animation: munculBawah 1s ease 0.5s forwards;
-
-    opacity: 0;
-}
-
-/* =========================
-   INPUT
-========================= */
-
-.input-group-custom {
-    position: relative;
-    margin-bottom: 16px;
-}
-
-.input-group-custom i {
-    position: absolute;
-
-    left: 16px;
-    top: 50%;
-
-    transform: translateY(-50%);
-
-    color: #198754;
-
-    z-index: 2;
-}
-
-.input-group-custom input {
-    width: 100%;
-
-    border: 1px solid #dee2e6;
-
-    border-radius: 13px;
-
-    padding: 13px 15px 13px 45px;
-
-    outline: none;
-
-    transition: 0.2s;
-}
-
-.input-group-custom input:focus {
-    border-color: #198754;
-
-    box-shadow:
-        0 0 0 3px rgba(25,135,84,0.10);
-}
-
-/* =========================
-   TOMBOL
-========================= */
-
-.btn-login {
-    width: 100%;
-
-    border: none;
-
-    background: #198754;
-
-    color: white;
-
-    padding: 13px;
-
-    border-radius: 13px;
-
-    font-weight: 600;
-
-    transition: 0.2s;
-
-    margin-top: 5px;
-}
-
-.btn-login:hover {
-    background: #157347;
-
-    transform: translateY(-1px);
-}
-
-.btn-login:active {
-    transform: scale(0.98);
-}
-
-/* =========================
-   LOADING
-========================= */
-
-.loading {
-    display: none;
-    margin-top: 12px;
-    color: #6c757d;
-    font-size: 14px;
-}
-
-/* =========================
-   ERROR
-========================= */
-
-.error-message {
-    display: none;
-
-    color: #dc3545;
-
-    background: #fff5f5;
-
-    border-radius: 10px;
-
-    padding: 10px;
-
-    margin-bottom: 15px;
-
-    font-size: 13px;
-}
-
-/* =========================
-   FOOTER
-========================= */
-
-.footer {
-    margin-top: 20px;
-
-    color: #999;
-
-    font-size: 12px;
-
-    animation: muncul 1s ease 1s forwards;
-
-    opacity: 0;
-}
-
-/* =========================
-   ANIMASI
-========================= */
-
-@keyframes logoMasuk {
-
-    0% {
-        opacity: 0;
-        transform: scale(0.7);
+    * {
+        box-sizing: border-box;
     }
 
-    70% {
-        transform: scale(1.05);
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(145deg, #f8fff9, #eef7f0);
+        font-family: Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
     }
 
-    100% {
-        opacity: 1;
-        transform: scale(1);
+    .login-container {
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
     }
 
-}
-
-@keyframes munculAtas {
-
-    from {
-        opacity: 0;
-        transform: translateY(-15px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-}
-
-@keyframes munculBawah {
-
-    from {
-        opacity: 0;
-        transform: translateY(25px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-}
-
-@keyframes muncul {
-
-    from {
+    .logo-wrapper {
+        animation: logoMasuk 1s ease forwards;
         opacity: 0;
     }
 
-    to {
-        opacity: 1;
+    .logo {
+        width: 95px;
+        height: 95px;
+        object-fit: cover;
+        border-radius: 50%;
+        box-shadow: 0 8px 25px rgba(25, 135, 84, 0.18);
+        border: 4px solid white;
     }
 
-}
+    .welcome {
+        margin-top: 22px;
+        animation: munculAtas 1s ease 0.3s forwards;
+        opacity: 0;
+    }
 
+    .welcome h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #198754;
+        margin-bottom: 8px;
+    }
+
+    .welcome p {
+        color: #6c757d;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .login-card {
+        margin-top: 28px;
+        background: white;
+        padding: 28px 24px;
+        border-radius: 22px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.07);
+        animation: munculBawah 1s ease 0.5s forwards;
+        opacity: 0;
+    }
+
+    .input-group-custom {
+        position: relative;
+        margin-bottom: 16px;
+    }
+
+    .input-group-custom i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #198754;
+        z-index: 2;
+    }
+
+    .input-group-custom input {
+        width: 100%;
+        border: 1px solid #dee2e6;
+        border-radius: 13px;
+        padding: 13px 15px 13px 45px;
+        outline: none;
+        transition: 0.2s;
+    }
+
+    .input-group-custom input:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.10);
+    }
+
+    .btn-login {
+        width: 100%;
+        border: none;
+        background: #198754;
+        color: white;
+        padding: 13px;
+        border-radius: 13px;
+        font-weight: 600;
+        transition: 0.2s;
+        margin-top: 5px;
+    }
+
+    .btn-login:hover {
+        background: #157347;
+        transform: translateY(-1px);
+    }
+
+    .btn-login:active {
+        transform: scale(0.98);
+    }
+
+    .loading {
+        display: none;
+        margin-top: 12px;
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .error-message {
+        display: none;
+        color: #dc3545;
+        background: #fff5f5;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 15px;
+        font-size: 13px;
+    }
+
+    .footer {
+        margin-top: 20px;
+        color: #999;
+        font-size: 12px;
+        animation: muncul 1s ease 1s forwards;
+        opacity: 0;
+    }
+
+    @keyframes logoMasuk {
+        0% { opacity: 0; transform: scale(0.7); }
+        70% { transform: scale(1.05); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes munculAtas {
+        from { opacity: 0; transform: translateY(-15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes munculBawah {
+        from { opacity: 0; transform: translateY(25px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes muncul {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 </style>
 </head>
 
@@ -302,249 +177,109 @@ body {
 <div class="login-container">
 
     <!-- LOGO -->
-
     <div class="logo-wrapper">
-
-        <img
-            src="assets/IMG_1091.jpeg"
-            class="logo"
-            alt="Logo Alfattah Finance">
-
+        <img src="assets/IMG_1091.jpeg" class="logo" alt="Logo Alfattah Finance">
     </div>
-
 
     <!-- WELCOME -->
-
     <div class="welcome">
-
-        <h1>
-            Welcome
-        </h1>
-
+        <h1>Welcome</h1>
         <p>
-            Selamat datang di
-            <strong>Alfattah Finance</strong>
-            <br>
-
-            Sistem Keuangan
-            Ribath Madrasah Al-Fattah
+            Selamat datang di <strong>Alfattah Finance</strong><br>
+            Sistem Keuangan Ribath Madrasah Al-Fattah
         </p>
-
     </div>
 
-
-    <!-- LOGIN -->
-
+    <!-- LOGIN CARD -->
     <div class="login-card">
-
-        <div
-            id="errorMessage"
-            class="error-message">
-        </div>
-
+        <div id="errorMessage" class="error-message"></div>
 
         <!-- EMAIL -->
-
         <div class="input-group-custom">
-
             <i class="bi bi-envelope-fill"></i>
-
-            <input
-                type="email"
-                id="email"
-                placeholder="Gmail"
-                autocomplete="email">
-
+            <input type="email" id="email" placeholder="Gmail" autocomplete="email">
         </div>
-
 
         <!-- PASSWORD -->
-
         <div class="input-group-custom">
-
             <i class="bi bi-lock-fill"></i>
-
-            <input
-                type="password"
-                id="password"
-                placeholder="Kata sandi"
-                autocomplete="current-password">
-
+            <input type="password" id="password" placeholder="Kata sandi" autocomplete="current-password">
         </div>
 
-
-        <!-- LOGIN -->
-
-        <button
-            id="loginButton"
-            class="btn-login">
-
-            <i class="bi bi-box-arrow-in-right"></i>
-
-            Masuk
-
+        <!-- TOMBOL MASUK -->
+        <button id="loginButton" class="btn-login">
+            <i class="bi bi-box-arrow-in-right"></i> Masuk
         </button>
 
-
-        <div
-            id="loading"
-            class="loading">
-
+        <div id="loading" class="loading">
             <span class="spinner-border spinner-border-sm"></span>
-
             Memeriksa akun...
-
         </div>
-
     </div>
 
-
     <div class="footer">
-
         © 2026 Alfattah Finance
-
     </div>
 
 </div>
 
-
+<!-- FIREBASE & SCRIPT -->
 <script type="module">
+    import { auth } from "./js/firebase-config.js";
+    import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-import {
-    auth
-} from "./js/firebase-config.js";
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginButton = document.getElementById("loginButton");
+    const loadingDiv = document.getElementById("loading");
+    const errorMessageDiv = document.getElementById("errorMessage");
 
-import {
-    signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+    function tampilkanError(pesan) {
+        errorMessageDiv.textContent = pesan;
+        errorMessageDiv.style.display = "block";
+    }
 
-import {
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-    
-/* =========================
-   ELEMENT
-========================= */
-
-const email =
-    document.getElementById("email");
-
-const password =
-    document.getElementById("password");
-
-const button =
-    document.getElementById("loginButton");
-
-const loading =
-    document.getElementById("loading");
-
-const errorMessage =
-    document.getElementById("errorMessage");
-
-
-/* =========================
-   LOGIN
-========================= */
-
-button.addEventListener(
-    "click",
-    async () => {
-
-        const emailValue =
-            email.value.trim();
-
-        const passwordValue =
-            password.value;
-
+    async function prosesLogin() {
+        const emailValue = emailInput.value.trim();
+        const passwordValue = passwordInput.value;
 
         if (!emailValue || !passwordValue) {
-
-            tampilkanError(
-                "Gmail dan kata sandi harus diisi."
-            );
-
+            tampilkanError("Gmail dan kata sandi harus diisi.");
             return;
-
         }
 
-
-        button.disabled = true;
-
-        loading.style.display = "block";
-
-        errorMessage.style.display = "none";
-
+        loginButton.disabled = true;
+        loadingDiv.style.display = "block";
+        errorMessageDiv.style.display = "none";
 
         try {
-
-            await signInWithEmailAndPassword(
-                auth,
-                emailValue,
-                passwordValue
-            );
-
-
-            window.location.href =
-                "index.html";
-
-
+            await signInWithEmailAndPassword(auth, emailValue, passwordValue);
+            window.location.replace("index.html");
         } catch (error) {
-
             console.error(error);
-
-            tampilkanError(
-                "Gmail atau kata sandi salah."
-            );
-
-            button.disabled = false;
-
-            loading.style.display = "none";
-
+            tampilkanError("Gmail atau kata sandi salah.");
+            loginButton.disabled = false;
+            loadingDiv.style.display = "none";
         }
-
-    }
-);
-
-
-/* =========================
-   ERROR
-========================= */
-
-function tampilkanError(pesan) {
-
-    errorMessage.textContent =
-        pesan;
-
-    errorMessage.style.display =
-        "block";
-
-}
-
-onAuthStateChanged(auth, (user) => {
-
-    if (user) {
-
-        window.location.replace("index.html");
-
     }
 
-});
-    
-/* ENTER UNTUK LOGIN */
+    loginButton.addEventListener("click", prosesLogin);
 
-password.addEventListener(
-    "keydown",
-    event => {
+    // Dukungan tombol Enter pada input email dan password
+    [emailInput, passwordInput].forEach(input => {
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                prosesLogin();
+            }
+        });
+    });
 
-        if (event.key === "Enter") {
-
-            button.click();
-
+    // Cek status sesi login otomatis
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            window.location.replace("index.html");
         }
-
-    }
-);
-
+    });
 </script>
 
 </body>
