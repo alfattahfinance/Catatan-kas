@@ -1,611 +1,419 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="id">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Keuangan | Catatan Kas</title>
 
-<title>Laporan Keuangan | Catatan Kas</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
-<!-- Bootstrap -->
-<link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-    rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme.css">
 
-<!-- Bootstrap Icons -->
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
-<!-- Custom CSS -->
-<link rel="stylesheet" href="css/style.css">
-
-<!-- Theme -->
-<link rel="stylesheet" href="css/theme.css">
-
-<style>
-/* ==========================================
-   ANIMASI ANGKA LAPORAN
-   Muncul dari atas ke bawah
-========================================== */
-
-#totalSaldo,
-#hariIni,
-#pengeluaranHariIni,
-#bulanIni,
-#pengeluaranBulanIni,
-#tahunIni,
-#pengeluaranTahunIni {
-    display: inline-block;
-    animation: angkaTurun 0.7s ease-out;
-}
-
-/* Animasi dari atas ke posisi normal */
-@keyframes angkaTurun {
-    0% {
-        opacity: 0;
-        transform: translateY(-35px);
-    }
-
-    60% {
-        opacity: 1;
-        transform: translateY(5px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-</style>
-
-<script>
-/* ==========================================
-   ULANGI ANIMASI SETIAP ANGKA BERUBAH
-========================================== */
-
-function animasiAngka(id) {
-
-    const element = document.getElementById(id);
-
-    if (!element) return;
-
-    element.classList.remove("animasi-angka");
-
-    // Paksa browser mengulang animasi
-    void element.offsetWidth;
-
-    element.classList.add("animasi-angka");
-}
-
-const styleAnimasi = document.createElement("style");
-
-styleAnimasi.textContent = `
-    .animasi-angka {
-        animation: angkaTurun 0.7s ease-out;
-    }
-
-    @keyframes angkaTurun {
-        0% {
-            opacity: 0;
-            transform: translateY(-35px);
+    <style>
+        * {
+            box-sizing: border-box;
         }
 
-        60% {
-            opacity: 1;
-            transform: translateY(5px);
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            /* Gradasi 2 Warna Beranimasi yang Konsisten */
+            background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            color: #212529;
         }
 
-        100% {
-            opacity: 1;
-            transform: translateY(0);
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-    }
-`;
 
-document.head.appendChild(styleAnimasi);
+        .mobile-container {
+            max-width: 600px;
+            margin: auto;
+            padding-bottom: 90px;
+        }
 
+        .custom-card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
+            background: rgba(255, 255, 255, .90);
+            backdrop-filter: blur(6px);
+        }
 
-/* Jalankan animasi saat halaman selesai dimuat */
-window.addEventListener("load", () => {
+        /* HEADER TOPBAR */
+        .ck-topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, .92);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
+        }
 
-    const daftarAngka = [
-        "totalSaldo",
-        "hariIni",
-        "pengeluaranHariIni",
-        "bulanIni",
-        "pengeluaranBulanIni",
-        "tahunIni",
-        "pengeluaranTahunIni"
-    ];
+        .ck-logo {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 14px;
+            background: white;
+            border: 1px solid #eee;
+        }
 
-    daftarAngka.forEach((id, index) => {
+        .ck-title {
+            margin: 0;
+            color: #198754;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
 
-        setTimeout(() => {
-            animasiAngka(id);
-        }, index * 100);
+        .ck-subtitle {
+            color: #6c757d;
+            font-size: .8rem;
+        }
 
-    });
+        .ck-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #198754;
+            text-decoration: none;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
 
-});
-</script>
-      
-</head><body>
-<div class="container ck-page">
-<div class="ck-topbar">
-    <img src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
-    <div>
-        <p class="ck-title">Catatan Kas</p>
-        <span class="ck-subtitle">Madrasah Al-Fattah</span>
+        .ck-back:hover {
+            color: #146c43;
+        }
+
+        /* BOTTOM NAVIGATION */
+        .ck-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, .96);
+            border-top: 1px solid #e9ecef;
+            padding: 9px 12px calc(9px + env(safe-area-inset-bottom));
+            backdrop-filter: blur(8px);
+        }
+
+        .ck-bottom-inner {
+            max-width: 600px;
+            margin: auto;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .ck-bottom a {
+            color: #6c757d;
+            text-decoration: none;
+            font-size: .68rem;
+            text-align: center;
+            min-width: 58px;
+            font-weight: 600;
+        }
+
+        .ck-bottom a i {
+            display: block;
+            font-size: 1.15rem;
+            line-height: 1.1;
+        }
+
+        .ck-bottom a.active {
+            color: #198754;
+            font-weight: 800;
+        }
+
+        /* ANIMASI ANGKA */
+        #totalSaldo,
+        #hariIni,
+        #pengeluaranHariIni,
+        #bulanIni,
+        #pengeluaranBulanIni,
+        #tahunIni,
+        #pengeluaranTahunIni {
+            display: inline-block;
+            animation: angkaTurun 0.7s ease-out;
+        }
+
+        @keyframes angkaTurun {
+            0% {
+                opacity: 0;
+                transform: translateY(-35px);
+            }
+            60% {
+                opacity: 1;
+                transform: translateY(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* DARK MODE */
+        body.dark-mode {
+            background: #121212 !important;
+            animation: none !important;
+            color: #ffffff !important;
+        }
+
+        body.dark-mode .custom-card,
+        body.dark-mode .card,
+        body.dark-mode .ck-topbar,
+        body.dark-mode .ck-bottom {
+            background: #1e1e1e !important;
+            color: #eee !important;
+            border-color: #333 !important;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background: #2a2a2a !important;
+            color: #fff !important;
+            border: 1px solid #444 !important;
+        }
+
+        body.dark-mode .text-muted {
+            color: #aaa !important;
+        }
+
+        body.dark-mode .table {
+            color: #eee !important;
+        }
+    </style>
+
+    <script>
+        function animasiAngka(id) {
+            const element = document.getElementById(id);
+            if (!element) return;
+            element.classList.remove("animasi-angka");
+            void element.offsetWidth;
+            element.classList.add("animasi-angka");
+        }
+
+        window.addEventListener("load", () => {
+            const daftarAngka = [
+                "totalSaldo",
+                "hariIni",
+                "pengeluaranHariIni",
+                "bulanIni",
+                "pengeluaranBulanIni",
+                "tahunIni",
+                "pengeluaranTahunIni"
+            ];
+            daftarAngka.forEach((id, index) => {
+                setTimeout(() => {
+                    animasiAngka(id);
+                }, index * 100);
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+<div class="container mobile-container py-4">
+
+    <!-- Topbar Header -->
+    <div class="ck-topbar">
+        <img id="logoPreviewV2" src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
+        <div>
+            <p class="ck-title">Catatan Kas</p>
+            <span class="ck-subtitle" id="namaPondokHeader">Madrasah Al-Fattah</span>
+        </div>
     </div>
-</div><div class="container py-4"><!-- ================================= -->
-<!-- JUDUL -->
-<!-- ================================= -->
 
-<div class="mb-4">
+    <div class="container py-2">
 
-    <a href="index.html" class="ck-back"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
-<h2 class="text-success fw-bold">
-        <i class="bi bi-bar-chart-line-fill"></i>
-        Laporan Keuangan
-    </h2>
-
-    <p class="text-muted mb-0">
-        Rekap keuangan Ribath Madrasah Al-Fattah
-    </p>
-
-</div>
-
-
-<!-- ================================= -->
-<!-- RINGKASAN KEUANGAN -->
-<!-- ================================= -->
-
-<div class="row g-3 mb-4">
-
-    <!-- TOTAL SALDO -->
-    <div class="col-12">
-
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body">
-
-                <div class="d-flex align-items-center">
-
-                    <div class="me-3 fs-2 text-success">
-                        <i class="bi bi-wallet2"></i>
-                    </div>
-
-                    <div>
-
-                        <div class="text-muted">
-                            Total Saldo
-                        </div>
-
-                        <h2
-                            class="text-success fw-bold mb-0"
-                            id="totalSaldo">
-
-                            Rp 0
-
-                        </h2>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+        <!-- Judul -->
+        <div class="mb-4">
+            <a href="index.html" class="ck-back"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
+            <h2 class="text-success fw-bold">
+                <i class="bi bi-bar-chart-line-fill"></i> Laporan Keuangan
+            </h2>
+            <p class="text-muted mb-0" id="subJudulHeader">
+                Rekap keuangan Ribath Madrasah Al-Fattah
+            </p>
         </div>
 
-    </div>
-
-
-    <!-- ============================== -->
-    <!-- HARI INI -->
-    <!-- ============================== -->
-
-    <!-- PEMASUKAN HARI INI -->
-    <div class="col-6">
-
-        <div class="card shadow-sm border-0 h-100">
-
-            <div class="card-body">
-
-                <div class="text-muted mb-2">
-
-                    <i class="bi bi-calendar-day"></i>
-
-                    Pemasukan Hari Ini
-
-                </div>
-
-                <h4
-                    class="text-success fw-bold mb-0"
-                    id="hariIni">
-
-                    Rp 0
-
-                </h4>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- PENGELUARAN HARI INI -->
-    <div class="col-6">
-
-        <div class="card shadow-sm border-0 h-100">
-
-            <div class="card-body">
-
-                <div class="text-muted mb-2">
-
-                    <i class="bi bi-arrow-down-circle"></i>
-
-                    Pengeluaran Hari Ini
-
-                </div>
-
-                <h4
-                    class="text-danger fw-bold mb-0"
-                    id="pengeluaranHariIni">
-
-                    Rp 0
-
-                </h4>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ============================== -->
-    <!-- BULAN INI -->
-    <!-- ============================== -->
-
-    <!-- PEMASUKAN BULAN INI -->
-    <div class="col-6">
-
-        <div class="card shadow-sm border-0 h-100">
-
-            <div class="card-body">
-
-                <div class="text-muted mb-2">
-
-                    <i class="bi bi-calendar-month"></i>
-
-                    Pemasukan Bulan Ini
-
-                </div>
-
-                <h4
-                    class="text-success fw-bold mb-0"
-                    id="bulanIni">
-
-                    Rp 0
-
-                </h4>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- PENGELUARAN BULAN INI -->
-    <div class="col-6">
-
-        <div class="card shadow-sm border-0 h-100">
-
-            <div class="card-body">
-
-                <div class="text-muted mb-2">
-
-                    <i class="bi bi-calendar-minus"></i>
-
-                    Pengeluaran Bulan Ini
-
-                </div>
-
-                <h4
-                    class="text-danger fw-bold mb-0"
-                    id="pengeluaranBulanIni">
-
-                    Rp 0
-
-                </h4>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ============================== -->
-    <!-- TAHUN INI -->
-    <!-- ============================== -->
-
-    <!-- PEMASUKAN TAHUN INI -->
-    <div class="col-6">
-
-        <div class="card shadow-sm border-0 h-100">
-
-            <div class="card-body">
-
-                <div class="text-muted mb-2">
-
-                    <i class="bi bi-calendar3"></i>
-
-                    Pemasukan Tahun Ini
-
-                </div>
-
-                <h4
-                    class="text-success fw-bold mb-0"
-                    id="tahunIni">
-
-                    Rp 0
-
-                </h4>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- PENGELUARAN TAHUN INI -->
-    <div class="col-6">
-
-        <div class="card shadow-sm border-0 h-100">
-
-            <div class="card-body">
-
-                <div class="text-muted mb-2">
-
-                    <i class="bi bi-calendar-x"></i>
-
-                    Pengeluaran Tahun Ini
-
-                </div>
-
-                <h4
-                    class="text-danger fw-bold mb-0"
-                    id="pengeluaranTahunIni">
-
-                    Rp 0
-
-                </h4>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- ================================= -->
-<!-- FILTER LAPORAN -->
-<!-- ================================= -->
-
-<div class="card shadow-sm border-0 mb-4">
-
-    <div class="card-body">
-
-        <h5 class="fw-bold mb-3">
-
-            <i class="bi bi-funnel"></i>
-
-            Filter Laporan
-
-        </h5>
-
-
-        <div class="row g-3">
-
-            <!-- BULAN -->
-            <div class="col-12 col-md-6">
-
-                <label
-                    for="bulan"
-                    class="form-label">
-
-                    Bulan
-
-                </label>
-
-                <select
-                    id="bulan"
-                    class="form-select">
-
-                </select>
-
-            </div>
-
-
-            <!-- TAHUN -->
-            <div class="col-12 col-md-6">
-
-                <label
-                    for="tahun"
-                    class="form-label">
-
-                    Tahun
-
-                </label>
-
-                <select
-                    id="tahun"
-                    class="form-select">
-
-                </select>
-
-            </div>
-
-
-            <!-- JENIS TRANSAKSI -->
+        <!-- Ringkasan Keuangan -->
+        <div class="row g-3 mb-4">
+            <!-- Total Saldo -->
             <div class="col-12">
-
-                <label
-                    for="filterJenis"
-                    class="form-label">
-
-                    Jenis Transaksi
-
-                </label>
-
-                <select
-                    id="filterJenis"
-                    class="form-select">
-
-                    <option value="semua">
-                        Semua Jenis
-                    </option>
-
-                    <option value="SPP">
-                        SPP
-                    </option>
-
-                    <option value="Syahriyyah">
-                        Syahriyyah
-                    </option>
-
-                    <option value="Infaq">
-                        Infaq
-                    </option>
-
-                    <option value="Kas">
-                        Kas
-                    </option>
-
-                    <option value="Beras">
-                        Beras
-                    </option>
-
-                    <option value="Lainnya">
-                        Lainnya
-                    </option>
-
-                </select>
-
+                <div class="card custom-card shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 fs-2 text-success">
+                                <i class="bi bi-wallet2"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted">Total Saldo</div>
+                                <h2 class="text-success fw-bold mb-0" id="totalSaldo">Rp 0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <!-- Pemasukan & Pengeluaran Hari Ini -->
+            <div class="col-6">
+                <div class="card custom-card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted mb-2 small"><i class="bi bi-calendar-day"></i> Pemasukan Hari Ini</div>
+                        <h4 class="text-success fw-bold mb-0" id="hariIni">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card custom-card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted mb-2 small"><i class="bi bi-arrow-down-circle"></i> Pengeluaran Hari Ini</div>
+                        <h4 class="text-danger fw-bold mb-0" id="pengeluaranHariIni">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pemasukan & Pengeluaran Bulan Ini -->
+            <div class="col-6">
+                <div class="card custom-card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted mb-2 small"><i class="bi bi-calendar-month"></i> Pemasukan Bulan Ini</div>
+                        <h4 class="text-success fw-bold mb-0" id="bulanIni">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card custom-card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted mb-2 small"><i class="bi bi-calendar-minus"></i> Pengeluaran Bulan Ini</div>
+                        <h4 class="text-danger fw-bold mb-0" id="pengeluaranBulanIni">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pemasukan & Pengeluaran Tahun Ini -->
+            <div class="col-6">
+                <div class="card custom-card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted mb-2 small"><i class="bi bi-calendar3"></i> Pemasukan Tahun Ini</div>
+                        <h4 class="text-success fw-bold mb-0" id="tahunIni">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card custom-card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted mb-2 small"><i class="bi bi-calendar-x"></i> Pengeluaran Tahun Ini</div>
+                        <h4 class="text-danger fw-bold mb-0" id="pengeluaranTahunIni">Rp 0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Laporan -->
+        <div class="card custom-card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="bi bi-funnel"></i> Filter Laporan</h5>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label for="bulan" class="form-label small">Bulan</label>
+                        <select id="bulan" class="form-select bg-light border-0"></select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="tahun" class="form-label small">Tahun</label>
+                        <select id="tahun" class="form-select bg-light border-0"></select>
+                    </div>
+                    <div class="col-12">
+                        <label for="filterJenis" class="form-label small">Jenis Transaksi</label>
+                        <select id="filterJenis" class="form-select bg-light border-0">
+                            <option value="semua">Semua Jenis</option>
+                            <option value="SPP">SPP</option>
+                            <option value="Syahriyyah">Syahriyyah</option>
+                            <option value="Infaq">Infaq</option>
+                            <option value="Kas">Kas</option>
+                            <option value="Beras">Beras</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riwayat Transaksi -->
+        <div class="card custom-card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="bi bi-receipt"></i> Riwayat Transaksi</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Nama Santri</th>
+                                <th>Jenis</th>
+                                <th>Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataPembayaran">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">Belum ada transaksi</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>
 
 </div>
 
-
-<!-- ================================= -->
-<!-- RIWAYAT TRANSAKSI -->
-<!-- ================================= -->
-
-<div class="card shadow-sm border-0">
-
-    <div class="card-body">
-
-        <h5 class="fw-bold mb-3">
-
-            <i class="bi bi-receipt"></i>
-
-            Riwayat Transaksi
-
-        </h5>
-
-
-        <div class="table-responsive">
-
-            <table
-                class="table table-striped table-hover align-middle">
-
-                <thead class="table-success">
-
-                    <tr>
-
-                        <th>
-                            Tanggal
-                        </th>
-
-                        <th>
-                            Nama Santri
-                        </th>
-
-                        <th>
-                            Jenis
-                        </th>
-
-                        <th>
-                            Jumlah
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody id="dataPembayaran">
-
-                    <tr>
-
-                        <td
-                            colspan="4"
-                            class="text-center text-muted py-4">
-
-                            Belum ada transaksi
-
-                        </td>
-
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
+<!-- Bottom Navigation -->
+<div class="ck-bottom">
+    <div class="ck-bottom-inner">
+        <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
+        <a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
+        <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
+        <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
+        <a href="laporan.html" class="active"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
     </div>
-
 </div>
 
+<!-- Script Inisialisasi Pengaturan & Logo Dinamis -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
+        if (pengaturan) {
+            if (pengaturan.namaPondok) {
+                document.getElementById("namaPondokHeader").textContent = pengaturan.namaPondok;
+                document.getElementById("subJudulHeader").textContent = "Rekap keuangan " + pengaturan.namaPondok;
+            }
+        }
+        const savedLogo = localStorage.getItem("logoDashboard");
+        if (savedLogo) {
+            document.getElementById("logoPreviewV2").src = savedLogo;
+        }
+    });
+</script>
 
-<!-- ================================= -->
-<!-- KEMBALI -->
-<!-- ================================= -->
-
-<a
-    href="index.html"
-    class="btn btn-secondary mt-3 w-100">
-
-    <i class="bi bi-arrow-left"></i>
-
- Kembali ke Dashboard
-</a>
-
-</div>
-
-<!-- JAVASCRIPT -->
+<!-- JavaScript Utama -->
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/auth-guard.js"></script>
 <script src="js/theme.js"></script>
-<div class="ck-bottom">
-  <div class="ck-bottom-inner">
-    <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
-    <a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
-    <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
-    <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
-    <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
-  </div>
-</div>
-</div>
+
 </body>
 </html>
