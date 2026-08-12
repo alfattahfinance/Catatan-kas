@@ -384,16 +384,15 @@
     <!-- TOMBOL AKSI -->
     <!-- ================================= -->
 
-    <div class="d-grid gap-2 mb-4">
-        <button class="btn btn-success btn-lg" id="simpanPengaturanButton">
-            <i class="bi bi-save"></i> Simpan Pengaturan
-        </button>
+   <div class="d-grid gap-2 mb-4">
+    <button class="btn btn-success btn-lg" id="simpanPengaturanButton">
+        <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
+        <span id="btnText"><i class="bi bi-save"></i> Simpan Pengaturan</span>
+    </button>
 
-        <button class="btn btn-outline-danger" id="resetPengaturanButton">
-            <i class="bi bi-arrow-counterclockwise"></i> Kembalikan Pengaturan Awal
-        </button>
-    </div>
-
+    <button class="btn btn-outline-danger" id="resetPengaturanButton">
+        <i class="bi bi-arrow-counterclockwise"></i> Kembalikan Pengaturan Awal
+    </button>
 </div>
 
 
