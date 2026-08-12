@@ -1,76 +1,263 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Santri | Catatan Kas</title>
 
-<title>Data Santri | Catatan Kas</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            color: #212529;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .mobile-container {
+            max-width: 600px;
+            margin: auto;
+            padding: 15px;
+            padding-bottom: 100px;
+        }
+
+        .custom-card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
+            background: rgba(255, 255, 255, .92);
+            backdrop-filter: blur(6px);
+            margin-bottom: 20px;
+        }
+
+        /* HEADER TOPBAR */
+        .ck-topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, .92);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
+        }
+
+        .ck-logo {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 14px;
+            background: white;
+            border: 1px solid #eee;
+        }
+
+        .ck-title {
+            margin: 0;
+            color: #198754;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .ck-subtitle {
+            color: #6c757d;
+            font-size: .8rem;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #198754;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        /* BOTTOM NAVIGATION */
+        .ck-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, .96);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, .08);
+        }
+
+        .ck-bottom-inner {
+            max-width: 600px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
+
+        .ck-bottom a {
+            text-decoration: none;
+            color: #6c757d;
+            text-align: center;
+            font-size: .68rem;
+            font-weight: 600;
+            padding: 4px 2px;
+        }
+
+        .ck-bottom a i {
+            display: block;
+            font-size: 1.25rem;
+            margin-bottom: 2px;
+        }
+
+        .ck-bottom a:hover,
+        .ck-bottom a.active {
+            color: #198754;
+            font-weight: 800;
+        }
+
+        /* DARK MODE */
+        body.dark-mode {
+            background: #121212 !important;
+            animation: none !important;
+            color: #eee !important;
+        }
+
+        body.dark-mode .custom-card,
+        body.dark-mode .ck-topbar,
+        body.dark-mode .ck-bottom {
+            background: #1e1e1e !important;
+            color: #eee !important;
+            border-color: #333 !important;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background: #2a2a2a;
+            color: #fff;
+            border-color: #444;
+        }
+
+        body.dark-mode .text-muted {
+            color: #aaa !important;
+        }
+    </style>
 </head>
+
 <body>
-<div class="container ck-page">
-<div class="ck-topbar">
-    <img src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
-    <div>
-        <p class="ck-title">Catatan Kas</p>
-        <span class="ck-subtitle">Madrasah Al-Fattah</span>
+
+<div class="container-fluid mobile-container py-3">
+
+    <!-- HEADER -->
+    <div class="ck-topbar">
+        <img id="logoPreviewV2" src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo">
+        <div>
+            <p class="ck-title">Catatan Kas</p>
+            <span class="ck-subtitle" id="namaPondokHeader">Madrasah Al-Fattah</span>
+        </div>
+    </div>
+
+    <!-- KEMBALI & JUDUL -->
+    <a href="index.html" class="back-btn">
+        <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+    </a>
+
+    <div class="mb-3">
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-mortarboard-fill text-success"></i> Data Santri
+        </h4>
+        <small class="text-muted">Kelola data santri pondok</small>
+    </div>
+
+    <!-- FORM TAMBAH SANTRI -->
+    <div class="card custom-card">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3 text-success">Tambah Santri Baru</h5>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Nama Santri</label>
+                <input type="text" class="form-control" id="namaSantri" placeholder="Masukkan nama santri">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Kelas</label>
+                <input type="text" class="form-control" id="kelasSantri" placeholder="Contoh: 1 Ula / 7 A">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">No. HP Wali</label>
+                <input type="tel" class="form-control" id="hpSantri" placeholder="Contoh: 08123456789">
+            </div>
+            <button type="button" class="btn btn-success w-100 py-2 fw-bold" id="btnSimpanSantri">
+                <i class="bi bi-plus-circle"></i> Tambah Santri
+            </button>
+        </div>
+    </div>
+
+    <!-- DAFTAR SANTRI -->
+    <div class="card custom-card">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3 text-success">Daftar Santri</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="tabelSantri">
+                    <thead class="table-light">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Kelas</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">Memuat data santri...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="ck-bottom">
+    <div class="ck-bottom-inner">
+        <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
+        <a href="santri.html" class="active"><i class="bi bi-people-fill"></i>Santri</a>
+        <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
+        <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
+        <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
     </div>
 </div>
 
-<div class="container py-4">
+<script>
+    // Memuat nama pondok & logo dari pengaturan tersimpan jika ada
+    document.addEventListener("DOMContentLoaded", function() {
+        const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
+        if (pengaturan && pengaturan.namaPondok) {
+            document.getElementById("namaPondokHeader").textContent = pengaturan.namaPondok;
+        }
+        const savedLogo = localStorage.getItem("logoDashboard");
+        if (savedLogo) {
+            document.getElementById("logoPreviewV2").src = savedLogo;
+        }
+    });
+</script>
 
-<a href="index.html" class="ck-back"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
-<h2 class="text-success mb-4">
-👨‍🎓 Data Santri
-</h2>
-
-<div class="card p-3 mb-3">
-
-<input id="nama" class="form-control mb-2" placeholder="Nama Santri">
-
-<input id="kelas" class="form-control mb-2" placeholder="Kelas">
-
-<input id="wali" class="form-control mb-3" placeholder="No. HP Wali">
-
-<input type="hidden" id="idSantri">
-  
-<button onclick="simpanSantri()" class="btn btn-success w-100">
-Tambah Santri
-</button>
-
-</div>
-
-<div class="card p-3">
-
-<h5 class="mb-3">Daftar Santri</h5>
-
-<ul id="daftarSantri" class="list-group"></ul>
-
-</div>
-
-<a href="index.html" class="btn btn-secondary w-100 mt-3">
-← Kembali ke Dashboard
-</a>
-
-</div>
-
-<script type="module" src="js/santri.js"></script>
-
-<script src="js/theme.js"></script>
-  
-<div class="ck-bottom">
-  <div class="ck-bottom-inner">
-    <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
-    <a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
-    <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
-    <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
-    <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
-  </div>
-</div>
-</div>
 </body>
 </html>
