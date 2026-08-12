@@ -357,6 +357,95 @@ async function ambilDataFirebase() {
 
 }
 
+// ======================================
+// SIMPAN PEMASUKAN
+// ======================================
+
+async function simpanPemasukan(event) {
+
+    if (event) {
+        event.preventDefault();
+    }
+
+    const jenisEl = document.getElementById("jenisPemasukan");
+    const namaSantriEl = document.getElementById("namaSantriPemasukan");
+    const tanggalEl = document.getElementById("tanggalPemasukan");
+    const nominalEl = document.getElementById("nominalPemasukan");
+    const satuanEl = document.getElementById("satuanPemasukan");
+
+    const jenis = jenisEl?.value || "";
+    const namaSantri = namaSantriEl?.value.trim() || "";
+    const tanggal = tanggalEl?.value || "";
+    const nominal = Number(nominalEl?.value || 0);
+    const satuan = satuanEl?.value || "Rupiah";
+
+    // ==================================
+    // VALIDASI
+    // ==================================
+
+    if (!jenis) {
+        alert("Silakan pilih jenis pemasukan.");
+        return;
+    }
+
+    if (!namaSantri) {
+        alert("Silakan isi nama santri / sumber dana.");
+        return;
+    }
+
+    if (!tanggal) {
+        alert("Silakan pilih tanggal.");
+        return;
+    }
+
+    if (nominal <= 0) {
+        alert("Nominal/jumlah harus lebih dari 0.");
+        return;
+    }
+
+    // ==================================
+    // CEK LOGIN
+    // ==================================
+
+    if (!auth.currentUser) {
+        alert("Silakan login terlebih dahulu.");
+        return;
+    }
+
+    // ==================================
+    // SIMPAN KE FIRESTORE (koleksi "payments")
+    // ==================================
+
+    try {
+        const dataPemasukan = {
+            jenis,
+            namaSantri,
+            tanggal,
+            nominal,
+            jumlah: nominal,
+            satuan,
+            createdAt: serverTimestamp()
+        };
+
+        await addDoc(collection(db, "payments"), dataPemasukan);
+
+        alert("Pemasukan berhasil disimpan!");
+
+        // Reset Form
+        if (jenisEl) jenisEl.value = "";
+        if (namaSantriEl) namaSantriEl.value = "";
+        if (tanggalEl) tanggalEl.value = "";
+        if (nominalEl) nominalEl.value = "";
+
+        // Refresh Data Dashboard & Tabel
+        await loadSemua();
+
+    } catch (error) {
+        console.error("Gagal menyimpan pemasukan:", error);
+        alert("Gagal menyimpan pemasukan: " + error.message);
+    }
+}
+
 
 // ======================================
 // HITUNG PEMASUKAN
@@ -2217,6 +2306,16 @@ function jalankanAplikasi() {
     console.log(
         "Catatan Kas siap dijalankan."
     );
+
+        // ==================================
+    // SIMPAN PEMASUKAN
+    // ==================================
+
+    const tombolSimpanMasuk = document.getElementById("simpanPemasukan");
+
+    if (tombolSimpanMasuk) {
+        tombolSimpanMasuk.addEventListener("click", simpanPemasukan);
+    }
 
 
     // ==================================
