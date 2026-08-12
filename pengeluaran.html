@@ -2,96 +2,50 @@
 <html lang="id">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <meta
-        name="theme-color"
-        content="#dc3545"
-    >
-
-    <meta
-        name="description"
-        content="Catatan Kas - Pengeluaran"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#dc3545">
+    <meta name="description" content="Catatan Kas - Pengeluaran">
     <title>Pengeluaran | Catatan Kas</title>
-
 
     <!-- =====================================================
          BOOTSTRAP
     ====================================================== -->
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- =====================================================
          BOOTSTRAP ICONS
     ====================================================== -->
-
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-    >
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
     <!-- =====================================================
          CUSTOM CSS
     ====================================================== -->
-
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="css/theme.css"
-    >
-
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme.css">
 
     <!-- =====================================================
          STYLE HALAMAN
     ====================================================== -->
-
     <style>
-
         * {
             box-sizing: border-box;
         }
-
 
         html {
             scroll-behavior: smooth;
         }
 
-
         body {
-
             margin: 0;
-
             min-height: 100vh;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
+            font-family: Arial, Helvetica, sans-serif;
             padding-bottom: 90px;
-
             /* Background Gradasi Konsisten */
             background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
             background-size: 200% 200%;
             animation: gradientShift 15s ease infinite;
-
+            color: #212529;
         }
 
         @keyframes gradientShift {
@@ -100,11 +54,9 @@
             100% { background-position: 0% 50%; }
         }
 
-
         /* =================================================
            TOPBAR HEADER
         ================================================= */
-
         .ck-topbar {
             display: flex;
             align-items: center;
@@ -137,427 +89,223 @@
             font-size: .8rem;
         }
 
-
         /* =================================================
            CONTAINER
         ================================================= */
-
         .page-container {
-
             width: 100%;
-
             max-width: 600px;
-
-            margin:
-                0 auto;
-
+            margin: 0 auto;
         }
-
 
         /* =================================================
            CARD
         ================================================= */
-
         .pengeluaran-card {
-
             border: none;
-
             border-radius: 18px;
-
-            box-shadow:
-                0 4px 15px
-                rgba(0, 0, 0, .07);
-
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .07);
             background: rgba(255, 255, 255, .90);
-
             backdrop-filter: blur(6px);
-
         }
-
 
         /* =================================================
            TOMBOL KEMBALI
         ================================================= */
-
         .ck-back {
-
             display: inline-flex;
-
             align-items: center;
-
             gap: 6px;
-
             text-decoration: none;
-
-            color: #6c757d;
-
+            color: #dc3545;
             font-size: .9rem;
-
-            margin-bottom: 18px;
-
+            font-weight: 700;
+            margin-bottom: 12px;
         }
-
 
         .ck-back:hover {
-
-            color: #dc3545;
-
+            color: #b02a37;
         }
-
 
         /* =================================================
            FORM
         ================================================= */
-
         .form-label {
-
             font-weight: 600;
-
         }
-
 
         .form-select,
         .form-control {
-
             min-height: 46px;
-
             border-radius: 12px;
-
         }
-
 
         .form-control:focus,
         .form-select:focus {
-
             border-color: #dc3545;
-
-            box-shadow:
-                0 0 0 .2rem
-                rgba(220, 53, 69, .12);
-
+            box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .12);
         }
-
 
         /* =================================================
            TOMBOL SIMPAN
         ================================================= */
-
         .btn-simpan {
-
             min-height: 48px;
-
             border-radius: 12px;
-
             font-weight: 700;
-
         }
-
 
         /* =================================================
            RIWAYAT
         ================================================= */
-
         .riwayat-title {
-
             font-weight: 700;
-
         }
-
 
         #daftarPengeluaran {
-
             border-radius: 12px;
-
             overflow: hidden;
-
         }
 
-
-        #daftarPengeluaran
-        .list-group-item {
-
-            padding:
-                15px 12px;
-
+        #daftarPengeluaran .list-group-item {
+            padding: 15px 12px;
+            background: transparent;
         }
-
 
         /* =================================================
            DARK MODE
         ================================================= */
-
         body.dark-mode {
-
             background: #121212 !important;
             animation: none !important;
-
             color: #f1f1f1;
-
         }
 
-
-        body.dark-mode
-        .pengeluaran-card,
-        body.dark-mode
-        .ck-topbar,
-        body.dark-mode
-        .ck-bottom {
-
-            background:
-                #1e1e1e !important;
-
+        body.dark-mode .pengeluaran-card,
+        body.dark-mode .ck-topbar,
+        body.dark-mode .ck-bottom {
+            background: #1e1e1e !important;
             color: #f1f1f1;
-
             border-color: #333 !important;
-
         }
 
-
-        body.dark-mode
-        .form-control,
-        body.dark-mode
-        .form-select {
-
-            background:
-                #242424 !important;
-
-            color:
-                #fff !important;
-
-            border-color:
-                #555 !important;
-
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background: #242424 !important;
+            color: #fff !important;
+            border-color: #555 !important;
         }
 
-
-        body.dark-mode
-        .form-control::placeholder {
-
-            color:
-                #aaa;
-
+        body.dark-mode .form-control::placeholder {
+            color: #aaa;
         }
 
-
-        body.dark-mode
-        .text-muted {
-
-            color:
-                #adb5bd !important;
-
+        body.dark-mode .text-muted {
+            color: #adb5bd !important;
         }
 
-
-        body.dark-mode
-        #daftarPengeluaran
-        .list-group-item {
-
-            background:
-                #1e1e1e;
-
-            color:
-                #f1f1f1;
-
-            border-color:
-                #444;
-
+        body.dark-mode #daftarPengeluaran .list-group-item {
+            background: #1e1e1e;
+            color: #f1f1f1;
+            border-color: #444;
         }
 
-
-        body.dark-mode
-        .ck-back {
-
-            color:
-                #adb5bd;
-
+        body.dark-mode .ck-back {
+            color: #ff6b7a;
         }
 
-
-        body.dark-mode
-        .ck-back:hover {
-
-            color:
-                #ff6b7a;
-
+        body.dark-mode .ck-back:hover {
+            color: #ff8594;
         }
-
 
         /* =================================================
            BOTTOM NAVIGATION
         ================================================= */
-
         .ck-bottom {
-
             position: fixed;
-
             left: 0;
-
             right: 0;
-
             bottom: 0;
-
             z-index: 1050;
-
-            background:
-                rgba(255, 255, 255, .97);
-
-            border-top:
-                1px solid #dee2e6;
-
-            box-shadow:
-                0 -3px 15px
-                rgba(0, 0, 0, .08);
-
-            padding:
-                6px 8px;
-
+            background: rgba(255, 255, 255, .97);
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
+            padding: 6px 8px;
             backdrop-filter: blur(8px);
-
         }
-
 
         .ck-bottom-inner {
-
             width: 100%;
-
             max-width: 600px;
-
-            margin:
-                0 auto;
-
+            margin: 0 auto;
             display: grid;
-
-            grid-template-columns:
-                repeat(5, 1fr);
-
+            grid-template-columns: repeat(5, 1fr);
             gap: 4px;
-
         }
-
 
         .ck-bottom a {
-
             text-decoration: none;
-
             color: #6c757d;
-
             display: flex;
-
             flex-direction: column;
-
             align-items: center;
-
             justify-content: center;
-
             gap: 3px;
-
             font-size: .68rem;
-
-            padding:
-                5px 2px;
-
+            padding: 5px 2px;
             border-radius: 10px;
-
-            transition:
-                .2s ease;
-
+            transition: .2s ease;
         }
-
 
         .ck-bottom a i {
-
             font-size: 1.15rem;
-
         }
-
 
         .ck-bottom a:hover {
-
             color: #dc3545;
-
-            background:
-                rgba(220, 53, 69, .08);
-
+            background: rgba(220, 53, 69, .08);
         }
 
-
         .ck-bottom a.active {
-
             color: #dc3545;
-
             font-weight: 700;
-
         }
 
-
-        body.dark-mode
-        .ck-bottom a {
-
-            color:
-                #adb5bd;
-
+        body.dark-mode .ck-bottom a {
+            color: #adb5bd;
         }
 
-
-        body.dark-mode
-        .ck-bottom a:hover,
-        body.dark-mode
-        .ck-bottom a.active {
-
-            color:
-                #ff6b7a;
-
+        body.dark-mode .ck-bottom a:hover,
+        body.dark-mode .ck-bottom a.active {
+            color: #ff6b7a;
         }
-
 
         /* =================================================
            MOBILE
         ================================================= */
-
         @media (max-width: 380px) {
-
             .page-container {
-
-                padding-left:
-                    10px !important;
-
-                padding-right:
-                    10px !important;
-
+                padding-left: 10px !important;
+                padding-right: 10px !important;
             }
-
 
             .ck-bottom a {
-
                 font-size: .62rem;
-
             }
-
 
             .ck-bottom a i {
-
                 font-size: 1.05rem;
-
             }
-
         }
-
     </style>
-
 </head>
 
-
 <body>
-
-
 
 <!-- =====================================================
      CONTAINER UTAMA
 ====================================================== -->
-
-<div
-    class="container page-container py-4"
->
+<div class="container page-container py-4">
 
     <!-- Topbar Header Dinamis -->
     <div class="ck-topbar">
@@ -568,526 +316,181 @@
         </div>
     </div>
 
-
     <!-- =================================================
          FORM INPUT
     ================================================== -->
-
-    <div
-        class="card pengeluaran-card shadow p-4"
-    >
-
+    <div class="card pengeluaran-card shadow p-4 mb-4">
 
         <!-- KEMBALI -->
-
-        <a
-            href="index.html"
-            class="ck-back"
-        >
-
-            <i
-                class="bi bi-arrow-left"
-            ></i>
-
-            Kembali ke Dashboard
-
+        <a href="index.html" class="ck-back">
+            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
         </a>
 
-
-
         <!-- JUDUL -->
-
-        <h4
-            class="mb-4 fw-bold"
-        >
-
+        <h4 class="mb-4 fw-bold text-danger">
             Input Pengeluaran
-
         </h4>
-
-
 
         <!-- =================================================
              JENIS PENGELUARAN
         ================================================== -->
-
-        <label
-            class="form-label"
-            for="jenis"
-        >
-
-            Jenis Pengeluaran
-
-        </label>
-
-
-        <select
-            id="jenis"
-            class="form-select mb-3"
-        >
-
-            <option value="">
-                Pilih Jenis
-            </option>
-
-            <option value="SPP">
-                SPP
-            </option>
-
-            <option value="Syahriyyah">
-                Syahriyyah
-            </option>
-
-            <option value="Infaq">
-                Infaq
-            </option>
-
-            <option value="Kas">
-                Kas
-            </option>
-
-            <option value="Beras">
-                Beras
-            </option>
-
-            <option value="Lainnya">
-                Lainnya
-            </option>
-
+        <label class="form-label" for="jenis">Jenis Pengeluaran</label>
+        <select id="jenis" class="form-select mb-3 bg-light border-0">
+            <option value="">Pilih Jenis</option>
+            <option value="SPP">SPP</option>
+            <option value="Syahriyyah">Syahriyyah</option>
+            <option value="Infaq">Infaq</option>
+            <option value="Kas">Kas</option>
+            <option value="Beras">Beras</option>
+            <option value="Lainnya">Lainnya</option>
         </select>
-
-
 
         <!-- =================================================
              KETERANGAN
         ================================================== -->
-
-        <label
-            class="form-label"
-            for="keterangan"
-        >
-
-            Keterangan
-
-        </label>
-
-
-        <input
-            id="keterangan"
-            type="text"
-            class="form-control mb-3"
-            placeholder="Contoh: Belanja dapur"
-            autocomplete="off"
-        >
-
-
+        <label class="form-label" for="keterangan">Keterangan</label>
+        <input id="keterangan" type="text" class="form-control mb-3 bg-light border-0" placeholder="Contoh: Belanja dapur" autocomplete="off">
 
         <!-- =================================================
              TANGGAL
         ================================================== -->
-
-        <label
-            class="form-label"
-            for="tanggal"
-        >
-
-            Tanggal
-
-        </label>
-
-
-        <input
-            type="date"
-            id="tanggal"
-            class="form-control mb-3"
-        >
-
-
+        <label class="form-label" for="tanggal">Tanggal</label>
+        <input type="date" id="tanggal" class="form-control mb-3 bg-light border-0">
 
         <!-- =================================================
              JUMLAH
         ================================================== -->
-
-        <label
-            id="labelJumlah"
-            class="form-label"
-            for="jumlah"
-        >
-
-            Nominal (Rp)
-
-        </label>
-
-
-        <input
-            type="number"
-            id="jumlah"
-            class="form-control mb-3"
-            placeholder="Masukkan nominal"
-            min="0"
-            step="any"
-        >
-
-
+        <label id="labelJumlah" class="form-label" for="jumlah">Nominal (Rp)</label>
+        <input type="number" id="jumlah" class="form-control mb-3 bg-light border-0" placeholder="Masukkan nominal" min="0" step="any">
 
         <!-- =================================================
              SATUAN
         ================================================== -->
-
-        <label
-            class="form-label"
-            for="satuan"
-        >
-
-            Satuan
-
-        </label>
-
-
-        <select
-            id="satuan"
-            class="form-select mb-4"
-            disabled
-        >
-
-            <option value="Rupiah">
-                Rupiah
-            </option>
-
-            <option value="Liter">
-                Liter
-            </option>
-
+        <label class="form-label" for="satuan">Satuan</label>
+        <select id="satuan" class="form-select mb-4 bg-light border-0" disabled>
+            <option value="Rupiah">Rupiah</option>
+            <option value="Liter">Liter</option>
         </select>
-
-
 
         <!-- =================================================
              SIMPAN
         ================================================== -->
-
-        <button
-            type="button"
-            id="btnSimpanPengeluaran"
-            onclick="simpanPengeluaran()"
-            class="btn btn-danger btn-simpan w-100"
-        >
-
-            <i
-                class="bi bi-save me-1"
-            ></i>
-
-            Simpan Pengeluaran
-
+        <button type="button" id="btnSimpanPengeluaran" onclick="simpanPengeluaran()" class="btn btn-danger btn-simpan w-100">
+            <i class="bi bi-save me-1"></i> Simpan Pengeluaran
         </button>
 
-
     </div>
-
-
 
     <!-- =================================================
          RIWAYAT
     ================================================== -->
-
-    <div
-        class="card pengeluaran-card shadow p-4 mt-4"
-    >
-
-
-        <h5
-            class="riwayat-title mb-3"
-        >
-
-            <i
-                class="bi bi-clock-history me-1"
-            ></i>
-
-            Riwayat Pengeluaran
-
+    <div class="card pengeluaran-card shadow p-4">
+        <h5 class="riwayat-title mb-3">
+            <i class="bi bi-clock-history me-1"></i> Riwayat Pengeluaran
         </h5>
-
-
-        <ul
-            id="daftarPengeluaran"
-            class="list-group"
-        >
-
-            <li
-                class="list-group-item text-center text-muted"
-            >
-
+        <ul id="daftarPengeluaran" class="list-group">
+            <li class="list-group-item text-center text-muted">
                 Memuat riwayat...
-
             </li>
-
         </ul>
-
-
     </div>
 
-
-
-    <!-- =================================================
-         TOMBOL DASHBOARD
-    ================================================== -->
-
-    <a
-        href="index.html"
-        class="btn btn-secondary w-100 mt-3"
-    >
-
-        <i
-            class="bi bi-house me-1"
-        ></i>
-
-        Kembali ke Dashboard
-
-    </a>
-
-
 </div>
-
-
 
 <!-- =====================================================
      FUNGSI UBAH SATUAN
 ====================================================== -->
-
 <script>
-
 function ubahSatuan() {
+    const jenis = document.getElementById("jenis");
+    const satuan = document.getElementById("satuan");
+    const label = document.getElementById("labelJumlah");
+    const jumlah = document.getElementById("jumlah");
 
-    const jenis =
-        document.getElementById("jenis");
-
-    const satuan =
-        document.getElementById("satuan");
-
-    const label =
-        document.getElementById("labelJumlah");
-
-    const jumlah =
-        document.getElementById("jumlah");
-
-
-    if (
-        !jenis ||
-        !satuan ||
-        !label ||
-        !jumlah
-    ) {
-
-        return;
-
-    }
-
+    if (!jenis || !satuan || !label || !jumlah) return;
 
     if (jenis.value === "Beras") {
-
-        satuan.value =
-            "Liter";
-
-        label.textContent =
-            "Jumlah (Liter)";
-
-        jumlah.placeholder =
-            "Masukkan jumlah liter";
-
-
+        satuan.value = "Liter";
+        label.textContent = "Jumlah (Liter)";
+        jumlah.placeholder = "Masukkan jumlah liter";
     } else {
-
-        satuan.value =
-            "Rupiah";
-
-        label.textContent =
-            "Nominal (Rp)";
-
-        jumlah.placeholder =
-            "Masukkan nominal";
-
+        satuan.value = "Rupiah";
+        label.textContent = "Nominal (Rp)";
+        jumlah.placeholder = "Masukkan nominal";
     }
-
 }
-
 </script>
-
-
 
 <!-- =====================================================
      EVENT JENIS & INISIALISASI PENGATURAN
 ====================================================== -->
-
 <script>
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        // Muat Pengaturan Nama Pondok & Logo
-        const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
-        if (pengaturan && pengaturan.namaPondok) {
-            document.getElementById("namaPondokHeader").textContent = pengaturan.namaPondok;
-        }
-        const savedLogo = localStorage.getItem("logoDashboard");
-        if (savedLogo) {
-            document.getElementById("logoPreviewV2").src = savedLogo;
-        }
-
-        const jenis =
-            document.getElementById("jenis");
-
-
-        if (!jenis) return;
-
-
-        jenis.addEventListener(
-            "change",
-            ubahSatuan
-        );
-
-
-        ubahSatuan();
-
+document.addEventListener("DOMContentLoaded", function () {
+    // Muat Pengaturan Nama Pondok & Logo
+    const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
+    if (pengaturan && pengaturan.namaPondok) {
+        document.getElementById("namaPondokHeader").textContent = pengaturan.namaPondok;
     }
-);
+    const savedLogo = localStorage.getItem("logoDashboard");
+    if (savedLogo) {
+        document.getElementById("logoPreviewV2").src = savedLogo;
+    }
 
+    const jenis = document.getElementById("jenis");
+    if (!jenis) return;
+
+    jenis.addEventListener("change", ubahSatuan);
+    ubahSatuan();
+});
 </script>
-
-
 
 <!-- =====================================================
      PENGELUARAN JAVASCRIPT
 ====================================================== -->
-
-<script
-    type="module"
-    src="./js/pengeluaran.js"
-></script>
-
-
+<script type="module" src="./js/pengeluaran.js"></script>
 
 <!-- =====================================================
      THEME
 ====================================================== -->
-
-<script
-    src="./js/theme.js"
-></script>
-
-
+<script src="./js/theme.js"></script>
 
 <!-- =====================================================
      AUTH GUARD
 ====================================================== -->
-
-<script
-    type="module"
-    src="./js/auth-guard.js"
-></script>
-
-
+<script type="module" src="./js/auth-guard.js"></script>
 
 <!-- =====================================================
      BOTTOM NAVIGATION
 ====================================================== -->
-
 <div class="ck-bottom">
-
     <div class="ck-bottom-inner">
-
-
-        <a
-            href="index.html"
-        >
-
-            <i
-                class="bi bi-house-fill"
-            ></i>
-
-            <span>
-                Beranda
-            </span>
-
+        <a href="index.html">
+            <i class="bi bi-house-fill"></i>
+            <span>Beranda</span>
         </a>
-
-
-        <a
-            href="santri.html"
-        >
-
-            <i
-                class="bi bi-people-fill"
-            ></i>
-
-            <span>
-                Santri
-            </span>
-
+        <a href="santri.html">
+            <i class="bi bi-people-fill"></i>
+            <span>Santri</span>
         </a>
-
-
-        <a
-            href="pembayaran.html"
-        >
-
-            <i
-                class="bi bi-cash-stack"
-            ></i>
-
-            <span>
-                Bayar
-            </span>
-
+        <a href="pembayaran.html">
+            <i class="bi bi-cash-stack"></i>
+            <span>Bayar</span>
         </a>
-
-
-        <a
-            href="pengeluaran.html"
-            class="active"
-        >
-
-            <i
-                class="bi bi-wallet2"
-            ></i>
-
-            <span>
-                Keluar
-            </span>
-
+        <a href="pengeluaran.html" class="active">
+            <i class="bi bi-wallet2"></i>
+            <span>Keluar</span>
         </a>
-
-
-        <a
-            href="laporan.html"
-        >
-
-            <i
-                class="bi bi-bar-chart-fill"
-            ></i>
-
-            <span>
-                Laporan
-            </span>
-
+        <a href="laporan.html">
+            <i class="bi bi-bar-chart-fill"></i>
+            <span>Laporan</span>
         </a>
-
-
     </div>
-
 </div>
-
-
 
 <!-- =====================================================
      BOOTSTRAP JS
 ====================================================== -->
-
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
-></script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
-
 </html>
