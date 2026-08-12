@@ -91,48 +91,57 @@
             margin-bottom: 15px;
         }
 
-        /* BOTTOM NAVIGATION */
-        .ck-bottom {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1000;
-            padding: 8px 10px;
-            background: rgba(255, 255, 255, .96);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(0, 0, 0, .08);
-        }
+        <!-- =====================================================
+     BOTTOM NAVIGATION (DIPERBAIKI)
+====================================================== -->
+<div class="ck-bottom">
+    <div class="ck-bottom-inner">
+        <a href="index.html" style="text-decoration: none; color: inherit;">
+            <i class="bi bi-house-fill"></i>
+            <span>Beranda</span>
+        </a>
+        <a href="santri.html" style="text-decoration: none; color: inherit;">
+            <i class="bi bi-people-fill"></i>
+            <span>Santri</span>
+        </a>
+        <a href="pembayaran.html" style="text-decoration: none; color: inherit;">
+            <i class="bi bi-cash-stack"></i>
+            <span>Bayar</span>
+        </a>
+        <a href="pengeluaran.html" class="active" style="text-decoration: none; color: inherit;">
+            <i class="bi bi-wallet2"></i>
+            <span>Keluar</span>
+        </a>
+        <a href="laporan.html" style="text-decoration: none; color: inherit;">
+            <i class="bi bi-bar-chart-fill"></i>
+            <span>Laporan</span>
+        </a>
+    </div>
+</div>
 
-        .ck-bottom-inner {
-            max-width: 600px;
-            margin: auto;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-        }
+<style>
+    /* Pastikan CSS ini ada di dalam tag <style> anda */
+    .ck-bottom a {
+        text-decoration: none !important; /* Menghilangkan garis bawah */
+        color: #6c757d;                   /* Warna abu-abu standar */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        font-size: .68rem;
+        padding: 5px 2px;
+        border-radius: 10px;
+        transition: .2s ease;
+    }
 
-        .ck-bottom a {
-            text-decoration: none;
-            color: #6c757d;
-            text-align: center;
-            font-size: .68rem;
-            font-weight: 600;
-            padding: 4px 2px;
-        }
+    .ck-bottom a.active {
+        color: #dc3545 !important;        /* Warna merah saat aktif */
+        font-weight: 700;
+    }
+</style>
 
-        .ck-bottom a i {
-            display: block;
-            font-size: 1.25rem;
-            margin-bottom: 2px;
-        }
-
-        .ck-bottom a:hover,
-        .ck-bottom a.active {
-            color: #198754;
-            font-weight: 800;
-        }
-
+      
         /* DARK MODE */
         body.dark-mode {
             background: #121212 !important;
