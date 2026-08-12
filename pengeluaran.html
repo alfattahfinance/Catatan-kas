@@ -87,35 +87,54 @@
 
             padding-bottom: 90px;
 
+            /* Background Gradasi Konsisten */
+            background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
 
         /* =================================================
-           NAVBAR
+           TOPBAR HEADER
         ================================================= */
 
-        .pengeluaran-navbar {
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #dc3545,
-                    #b02a37
-                ) !important;
-
-            box-shadow:
-                0 3px 12px
-                rgba(0, 0, 0, .12);
-
+        .ck-topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, .92);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
         }
 
+        .ck-logo {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 14px;
+            background: white;
+            border: 1px solid #eee;
+        }
 
-        .pengeluaran-navbar .navbar-brand {
+        .ck-title-top {
+            margin: 0;
+            color: #dc3545;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
 
-            font-weight: 700;
-
-            font-size: 1.05rem;
-
+        .ck-subtitle-top {
+            color: #6c757d;
+            font-size: .8rem;
         }
 
 
@@ -148,6 +167,10 @@
             box-shadow:
                 0 4px 15px
                 rgba(0, 0, 0, .07);
+
+            background: rgba(255, 255, 255, .90);
+
+            backdrop-filter: blur(6px);
 
         }
 
@@ -266,6 +289,7 @@
         body.dark-mode {
 
             background: #121212 !important;
+            animation: none !important;
 
             color: #f1f1f1;
 
@@ -273,12 +297,18 @@
 
 
         body.dark-mode
-        .pengeluaran-card {
+        .pengeluaran-card,
+        body.dark-mode
+        .ck-topbar,
+        body.dark-mode
+        .ck-bottom {
 
             background:
                 #1e1e1e !important;
 
             color: #f1f1f1;
+
+            border-color: #333 !important;
 
         }
 
@@ -381,6 +411,8 @@
             padding:
                 6px 8px;
 
+            backdrop-filter: blur(8px);
+
         }
 
 
@@ -459,18 +491,6 @@
 
 
         body.dark-mode
-        .ck-bottom {
-
-            background:
-                rgba(25, 25, 25, .98);
-
-            border-top-color:
-                #444;
-
-        }
-
-
-        body.dark-mode
         .ck-bottom a {
 
             color:
@@ -530,31 +550,6 @@
 <body>
 
 
-<!-- =====================================================
-     NAVBAR
-====================================================== -->
-
-<nav
-    class="navbar navbar-dark pengeluaran-navbar"
->
-
-    <div class="container">
-
-        <span class="navbar-brand">
-
-            <i
-                class="bi bi-wallet2 me-2"
-            ></i>
-
-            Pengeluaran
-
-        </span>
-
-    </div>
-
-</nav>
-
-
 
 <!-- =====================================================
      CONTAINER UTAMA
@@ -563,6 +558,15 @@
 <div
     class="container page-container py-4"
 >
+
+    <!-- Topbar Header Dinamis -->
+    <div class="ck-topbar">
+        <img id="logoPreviewV2" src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
+        <div>
+            <p class="ck-title-top">Catatan Kas</p>
+            <span class="ck-subtitle-top" id="namaPondokHeader">Madrasah Al-Fattah</span>
+        </div>
+    </div>
 
 
     <!-- =================================================
@@ -911,7 +915,7 @@ function ubahSatuan() {
 
 
 <!-- =====================================================
-     EVENT JENIS
+     EVENT JENIS & INISIALISASI PENGATURAN
 ====================================================== -->
 
 <script>
@@ -919,6 +923,16 @@ function ubahSatuan() {
 document.addEventListener(
     "DOMContentLoaded",
     function () {
+
+        // Muat Pengaturan Nama Pondok & Logo
+        const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
+        if (pengaturan && pengaturan.namaPondok) {
+            document.getElementById("namaPondokHeader").textContent = pengaturan.namaPondok;
+        }
+        const savedLogo = localStorage.getItem("logoDashboard");
+        if (savedLogo) {
+            document.getElementById("logoPreviewV2").src = savedLogo;
+        }
 
         const jenis =
             document.getElementById("jenis");
