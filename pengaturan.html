@@ -20,7 +20,6 @@
             margin: 0;
             min-height: 100vh;
             font-family: Arial, sans-serif;
-            /* Gradasi 2 Warna Beranimasi yang Konsisten */
             background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
             background-size: 200% 200%;
             animation: gradientShift 15s ease infinite;
@@ -215,15 +214,11 @@
     </style>
 </head>
 
-
 <body>
 
 <div class="container-fluid mobile-container py-4">
 
-    <!-- ================================= -->
     <!-- HEADER LOGO -->
-    <!-- ================================= -->
-
     <div class="ck-topbar">
         <img
             id="logoPreviewV2"
@@ -236,11 +231,7 @@
         </div>
     </div>
 
-
-    <!-- ================================= -->
     <!-- JUDUL -->
-    <!-- ================================= -->
-
     <div class="d-flex align-items-center mb-4">
         <a href="index.html" class="back-btn me-3">
             <i class="bi bi-arrow-left fs-4"></i>
@@ -251,11 +242,7 @@
         </div>
     </div>
 
-
-    <!-- ================================= -->
     <!-- AKUN -->
-    <!-- ================================= -->
-
     <div class="card custom-card mb-4">
         <div class="card-body">
             <h5 class="fw-bold mb-3">
@@ -282,11 +269,7 @@
         </div>
     </div>
 
-
-    <!-- ================================= -->
     <!-- INFORMASI PONDOK -->
-    <!-- ================================= -->
-
     <div class="card custom-card mb-4">
         <div class="card-body">
             <h5 class="fw-bold mb-3">
@@ -305,11 +288,7 @@
         </div>
     </div>
 
-
-    <!-- ================================= -->
     <!-- KEUANGAN -->
-    <!-- ================================= -->
-
     <div class="card custom-card mb-4">
         <div class="card-body">
             <h5 class="fw-bold mb-3">
@@ -326,11 +305,7 @@
         </div>
     </div>
 
-
-    <!-- ================================= -->
     <!-- TAMPILAN -->
-    <!-- ================================= -->
-
     <div class="card custom-card mb-4">
         <div class="card-body">
             <h5 class="fw-bold mb-3">
@@ -348,11 +323,7 @@
         </div>
     </div>
 
-
-    <!-- ================================= -->
     <!-- LOGO DASHBOARD -->
-    <!-- ================================= -->
-
     <div class="card custom-card mb-4">
         <div class="card-body">
             <h5 class="fw-bold mb-3">
@@ -379,27 +350,21 @@
         </div>
     </div>
 
-
-    <!-- ================================= -->
     <!-- TOMBOL AKSI -->
-    <!-- ================================= -->
+    <div class="d-grid gap-2 mb-4">
+        <button class="btn btn-success btn-lg" id="simpanPengaturanButton">
+            <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
+            <span id="btnText"><i class="bi bi-save"></i> Simpan Pengaturan</span>
+        </button>
 
-   <div class="d-grid gap-2 mb-4">
-    <button class="btn btn-success btn-lg" id="simpanPengaturanButton">
-        <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
-        <span id="btnText"><i class="bi bi-save"></i> Simpan Pengaturan</span>
-    </button>
+        <button class="btn btn-outline-danger" id="resetPengaturanButton">
+            <i class="bi bi-arrow-counterclockwise"></i> Kembalikan Pengaturan Awal
+        </button>
+    </div>
 
-    <button class="btn btn-outline-danger" id="resetPengaturanButton">
-        <i class="bi bi-arrow-counterclockwise"></i> Kembalikan Pengaturan Awal
-    </button>
 </div>
 
-
-<!-- ================================= -->
 <!-- BOTTOM NAVIGATION -->
-<!-- ================================= -->
-
 <div class="ck-bottom">
     <div class="ck-bottom-inner">
         <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
@@ -410,11 +375,7 @@
     </div>
 </div>
 
-
-<!-- ================================= -->
 <!-- SCRIPT PENGATURAN -->
-<!-- ================================= -->
-
 <script>
 const pengaturanDefault = {
     namaPondok: "Ribath Madrasah Al-Fattah",
@@ -442,6 +403,10 @@ function muatPengaturan() {
 }
 
 function simpanPengaturan() {
+    const btn = document.getElementById("simpanPengaturanButton");
+    const spinner = document.getElementById("loadingSpinner");
+    const btnText = document.getElementById("btnText");
+
     const data = {
         namaPondok: document.getElementById("namaPondok").value.trim(),
         subJudul: document.getElementById("subJudul").value.trim(),
@@ -454,9 +419,22 @@ function simpanPengaturan() {
         return;
     }
 
-    localStorage.setItem("pengaturanAplikasi", JSON.stringify(data));
-    terapkanTema(data.tema);
-    alert("✅ Pengaturan berhasil disimpan!");
+    // Aktifkan animasi loading
+    btn.disabled = true;
+    spinner.classList.remove("d-none");
+    btnText.innerHTML = " Menyimpan...";
+
+    setTimeout(() => {
+        localStorage.setItem("pengaturanAplikasi", JSON.stringify(data));
+        terapkanTema(data.tema);
+
+        // Kembalikan tombol seperti semula setelah tersimpan
+        btn.disabled = false;
+        spinner.classList.add("d-none");
+        btnText.innerHTML = '<i class="bi bi-save"></i> Simpan Pengaturan';
+
+        alert("✅ Pengaturan berhasil disimpan!");
+    }, 600);
 }
 
 function terapkanTema(tema) {
@@ -483,11 +461,7 @@ document.getElementById("tema").addEventListener("change", function () {
 });
 </script>
 
-
-<!-- ================================= -->
 <!-- LOGO DASHBOARD -->
-<!-- ================================= -->
-
 <script>
 const LOGO_DEFAULT = "assets/logo-catatan-kas.jpg";
 
@@ -538,11 +512,7 @@ document.getElementById("logoDashboardInput").addEventListener("change", functio
 document.getElementById("resetLogoButton").addEventListener("click", resetLogoDashboard);
 </script>
 
-
-<!-- ================================= -->
 <!-- FIREBASE LOGIN / LOGOUT -->
-<!-- ================================= -->
-
 <script type="module">
 import { auth } from "./js/firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
@@ -582,11 +552,7 @@ async function logout() {
 }
 </script>
 
-
-<!-- ================================= -->
 <!-- THEME.JS & INIT -->
-<!-- ================================= -->
-
 <script src="js/theme.js"></script>
 
 <script>
