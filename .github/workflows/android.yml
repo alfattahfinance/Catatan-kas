@@ -1,177 +1,128 @@
 name: Build Keuangan APK
 
 on:
-
   workflow_dispatch:
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
 
       # ==========================================
-
       # CHECKOUT PROJECT
-
       # ==========================================
-
       - name: Checkout project
-
         uses: actions/checkout@v4
 
-      # ==========================================
 
+      # ==========================================
       # SETUP JAVA
-
       # ==========================================
-
       - name: Setup Java
-
         uses: actions/setup-java@v4
-
         with:
-
           distribution: temurin
-
           java-version: '17'
-
           cache: gradle
 
-      # ==========================================
 
+      # ==========================================
       # SETUP ANDROID SDK
-
       # ==========================================
-
       - name: Setup Android SDK
-
         uses: android-actions/setup-android@v3
 
       - name: Install Android SDK
-
         run: |
-
           sdkmanager "platform-tools"
-
           sdkmanager "platforms;android-35"
-
           sdkmanager "build-tools;35.0.0"
 
-      # ==========================================
 
+      # ==========================================
       # CREATE ANDROID PROJECT FOLDERS
-
       # ==========================================
-
       - name: Create Android project folders
-
         run: |
-
           mkdir -p app/src/main/java/com/catatankas/app
-
           mkdir -p app/src/main/res/values
-
           mkdir -p app/src/main/res/drawable
-
           mkdir -p app/src/main/assets
 
-      # ==========================================
 
+      # ==========================================
       # COPY WEB FILES
-
       # ==========================================
-
       - name: Copy web files
-
         run: |
 
           find . -maxdepth 1 -type f -name "*.html" \
-
             -exec cp {} app/src/main/assets/ \;
 
           find . -maxdepth 1 -type f -name "*.js" \
-
             -exec cp {} app/src/main/assets/ \;
 
           find . -maxdepth 1 -type f -name "*.css" \
-
             -exec cp {} app/src/main/assets/ \;
 
+
           if [ -d "js" ]; then
-
             cp -r js app/src/main/assets/
-
           fi
 
           if [ -d "Js" ]; then
-
             cp -r Js app/src/main/assets/
-
           fi
 
           if [ -d "css" ]; then
-
             cp -r css app/src/main/assets/
-
           fi
 
           if [ -d "assets" ]; then
-
             cp -r assets app/src/main/assets/
-
           fi
 
           if [ -d "images" ]; then
-
             cp -r images app/src/main/assets/
-
           fi
 
           if [ -d "img" ]; then
-
             cp -r img app/src/main/assets/
-
           fi
+
 
           mkdir -p app/src/main/assets/assets
 
+
           if [ -f "logo-catatan-kas.jpg" ]; then
-
             cp logo-catatan-kas.jpg \
-
               app/src/main/assets/assets/logo-catatan-kas.jpg
-
           fi
 
-      # ==========================================
-
-      # PASANG IKON APLIKASI
 
       # ==========================================
-
+      # PASANG IKON APK
+      # ==========================================
       - name: Pasang ikon Keuangan
-
         run: |
+
+          echo "Memeriksa file ikon..."
 
           test -f "Photoroom_20260812_224807.png"
 
           cp "Photoroom_20260812_224807.png" \
-
             app/src/main/res/drawable/ic_keuangan.png
 
-          echo "OK: Ikon Keuangan berhasil dipasang"
+          echo "OK: ikon Keuangan berhasil dipasang"
+
+          ls -lh app/src/main/res/drawable/ic_keuangan.png
+
 
       # ==========================================
-
       # FIREBASE CONFIG
-
       # ==========================================
-
       - name: Prepare Firebase config
-
         run: |
 
           if [ -f "app/src/main/assets/firebase-config.js" ]; then
@@ -179,161 +130,109 @@ jobs:
             mkdir -p app/src/main/assets/js
 
             cp app/src/main/assets/firebase-config.js \
-
               app/src/main/assets/js/firebase-config.js
-
-            echo "OK: Firebase config ditemukan"
-
-          else
-
-            echo "INFO: Firebase config tidak ditemukan"
 
           fi
 
-      # ==========================================
 
+      # ==========================================
       # CHECK REQUIRED FILES
-
       # ==========================================
-
       - name: Check required files
-
         run: |
 
           echo "================================"
-
           echo "MEMERIKSA FILE APLIKASI"
-
           echo "================================"
 
           test -f app/src/main/assets/index.html
-
           echo "OK: index.html"
 
-          test -f app/src/main/res/drawable/ic_keuangan.png
+          echo ""
+          echo "MEMERIKSA IKON APK..."
 
+          test -f app/src/main/res/drawable/ic_keuangan.png
           echo "OK: ikon Keuangan"
 
           echo ""
-
           echo "MEMERIKSA LOGO DASHBOARD..."
 
           if [ -f "app/src/main/assets/assets/logo-catatan-kas.jpg" ]; then
-
             echo "OK: assets/logo-catatan-kas.jpg"
 
           elif [ -f "app/src/main/assets/assets/logo-catatan-keuangan.png" ]; then
-
             echo "OK: assets/logo-catatan-keuangan.png"
 
           else
-
-            echo "INFO: Logo dashboard tidak ditemukan"
-
+            echo "PERINGATAN: Logo dashboard tidak ditemukan."
           fi
 
           echo ""
-
           echo "DAFTAR FILE APLIKASI:"
 
           find app/src/main/assets -maxdepth 4 -type f | sort
 
           echo ""
-
           echo "VALIDASI FILE SELESAI."
 
-      # ==========================================
 
+      # ==========================================
       # CREATE SETTINGS.GRADLE
-
       # ==========================================
-
       - name: Create settings.gradle
-
         run: |
-
           cat > settings.gradle <<'EOF'
-
           pluginManagement {
-
               repositories {
-
                   google()
-
                   mavenCentral()
-
                   gradlePluginPortal()
-
               }
-
           }
 
           dependencyResolutionManagement {
-
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 
               repositories {
-
                   google()
-
                   mavenCentral()
-
               }
-
           }
 
           rootProject.name = "Keuangan"
 
           include(":app")
-
           EOF
 
-      # ==========================================
 
+      # ==========================================
       # CREATE ROOT BUILD.GRADLE
-
       # ==========================================
-
       - name: Create root build.gradle
-
         run: |
-
           cat > build.gradle <<'EOF'
-
           plugins {
-
               id 'com.android.application' version '8.7.3' apply false
-
           }
-
           EOF
 
-      # ==========================================
 
+      # ==========================================
       # CREATE APP BUILD.GRADLE
-
       # ==========================================
-
       - name: Create app build.gradle
-
         run: |
-
           cat > app/build.gradle <<'EOF'
-
           plugins {
-
               id 'com.android.application'
-
           }
 
           android {
-
               namespace 'com.catatankas.app'
 
               compileSdk 35
 
               defaultConfig {
-
                   applicationId 'com.catatankas.app'
 
                   minSdk 24
@@ -343,43 +242,27 @@ jobs:
                   versionCode 2
 
                   versionName '2.0'
-
               }
 
               buildTypes {
-
                   release {
-
                       minifyEnabled false
-
                   }
-
               }
-
           }
 
           dependencies {
-
               implementation 'androidx.webkit:webkit:1.16.0'
-
           }
-
           EOF
 
-      # ==========================================
 
+      # ==========================================
       # CREATE ANDROID MANIFEST
-
       # ==========================================
-
       - name: Create AndroidManifest.xml
-
         run: |
-
           cat > app/src/main/AndroidManifest.xml <<'EOF'
-
-          <?xml version="1.0" encoding="utf-8"?>
-
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
               <uses-permission android:name="android.permission.INTERNET" />
@@ -387,33 +270,21 @@ jobs:
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
               <application
-
                   android:allowBackup="true"
-
                   android:label="Keuangan"
-
                   android:icon="@drawable/ic_keuangan"
-
                   android:roundIcon="@drawable/ic_keuangan"
-
                   android:theme="@style/AppTheme"
-
                   android:usesCleartextTraffic="true">
 
                   <activity
-
                       android:name=".MainActivity"
-
                       android:screenOrientation="portrait"
-
                       android:exported="true">
 
                       <intent-filter>
-
                           <action android:name="android.intent.action.MAIN" />
-
                           <category android:name="android.intent.category.LAUNCHER" />
-
                       </intent-filter>
 
                   </activity>
@@ -421,27 +292,18 @@ jobs:
               </application>
 
           </manifest>
-
           EOF
 
-      # ==========================================
-
-      # CREATE STYLES.XML
 
       # ==========================================
-
+      # CREATE STYLES
+      # ==========================================
       - name: Create styles.xml
-
         run: |
-
           cat > app/src/main/res/values/styles.xml <<'EOF'
-
-          <?xml version="1.0" encoding="utf-8"?>
-
           <resources>
 
               <style name="AppTheme"
-
                   parent="android:style/Theme.Material.Light.NoActionBar">
 
                   <item name="android:fontFamily">sans</item>
@@ -455,39 +317,25 @@ jobs:
               </style>
 
           </resources>
-
           EOF
 
-      # ==========================================
 
+      # ==========================================
       # CREATE MAIN ACTIVITY
-
       # ==========================================
-
       - name: Create MainActivity.java
-
         run: |
-
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
-
           package com.catatankas.app;
 
           import android.annotation.SuppressLint;
-
           import android.app.Activity;
-
           import android.net.Uri;
-
           import android.os.Bundle;
-
           import android.webkit.WebResourceRequest;
-
           import android.webkit.WebResourceResponse;
-
           import android.webkit.WebSettings;
-
           import android.webkit.WebView;
-
           import android.webkit.WebViewClient;
 
           import androidx.webkit.WebViewAssetLoader;
@@ -497,11 +345,8 @@ jobs:
               private WebView webView;
 
               @SuppressLint("SetJavaScriptEnabled")
-
               @Override
-
               protected void onCreate(Bundle savedInstanceState) {
-
                   super.onCreate(savedInstanceState);
 
                   webView = new WebView(this);
@@ -521,47 +366,34 @@ jobs:
                   settings.setAllowContentAccess(false);
 
                   final WebViewAssetLoader assetLoader =
-
                           new WebViewAssetLoader.Builder()
-
                                   .addPathHandler(
-
                                           "/assets/",
-
                                           new WebViewAssetLoader.AssetsPathHandler(this)
-
                                   )
-
                                   .build();
 
-                  webView.setWebViewClient(new WebViewClient() {
+                  webView.setWebViewClient(
+                          new WebViewClient() {
 
-                      @Override
+                              @Override
+                              public WebResourceResponse shouldInterceptRequest(
+                                      WebView view,
+                                      WebResourceRequest request) {
 
-                      public WebResourceResponse shouldInterceptRequest(
+                                  Uri uri = request.getUrl();
 
-                              WebView view,
-
-                              WebResourceRequest request) {
-
-                          Uri uri = request.getUrl();
-
-                          return assetLoader.shouldInterceptRequest(uri);
-
-                      }
-
-                  });
-
-                  webView.loadUrl(
-
-                          "https://appassets.androidplatform.net/assets/index.html"
-
+                                  return assetLoader.shouldInterceptRequest(uri);
+                              }
+                          }
                   );
 
+                  webView.loadUrl(
+                          "https://appassets.androidplatform.net/assets/index.html"
+                  );
               }
 
               @Override
-
               public void onBackPressed() {
 
                   if (webView != null && webView.canGoBack()) {
@@ -571,77 +403,53 @@ jobs:
                   } else {
 
                       super.onBackPressed();
-
                   }
-
               }
-
           }
-
           EOF
 
-      # ==========================================
 
+      # ==========================================
       # SETUP GRADLE
-
       # ==========================================
-
       - name: Setup Gradle
-
         uses: gradle/actions/setup-gradle@v4
-
         with:
-
           gradle-version: '8.10'
 
-      # ==========================================
 
+      # ==========================================
       # BUILD APK
-
       # ==========================================
-
       - name: Build APK
-
         run: |
 
           gradle --no-daemon clean
 
           gradle --no-daemon :app:assembleDebug
 
-      # ==========================================
 
+      # ==========================================
       # CHECK APK
-
       # ==========================================
-
       - name: Check APK
-
         run: |
 
           test -f app/build/outputs/apk/debug/app-debug.apk
 
           echo "================================"
-
           echo "APK BERHASIL DIBUAT"
-
           echo "================================"
 
           ls -lh app/build/outputs/apk/debug/app-debug.apk
 
-      # ==========================================
 
+      # ==========================================
       # UPLOAD APK
-
       # ==========================================
-
       - name: Upload APK
-
         uses: actions/upload-artifact@v4
-
         with:
-
           name: Keuangan-v2.0-debug-apk
-
           path: app/build/outputs/apk/debug/app-debug.apk
-
           if-no-files-found: error
