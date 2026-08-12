@@ -1,191 +1,170 @@
-import { db } from "./firebase-config.js";
+// ======================================
+// DATA SANTRI - JS
+// ======================================
+
+import {
+    db,
+    auth
+} from "./firebase-config.js";
+
 import {
     collection,
     addDoc,
     getDocs,
     deleteDoc,
-    updateDoc,
-    doc
-    
-}from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    doc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-const daftarSantri = document.getElementById("daftarSantri");
-
-tampilkan();
-
-window.simpanSantri = async function () {
-
-    const id = document.getElementById("idSantri").value;
-
-    const nama = document.getElementById("nama").value.trim();
-    const kelas = document.getElementById("kelas").value.trim();
-    const wali = document.getElementById("wali").value.trim();
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 
-    if (!nama || !kelas) {
-        alert("Nama dan kelas harus diisi!");
+// ======================================
+// SIMPAN / TAMBAH SANTRI
+// ======================================
+
+window.simpanSantri = async function() {
+    const inputNama = document.getElementById("nama");
+    const inputKelas = document.getElementById("kelas");
+    const inputWali = document.getElementById("wali");
+    const idSantriEl = document.getElementById("idSantri");
+
+    const nama = inputNama?.value.trim() || "";
+    const kelas = inputKelas?.value.trim() || "";
+    const wali = inputWali?.value.trim() || "";
+    const idSantri = idSantriEl?.value || "";
+
+    if (!nama) {
+        alert("Silakan isi nama santri.");
         return;
     }
 
-
-    try {
-
-        if(id){
-
-            await updateDoc(doc(db,"santri",id),{
-                nama,
-                kelas,
-                wali
-            });
-
-            alert("Data santri berhasil diperbarui.");
-
-        } else {
-
-
-            await addDoc(collection(db, "santri"), {
-                nama,
-                kelas,
-                wali
-            });
-
-            alert("Santri berhasil ditambahkan.");
-
-        }
-
-
-        document.getElementById("nama").value="";
-        document.getElementById("kelas").value="";
-        document.getElementById("wali").value="";
-        document.getElementById("idSantri").value="";
-
-
-        document.querySelector("button").textContent="Tambah Santri";
-
-
-        tampilkan();
-
-
-    } catch(error){
-
-        console.error(error);
-
-        alert("Gagal menyimpan data.");
-
+    if (!auth.currentUser) {
+        alert("Silakan login terlebih dahulu.");
+        return;
     }
 
+    try {
+        if (idSantri) {
+            // Logika Edit (jika diperlukan di kemudian hari)
+            // Untuk saat ini fokus pada penambahan data baru
+        } else {
+            // Tambah Baru ke koleksi "santri"
+            await addDoc(collection(db, "santri"), {
+                nama,
+                kelas: kelas || "-",
+                wali: wali || "-",
+                createdAt: serverTimestamp()
+            });
+
+            alert("Santri berhasil ditambahkan!");
+        }
+
+        // Reset Form
+        if (inputNama) inputNama.value = "";
+        if (inputKelas) inputKelas.value = "";
+        if (inputWali) inputWali.value = "";
+        if (idSantriEl) idSantriEl.value = "";
+
+        // Refresh Daftar Santri
+        muatDataSantri();
+
+    } catch (error) {
+        console.error("Gagal menyimpan santri:", error);
+        alert("Gagal menyimpan data santri: " + error.message);
+    }
 };
 
-async function tampilkan() {
 
-    daftarSantri.innerHTML = "";
+// ======================================
+// MUAT DAFTAR SANTRI
+// ======================================
+
+async function muatDataSantri() {
+    const daftarEl = document.getElementById("daftarSantri");
+    if (!daftarEl) return;
+
+    daftarEl.innerHTML = `
+        <li class="list-group-item text-center text-muted py-3">
+            Memuat data santri...
+        </li>
+    `;
 
     try {
+        const querySnapshot = await getDocs(collection(db, "santri"));
+        let santriList = [];
 
-        const snapshot = await getDocs(collection(db, "santri"));
+        querySnapshot.forEach(docSnap => {
+            santriList.push({
+                id: docSnap.id,
+                ...docSnap.data()
+            });
+        });
 
-        if (snapshot.empty) {
-
-            daftarSantri.innerHTML =
-                "<li class='list-group-item'>Belum ada data santri.</li>";
-
+        if (santriList.length === 0) {
+            daftarEl.innerHTML = `
+                <li class="list-group-item text-center text-muted py-3">
+                    Belum ada data santri.
+                </li>
+            `;
             return;
         }
 
-        snapshot.forEach((item) => {
+        daftarEl.innerHTML = "";
 
-            const s = item.data();
-
-            daftarSantri.innerHTML += `
-
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-
-                <div>
-
-                    <strong>${s.nama}</strong><br>
-
-                    ${s.kelas}<br>
-
-                    ${s.wali || "-"}
-
-                </div>
-
-                <div class="d-flex gap-1">
-
-
-                <div class="d-flex gap-1">
-
-                    <button
-                    class="btn btn-warning btn-sm"
-                    onclick="editSantri('${item.id}','${s.nama}','${s.kelas}','${s.wali || ""}')">
-                    Edit
+        santriList.forEach((item, index) => {
+            daftarEl.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                    <div>
+                        <b class="d-block text-dark">${index + 1}. ${item.nama}</b>
+                        <small class="text-muted">Kelas: ${item.kelas} • Wali: ${item.wali}</small>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm" onclick="hapusSantri('${item.id}')">
+                        <i class="bi bi-trash"></i>
                     </button>
-
-                    <button
-                    class="btn btn-danger btn-sm"
-                    onclick="hapusSantri('${item.id}')">
-                    Hapus
-                    </button>
-
-                </div>
-
-            </li>
-            
+                </li>
             `;
-            
-     });
+        });
 
     } catch (error) {
-
-        console.error(error);
-
-        daftarSantri.innerHTML =
-            "<li class='list-group-item text-danger'>Gagal memuat data.</li>";
-
+        console.error("Gagal memuat santri:", error);
+        daftarEl.innerHTML = `
+            <li class="list-group-item text-center text-danger py-3">
+                Gagal memuat daftar santri.
+            </li>
+        `;
     }
-
 }
 
 
-window.hapusSantri = async function(id){
+// ======================================
+// HAPUS SANTRI
+// ======================================
 
-    if(!confirm("Yakin ingin menghapus santri ini?")) return;
+window.hapusSantri = async function(id) {
+    if (!confirm("Apakah Anda yakin ingin menghapus santri ini?")) {
+        return;
+    }
 
     try {
-
         await deleteDoc(doc(db, "santri", id));
-
-        tampilkan();
-
+        alert("Santri berhasil dihapus.");
+        muatDataSantri();
     } catch (error) {
-
-        console.error(error);
-
-        alert("Gagal menghapus data.");
-
+        console.error("Gagal menghapus santri:", error);
+        alert("Gagal menghapus santri: " + error.message);
     }
-
-}
-
-window.editSantri = function(id, nama, kelas, wali){
-
-    document.getElementById("idSantri").value = id;
-
-    document.getElementById("nama").value = nama;
-    document.getElementById("kelas").value = kelas;
-    document.getElementById("wali").value = wali;
-
-
-    const tombol = document.querySelector(".card button");
-
-    if(tombol){
-        tombol.textContent = "Update Santri";
-    }
-
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-
 };
+
+
+// ======================================
+// INISIALISASI SAAT AUTH SIAP
+// ======================================
+
+onAuthStateChanged(auth, user => {
+    if (user) {
+        muatDataSantri();
+    }
+});
