@@ -143,20 +143,15 @@ jobs:
           echo "OK: ikon Keuangan berhasil dipasang"
 
 
-      # ==========================================
+           # ==========================================
       # CREATE GRADLE PROPERTIES (Root & App level)
       # ==========================================
       - name: Create gradle.properties
         run: |
-          cat > gradle.properties <<'EOF'
-          android.useAndroidX=true
-          android.enableJetifier=true
-          EOF
+          printf "android.useAndroidX=true\nandroid.enableJetifier=false\n" > gradle.properties
+          printf "android.useAndroidX=true\nandroid.enableJetifier=false\n" > app/gradle.properties
+          cat gradle.properties
 
-          cat > app/gradle.properties <<'EOF'
-          android.useAndroidX=true
-          android.enableJetifier=true
-          EOF
 
 
       # ==========================================
