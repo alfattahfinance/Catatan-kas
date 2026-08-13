@@ -306,13 +306,13 @@
     background: rgba(255, 255, 255, .97);
     border-top: 1px solid #dee2e6;
     box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
-    padding: 6px 15px; /* Sesuaikan padding kiri-kanan */
+    padding: 6px 15px;
     backdrop-filter: blur(8px);
 }
 
 .ck-bottom-inner {
     width: 100% !important;
-    max-width: 100% !important; /* Diubah dari pembatas sebelumnya agar full */
+    max-width: 100% !important;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -408,9 +408,7 @@
             Input Pengeluaran
         </h4>
 
-               <!-- =================================================
-             JENIS PENGELUARAN
-        ================================================== -->
+        <!-- JENIS PENGELUARAN -->
         <label class="form-label" for="jenisPengeluaran">Jenis Pengeluaran</label>
         <select id="jenisPengeluaran" class="form-select mb-3 bg-light border-0">
             <option value="">Pilih Jenis</option>
@@ -422,39 +420,31 @@
             <option value="Lainnya">Lainnya</option>
         </select>
 
-        <!-- =================================================
-             KETERANGAN
-        ================================================== -->
+        <!-- KETERANGAN -->
         <label class="form-label" for="keterangan">Keterangan</label>
         <input id="keterangan" type="text" class="form-control mb-3 bg-light border-0" placeholder="Contoh: Belanja dapur" autocomplete="off">
 
-        <!-- =================================================
-             TANGGAL
-        ================================================== -->
+        <!-- TANGGAL -->
         <label class="form-label" for="tanggal">Tanggal</label>
         <input type="date" id="tanggal" class="form-control mb-3 bg-light border-0">
 
-        <!-- =================================================
-             JUMLAH
-        ================================================== -->
+        <!-- JUMLAH -->
         <label id="labelJumlah" class="form-label" for="nominal">Nominal (Rp)</label>
         <input type="number" id="nominal" class="form-control mb-3 bg-light border-0" placeholder="Masukkan nominal" min="0" step="any">
 
-        <!-- =================================================
-             SATUAN
-        ================================================== -->
+        <!-- SATUAN -->
         <label class="form-label" for="satuan">Satuan</label>
         <select id="satuan" class="form-select mb-4 bg-light border-0" disabled>
             <option value="Rupiah">Rupiah</option>
             <option value="Liter">Liter</option>
         </select>
 
-        <!-- =================================================
-             SIMPAN
-        ================================================== -->
+        <!-- SIMPAN -->
         <button type="button" id="simpanPengeluaran" class="btn btn-danger btn-simpan w-100">
             <i class="bi bi-save me-1"></i> Simpan Pengeluaran
         </button>
+
+    </div> <!-- TUTUP CARD FORM PENGELUARAN -->
 
     <!-- =================================================
          RIWAYAT
@@ -473,7 +463,7 @@
 </div>
 
 <!-- =====================================================
-     FUNGSI UBAH SATUAN
+     FUNGSI UBAH SATUAN & INISIALISASI
 ====================================================== -->
 <script>
 function ubahSatuan() {
@@ -496,46 +486,27 @@ function ubahSatuan() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const jenis = document.getElementById("jenisPengeluaran");
-    if (jenis) {
-        jenis.addEventListener("change", ubahSatuan);
+    // Muat Pengaturan Nama Pondok & Logo
+    const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
+    if (pengaturan && pengaturan.namaPondok) {
+        const headerEl = document.getElementById("namaPondokHeader");
+        if (headerEl) headerEl.textContent = pengaturan.namaPondok;
     }
-});
-    document.addEventListener("DOMContentLoaded", function () {
-    // Muat logo tersimpan
+
     const savedLogo = localStorage.getItem("logoDashboard");
     if (savedLogo) {
-        // Cari semua elemen gambar logo di halaman (sesuaikan ID atau class logo Anda)
         const logoImgs = document.querySelectorAll(".ck-logo, #logoPreviewV2");
         logoImgs.forEach(img => {
             img.src = savedLogo;
         });
     }
-});
 
-</script>
-
-
-<!-- =====================================================
-     EVENT JENIS & INISIALISASI PENGATURAN
-====================================================== -->
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Muat Pengaturan Nama Pondok & Logo
-    const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
-    if (pengaturan && pengaturan.namaPondok) {
-        document.getElementById("namaPondokHeader").textContent = pengaturan.namaPondok;
+    // Event Listener Jenis Pengeluaran
+    const jenis = document.getElementById("jenisPengeluaran");
+    if (jenis) {
+        jenis.addEventListener("change", ubahSatuan);
+        ubahSatuan();
     }
-    const savedLogo = localStorage.getItem("logoDashboard");
-    if (savedLogo) {
-        document.getElementById("logoPreviewV2").src = savedLogo;
-    }
-
-    const jenis = document.getElementById("jenis");
-    if (!jenis) return;
-
-    jenis.addEventListener("change", ubahSatuan);
-    ubahSatuan();
 });
 </script>
 
