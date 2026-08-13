@@ -3,16 +3,19 @@
 
     const THEME_KEY = "themeMode";
 
+    const SETTING_KEY = "pengaturanAplikasi";
+
     /* =====================================================
        AMBIL TEMA TERSIMPAN
     ====================================================== */
 
     function getSavedTheme() {
-        const saved = localStorage.getItem(THEME_KEY);
-
-        return saved === "dark"
-            ? "dark"
-            : "light";
+        try {
+            const pengaturan = JSON.parse(localStorage.getItem(SETTING_KEY)) || {};
+            return pengaturan.tema === "dark" ? "dark" : "light";
+        } catch (e) {
+            return "light";
+        }
     }
 
 
@@ -39,7 +42,12 @@
         );
 
 
-        /* HTML */
+        /* HTML (Tambahkan juga class agar CSS mendeteksinya secara global) */
+
+        document.documentElement.classList.toggle(
+            "dark-mode",
+            isDark
+        );
 
         document.documentElement.setAttribute(
             "data-theme",
@@ -47,12 +55,16 @@
         );
 
 
-        /* SIMPAN */
+        /* SIMPAN KE PENGATURAN APLIKASI */
 
-        localStorage.setItem(
-            THEME_KEY,
-            normalizedTheme
-        );
+        try {
+            const pengaturan = JSON.parse(localStorage.getItem(SETTING_KEY)) || {};
+            pengaturan.tema = normalizedTheme;
+            localStorage.setItem(SETTING_KEY, JSON.stringify(pengaturan));
+        } catch (e) {
+            console.warn("Gagal menyimpan tema:", e);
+        }
+
 
 
         /* EVENT */
