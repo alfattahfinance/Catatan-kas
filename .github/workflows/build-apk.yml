@@ -143,7 +143,7 @@ jobs:
           echo "OK: ikon Keuangan berhasil dipasang"
 
 
-           # ==========================================
+      # ==========================================
       # CREATE GRADLE PROPERTIES (Root & App level)
       # ==========================================
       - name: Create gradle.properties
