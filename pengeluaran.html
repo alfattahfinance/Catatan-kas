@@ -408,11 +408,11 @@
             Input Pengeluaran
         </h4>
 
-        <!-- =================================================
+               <!-- =================================================
              JENIS PENGELUARAN
         ================================================== -->
-        <label class="form-label" for="jenis">Jenis Pengeluaran</label>
-        <select id="jenis" class="form-select mb-3 bg-light border-0">
+        <label class="form-label" for="jenisPengeluaran">Jenis Pengeluaran</label>
+        <select id="jenisPengeluaran" class="form-select mb-3 bg-light border-0">
             <option value="">Pilih Jenis</option>
             <option value="SPP">SPP</option>
             <option value="Syahriyyah">Syahriyyah</option>
@@ -437,8 +437,8 @@
         <!-- =================================================
              JUMLAH
         ================================================== -->
-        <label id="labelJumlah" class="form-label" for="jumlah">Nominal (Rp)</label>
-        <input type="number" id="jumlah" class="form-control mb-3 bg-light border-0" placeholder="Masukkan nominal" min="0" step="any">
+        <label id="labelJumlah" class="form-label" for="nominal">Nominal (Rp)</label>
+        <input type="number" id="nominal" class="form-control mb-3 bg-light border-0" placeholder="Masukkan nominal" min="0" step="any">
 
         <!-- =================================================
              SATUAN
@@ -452,11 +452,9 @@
         <!-- =================================================
              SIMPAN
         ================================================== -->
-        <button type="button" id="btnSimpanPengeluaran" onclick="simpanPengeluaran()" class="btn btn-danger btn-simpan w-100">
+        <button type="button" id="simpanPengeluaran" class="btn btn-danger btn-simpan w-100">
             <i class="bi bi-save me-1"></i> Simpan Pengeluaran
         </button>
-
-    </div>
 
     <!-- =================================================
          RIWAYAT
@@ -479,10 +477,10 @@
 ====================================================== -->
 <script>
 function ubahSatuan() {
-    const jenis = document.getElementById("jenis");
+    const jenis = document.getElementById("jenisPengeluaran");
     const satuan = document.getElementById("satuan");
     const label = document.getElementById("labelJumlah");
-    const jumlah = document.getElementById("jumlah");
+    const jumlah = document.getElementById("nominal");
 
     if (!jenis || !satuan || !label || !jumlah) return;
 
@@ -496,7 +494,15 @@ function ubahSatuan() {
         jumlah.placeholder = "Masukkan nominal";
     }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const jenis = document.getElementById("jenisPengeluaran");
+    if (jenis) {
+        jenis.addEventListener("change", ubahSatuan);
+    }
+});
 </script>
+
 
 <!-- =====================================================
      EVENT JENIS & INISIALISASI PENGATURAN
