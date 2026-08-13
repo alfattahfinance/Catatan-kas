@@ -1,479 +1,826 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pembayaran Santri | Catatan Kas</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/theme.css">
-    
-    <style>
-        * {
-            box-sizing: border-box;
+<meta charset="UTF-8">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+<meta
+    name="theme-color"
+    content="#198754"
+>
+<meta
+    name="description"
+    content="Pembayaran Santri - Catatan Kas Ribath Madrasah Al-Fattah"
+>
+<title>Pembayaran Santri | Catatan Kas</title>
+<!-- =====================================================
+     BOOTSTRAP
+====================================================== -->
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
+<!-- =====================================================
+     BOOTSTRAP ICONS
+====================================================== -->
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+>
+<!-- =====================================================
+     CUSTOM CSS
+====================================================== -->
+<link
+    rel="stylesheet"
+    href="css/style.css"
+>
+<link
+    rel="stylesheet"
+    href="css/theme.css"
+>
+<!-- =====================================================
+     STYLE KHUSUS HALAMAN PEMBAYARAN
+====================================================== -->
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+        padding-bottom: 100px;
+        background:
+            linear-gradient(
+                135deg,
+                #d8e2dc 0%,
+                #fefae0 100%
+            );
+        background-size: 200% 200%;
+        animation:
+            gradientShift 15s ease infinite;
+        color: #212529;
+    }
+    @keyframes gradientShift {
+        0% {
+            background-position: 0% 50%;
         }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            /* Background Gradasi 2 Warna Beranimasi */
-            background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 15s ease infinite;
-            color: #212529;
+        50% {
+            background-position: 100% 50%;
         }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        100% {
+            background-position: 0% 50%;
         }
-
-        .mobile-container {
-           width: 100% !important;
-           max-width: 100% !important;
-           margin: 0 auto;
-           padding: 20px !important;
-           padding-bottom: 110px !important;
-        }
-
-        .custom-card {
-            border: none;
-            border-radius: 18px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
-            background: rgba(255, 255, 255, .90);
-            backdrop-filter: blur(6px);
-        }
-
-        /* HEADER TOPBAR */
-        .ck-topbar {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: rgba(255, 255, 255, .92);
-            border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
-        }
-
-        .ck-logo {
-            width: 56px;
-            height: 56px;
-            object-fit: cover;
-            border-radius: 14px;
-            background: white;
-            border: 1px solid #eee;
-        }
-
-        .ck-title {
-            margin: 0;
-            color: #198754;
-            font-weight: 800;
-            font-size: 1.1rem;
-        }
-
-        .ck-subtitle {
-            color: #6c757d;
-            font-size: .8rem;
-        }
-
-        .ck-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: #198754;
-            text-decoration: none;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .ck-back:hover {
-            color: #146c43;
-        }
-
-        /* BOTTOM NAVIGATION */
-        .ck-bottom {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1050;
-    background: rgba(255, 255, 255, .97);
-    border-top: 1px solid #dee2e6;
-    box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
-    padding: 6px 15px; /* Sesuaikan padding kiri-kanan */
-    backdrop-filter: blur(8px);
-}
-
-.ck-bottom-inner {
-    width: 100% !important;
-    max-width: 100% !important; /* Diubah dari pembatas sebelumnya agar full */
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-}
-
-
-        .ck-bottom a {
-            color: #6c757d;
-            text-decoration: none;
-            font-size: .68rem;
-            text-align: center;
-            min-width: 58px;
-            font-weight: 600;
-        }
-
-        .ck-bottom a i {
-            display: block;
-            font-size: 1.15rem;
-            line-height: 1.1;
-        }
-
-        .ck-bottom a.active {
-            color: #198754;
-            font-weight: 800;
-        }
-/* =================================================
-   TAMPILAN TABLET
-================================================= */
-
-@media (min-width: 768px) {
-
+    }
+    /* =================================================
+       CONTAINER
+    ================================================= */
     .mobile-container {
         width: 100% !important;
         max-width: 100% !important;
-        padding-left: 35px !important;
-        padding-right: 35px !important;
+        margin: 0 auto;
+        padding:
+            20px !important;
+        padding-bottom:
+            110px !important;
     }
-
-    .ck-topbar {
-        padding: 20px;
-        border-radius: 20px;
-    }
-
-    .ck-logo {
-        width: 72px;
-        height: 72px;
-        border-radius: 16px;
-    }
-
-    .ck-title {
-        font-size: 1.35rem;
-    }
-
-    .ck-subtitle {
-        font-size: 1rem;
-    }
-
-    .ck-back {
-        font-size: 1rem;
-    }
-
+    /* =================================================
+       CARD
+    ================================================= */
     .custom-card {
-        border-radius: 20px;
+        border: none;
+        border-radius: 18px;
+        box-shadow:
+            0 4px 14px
+            rgba(0, 0, 0, .06);
+        background:
+            rgba(255, 255, 255, .90);
+        backdrop-filter:
+            blur(8px);
+        -webkit-backdrop-filter:
+            blur(8px);
     }
-
-    .custom-card .card-body {
-        padding: 25px !important;
+    /* =================================================
+       HEADER
+    ================================================= */
+    .ck-topbar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background:
+            rgba(255, 255, 255, .92);
+        border-radius: 18px;
+        padding: 14px;
+        margin-bottom: 20px;
+        box-shadow:
+            0 4px 14px
+            rgba(0, 0, 0, .05);
     }
-
-    .custom-card h4 {
-        font-size: 1.6rem;
+    .ck-logo {
+        width: 56px;
+        height: 56px;
+        min-width: 56px;
+        object-fit: contain;
+        border-radius: 14px;
+        background: #fff;
+        border:
+            1px solid #eee;
     }
-
-    .custom-card h5 {
-        font-size: 1.3rem;
+    .ck-title {
+        margin: 0;
+        color: #198754;
+        font-weight: 800;
+        font-size: 1.1rem;
     }
-
-    .form-label {
-        font-size: 1rem !important;
+    .ck-subtitle {
+        color: #6c757d;
+        font-size: .8rem;
     }
-
+    /* =================================================
+       TOMBOL KEMBALI
+    ================================================= */
+    .ck-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #198754;
+        text-decoration: none;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+    .ck-back:hover {
+        color: #146c43;
+    }
+    /* =================================================
+       FORM
+    ================================================= */
     .form-control,
     .form-select {
-        min-height: 52px;
-        font-size: 1rem;
+        min-height: 48px;
+        border-radius: 12px;
+        border:
+            1px solid
+            rgba(0, 0, 0, .10);
+        box-shadow: none;
+        transition:
+            border-color .2s ease,
+            box-shadow .2s ease,
+            background .2s ease;
     }
-
-    .btn {
-        min-height: 52px;
-        font-size: 1rem;
+    .form-control:focus,
+    .form-select:focus {
+        border-color:
+            #198754;
+        box-shadow:
+            0 0 0 .2rem
+            rgba(25, 135, 84, .12);
     }
-
+    .form-label {
+        color: #495057;
+    }
+    /* =================================================
+       TOMBOL SIMPAN
+    ================================================= */
+    #btnSimpanPembayaran {
+        min-height: 50px;
+        transition:
+            transform .2s ease,
+            box-shadow .2s ease;
+    }
+    #btnSimpanPembayaran:hover {
+        transform:
+            translateY(-1px);
+        box-shadow:
+            0 6px 15px
+            rgba(25, 135, 84, .20);
+    }
+    #btnSimpanPembayaran:active {
+        transform:
+            translateY(0);
+    }
+    /* =================================================
+       RIWAYAT
+    ================================================= */
+    #riwayat {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    #riwayat .list-group-item {
+        background:
+            transparent;
+        transition:
+            background .2s ease;
+    }
+    #riwayat .list-group-item:hover {
+        background:
+            rgba(25, 135, 84, .05);
+    }
+    .riwayat-nama {
+        color: #212529;
+        font-weight: 700;
+    }
+    .riwayat-nominal {
+        color: #198754;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+    /* =================================================
+       BOTTOM NAVIGATION
+    ================================================= */
     .ck-bottom {
-        padding: 8px 25px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1050;
+        background:
+            rgba(255, 255, 255, .97);
+        border-top:
+            1px solid #dee2e6;
+        box-shadow:
+            0 -3px 15px
+            rgba(0, 0, 0, .08);
+        padding:
+            6px 15px;
+        backdrop-filter:
+            blur(8px);
+        -webkit-backdrop-filter:
+            blur(8px);
     }
-
+    .ck-bottom-inner {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns:
+            repeat(5, 1fr);
+        gap: 4px;
+    }
     .ck-bottom a {
-        font-size: .8rem;
-        padding: 8px 4px;
+        text-decoration: none !important;
+        color: #6c757d;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        font-size: .68rem;
+        padding:
+            5px 2px;
+        border-radius: 10px;
+        transition:
+            .2s ease;
     }
-
     .ck-bottom a i {
-        font-size: 1.35rem;
+        font-size: 1.15rem;
     }
-
-}
-
-        
-        /* DARK MODE */
-        body.dark-mode {
-            background: #121212 !important;
-            animation: none !important;
-            color: #ffffff !important;
+    .ck-bottom a:hover {
+        color: #198754;
+        background:
+            rgba(25, 135, 84, .08);
+    }
+    .ck-bottom a.active {
+        color:
+            #198754 !important;
+        font-weight: 700;
+    }
+    /* =================================================
+       TABLET
+    ================================================= */
+    @media (min-width: 768px) {
+        .mobile-container {
+            padding-left:
+                35px !important;
+            padding-right:
+                35px !important;
         }
-
-        body.dark-mode .custom-card,
-        body.dark-mode .ck-topbar,
-        body.dark-mode .ck-bottom {
-            background: #1e1e1e !important;
-            color: #eee !important;
-            border-color: #333 !important;
+        .ck-topbar {
+            padding: 20px;
+            border-radius: 20px;
         }
-
-        body.dark-mode .form-control,
-        body.dark-mode .form-select {
-            background: #2a2a2a !important;
-            color: #fff !important;
-            border: 1px solid #444 !important;
+        .ck-logo {
+            width: 72px;
+            height: 72px;
+            min-width: 72px;
+            border-radius: 16px;
         }
-
-        body.dark-mode .text-muted {
-            color: #aaa !important;
+        .ck-title {
+            font-size: 1.35rem;
         }
-    </style>
+        .ck-subtitle {
+            font-size: 1rem;
+        }
+        .ck-back {
+            font-size: 1rem;
+        }
+        .custom-card {
+            border-radius: 20px;
+        }
+        .custom-card .card-body {
+            padding: 25px !important;
+        }
+        .form-label {
+            font-size: 1rem !important;
+        }
+        .form-control,
+        .form-select {
+            min-height: 52px;
+            font-size: 1rem;
+        }
+        .btn {
+            min-height: 52px;
+            font-size: 1rem;
+        }
+        .ck-bottom {
+            padding:
+                8px 25px;
+        }
+        .ck-bottom a {
+            font-size: .8rem;
+            padding:
+                8px 4px;
+        }
+        .ck-bottom a i {
+            font-size: 1.35rem;
+        }
+    }
+    /* =================================================
+       TABLET BESAR
+    ================================================= */
+    @media (min-width: 992px) {
+        .mobile-container {
+            padding-left:
+                50px !important;
+            padding-right:
+                50px !important;
+        }
+        .ck-topbar {
+            padding: 24px;
+        }
+        .ck-logo {
+            width: 86px;
+            height: 86px;
+            min-width: 86px;
+        }
+        .ck-title {
+            font-size: 1.5rem;
+        }
+        .ck-subtitle {
+            font-size: 1.05rem;
+        }
+        .custom-card .card-body {
+            padding: 30px !important;
+        }
+    }
+    /* =================================================
+       MOBILE KECIL
+    ================================================= */
+    @media (max-width: 380px) {
+        .mobile-container {
+            padding-left:
+                10px !important;
+            padding-right:
+                10px !important;
+        }
+        .ck-logo {
+            width: 50px;
+            height: 50px;
+            min-width: 50px;
+        }
+        .ck-title {
+            font-size: 1rem;
+        }
+        .ck-subtitle {
+            font-size: .75rem;
+        }
+        .ck-bottom a {
+            font-size: .62rem;
+        }
+        .ck-bottom a i {
+            font-size: 1.05rem;
+        }
+    }
+</style>
 </head>
-
 <body>
-
-<div class="container-fluid mobile-container py-4">
-
-    <!-- Topbar Header -->
-    <div class="ck-topbar">
-        <img id="logoPreviewV2" src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
-        <div>
-            <p class="ck-title">Catatan Kas</p>
-            <span class="ck-subtitle" id="namaPondokHeader">Madrasah Al-Fattah</span>
-        </div>
+<!-- =====================================================
+     CONTAINER UTAMA
+====================================================== -->
+<div
+    class="container-fluid mobile-container py-4"
+>
+<!-- =================================================
+     HEADER
+================================================== -->
+<div class="ck-topbar">
+    <img
+        id="logoPreviewV2"
+        src="assets/logo-catatan-kas.jpg"
+        class="ck-logo"
+        alt="Logo Catatan Kas"
+    >
+    <div>
+        <p class="ck-title">
+            Catatan Kas
+        </p>
+        <span
+            class="ck-subtitle"
+            id="namaPondokHeader"
+        >
+            Madrasah Al-Fattah
+        </span>
     </div>
-
-    <div class="py-2 mb-5">
-
-        <!-- Form Pembayaran -->
-        <div class="card custom-card p-3 mb-4">
-            <div class="card-body p-1">
-                <a href="index.html" class="ck-back"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
-                <h4 class="mb-4 fw-bold">Input Pembayaran</h4>
-
-                <div class="mb-3">
-                    <label class="form-label text-muted small">Nama Santri</label>
-                    <select id="santri" class="form-select border-0 bg-light px-3 py-2">
-                        <option value="">Pilih Santri</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-muted small">Jenis Pembayaran</label>
-                    <select id="jenis" class="form-select border-0 bg-light px-3 py-2" onchange="pilihPembayaran()">
-                        <option value="">Pilih Pembayaran</option>
-                        <option value="SPP">SPP</option>
-                        <option value="Syahriyyah">Syahriyyah</option>
-                        <option value="Infaq">Infaq</option>
-                        <option value="Kas">Kas</option>
-                        <option value="Beras">Beras</option>
-                    </select>
-                </div>
-
-                <div id="berasPilihan" class="mb-3" style="display:none;">
-                    <label class="form-label text-muted small">Metode Beras</label>
-                    <select id="tipeBeras" class="form-select border-0 bg-light px-3 py-2" onchange="aturBeras()">
-                        <option value="uang">💵 Uang</option>
-                        <option value="liter">🌾 Beras (Liter)</option>
-                    </select>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label text-muted small">Nominal</label>
-                    <input type="number" id="nominal" class="form-control border-0 bg-light px-3 py-2" placeholder="Masukkan nominal">
-                </div>
-
-                <button class="btn btn-success w-100 py-2 rounded-pill fw-bold" onclick="simpanPembayaran()">
-                    Simpan Pembayaran
-                </button>
-            </div>
-        </div>
-
-        <!-- Riwayat Pembayaran -->
-        <div class="card custom-card p-3">
-            <div class="card-body p-1">
-                <h5 class="mb-3 fw-bold">📜 Riwayat Pembayaran</h5>
-                <ul id="riwayat" class="list-group list-group-flush mt-3">
-                    <li class="list-group-item text-center text-muted border-0 py-3">
-                        Memuat data...
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-    </div>
-
 </div>
-
-<!-- Bottom Navigation -->
+<!-- =================================================
+     FORM PEMBAYARAN
+================================================== -->
+<div class="card custom-card p-3 mb-4">
+    <div class="card-body p-1">
+        <!-- KEMBALI -->
+        <a
+            href="index.html"
+            class="ck-back"
+        >
+            <i class="bi bi-arrow-left"></i>
+            Kembali ke Dashboard
+        </a>
+        <h4 class="mb-4 fw-bold">
+            <i
+                class="bi bi-cash-stack text-success me-1"
+            ></i>
+            Input Pembayaran
+        </h4>
+        <!-- SANTRI -->
+        <div class="mb-3">
+            <label
+                class="form-label fw-semibold"
+                for="santri"
+            >
+                Nama Santri
+            </label>
+            <select
+                id="santri"
+                class="form-select"
+            >
+                <option value="">
+                    Pilih Santri
+                </option>
+            </select>
+        </div>
+        <!-- JENIS PEMBAYARAN -->
+        <div class="mb-3">
+            <label
+                class="form-label fw-semibold"
+                for="jenis"
+            >
+                Jenis Pembayaran
+            </label>
+            <select
+                id="jenis"
+                class="form-select"
+            >
+                <option value="">
+                    Pilih Pembayaran
+                </option>
+                <option value="SPP">
+                    SPP
+                </option>
+                <option value="Syahriyyah">
+                    Syahriyyah
+                </option>
+                <option value="Infaq">
+                    Infaq
+                </option>
+                <option value="Kas">
+                    Kas
+                </option>
+                <option value="Beras">
+                    Beras
+                </option>
+            </select>
+        </div>
+        <!-- MODE BERAS -->
+        <div
+            id="berasPilihan"
+            class="mb-3"
+            style="display:none;"
+        >
+            <label
+                class="form-label fw-semibold"
+                for="tipeBeras"
+            >
+                Metode Beras
+            </label>
+            <select
+                id="tipeBeras"
+                class="form-select"
+            >
+                <option value="uang">
+                    💵 Uang
+                </option>
+                <option value="liter">
+                    🌾 Beras (Liter)
+                </option>
+            </select>
+        </div>
+        <!-- NOMINAL -->
+        <div class="mb-4">
+            <label
+                class="form-label fw-semibold"
+                for="nominal"
+            >
+                Nominal / Jumlah
+            </label>
+            <input
+                type="number"
+                id="nominal"
+                class="form-control"
+                placeholder="Masukkan nominal"
+                min="0"
+                step="any"
+                inputmode="decimal"
+            >
+            <div
+                id="nominalHint"
+                class="form-text"
+            >
+                Masukkan jumlah pembayaran.
+            </div>
+        </div>
+        <!-- SIMPAN -->
+        <button
+            type="button"
+            class="btn btn-success w-100 py-2 rounded-pill fw-bold"
+            id="btnSimpanPembayaran"
+        >
+            <i class="bi bi-check-circle me-1"></i>
+            Simpan Pembayaran
+        </button>
+    </div>
+</div>
+<!-- =================================================
+     RIWAYAT PEMBAYARAN
+================================================== -->
+<div class="card custom-card p-3">
+    <div class="card-body p-1">
+        <h5 class="mb-3 fw-bold">
+            <i class="bi bi-clock-history text-success me-1"></i>
+            Riwayat Pembayaran
+        </h5>
+        <ul
+            id="riwayat"
+            class="list-group list-group-flush mt-3"
+        >
+            <li
+                class="list-group-item text-center text-muted border-0 py-3"
+            >
+                Memuat data...
+            </li>
+        </ul>
+    </div>
+</div>
+</div>
+<!-- =====================================================
+     BOTTOM NAVIGATION
+====================================================== -->
 <div class="ck-bottom">
-    <div class="ck-bottom-inner">
-        <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
-        <a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
-        <a href="pembayaran.html" class="active"><i class="bi bi-cash-stack"></i>Bayar</a>
-        <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
-        <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
-    </div>
+<div class="ck-bottom-inner">
+    <a href="index.html">
+        <i class="bi bi-house-fill"></i>
+        <span>Beranda</span>
+    </a>
+    <a href="santri.html">
+        <i class="bi bi-people-fill"></i>
+        <span>Santri</span>
+    </a>
+    <a
+        href="pembayaran.html"
+        class="active"
+    >
+        <i class="bi bi-cash-stack"></i>
+        <span>Bayar</span>
+    </a>
+    <a href="pengeluaran.html">
+        <i class="bi bi-wallet2"></i>
+        <span>Keluar</span>
+    </a>
+    <a href="laporan.html">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span>Laporan</span>
+    </a>
 </div>
-
-<!-- Script Logika UI -->
+</div>
+<!-- =====================================================
+     PENGATURAN NAMA & LOGO
+====================================================== -->
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Muat Pengaturan Nama Pondok & Logo
-        const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
-        if (pengaturan && pengaturan.namaPondok) {
-            document.getElementById("namaPondokHeader").textContent = pengaturan.namaPondok;
-        }
-        const savedLogo = localStorage.getItem("logoDashboard");
-        if (savedLogo) {
-            document.getElementById("logoPreviewV2").src = savedLogo;
-        }
-
-        // Muat Data Santri ke Dropdown dari localStorage (jaga-jaga jika variabel global belum siap)
-        let selectSantri = document.getElementById("santri");
-        let listSantri = [];
-        
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        let pengaturan = null;
         try {
-            listSantri = JSON.parse(localStorage.getItem("daftarSantri")) || window.daftarSantri || [];
-        } catch (e) {
-            listSantri = window.daftarSantri || [];
+            pengaturan =
+                JSON.parse(
+                    localStorage.getItem(
+                        "pengaturanAplikasi"
+                    )
+                );
+        } catch (error) {
+            console.warn(
+                "Pengaturan aplikasi tidak valid.",
+                error
+            );
         }
-
-        if (listSantri.length > 0) {
-            listSantri.forEach((item) => {
-                let option = document.createElement("option");
-                option.value = item.nama;
-                option.textContent = item.nama + (item.kelas ? ` (${item.kelas})` : '');
-                selectSantri.appendChild(option);
-            });
+        const namaPondok =
+            document.getElementById(
+                "namaPondokHeader"
+            );
+        if (
+            namaPondok &&
+            pengaturan &&
+            pengaturan.namaPondok
+        ) {
+            namaPondok.textContent =
+                pengaturan.namaPondok;
         }
-
-        tampilkanRiwayat();
-    });
-
-    function pilihPembayaran() {
-        let jenis = document.getElementById("jenis").value;
-        let nominal = document.getElementById("nominal");
-        let beras = document.getElementById("berasPilihan");
-
-        beras.style.display = "none";
-
-        if (jenis == "SPP") {
-            nominal.value = 50000;
-        } else if (jenis == "Syahriyyah") {
-            nominal.value = 80000;
-        } else if (jenis == "Kas") {
-            nominal.value = 30000;
-        } else if (jenis == "Beras") {
-            nominal.value = "";
-            beras.style.display = "block";
-        } else {
-            nominal.value = "";
+        const logo =
+            document.getElementById(
+                "logoPreviewV2"
+            );
+        const logoTersimpan =
+            localStorage.getItem(
+                "logoDashboard"
+            );
+        if (
+            logo &&
+            logoTersimpan
+        ) {
+            logo.src =
+                logoTersimpan;
+        }
+        if (logo) {
+            logo.onerror =
+                function () {
+                    localStorage.removeItem(
+                        "logoDashboard"
+                    );
+                    logo.src =
+                        "assets/logo-catatan-kas.jpg";
+                };
         }
     }
-
-    function aturBeras() {
-        let tipe = document.getElementById("tipeBeras").value;
-        let nominal = document.getElementById("nominal");
-
-        if (tipe == "uang") {
-            nominal.placeholder = "Masukkan nominal";
-            nominal.value = 120000;
-        } else {
-            nominal.value = "";
-            nominal.placeholder = "Masukkan jumlah liter";
-        }
-    }
-
-    function simpanPembayaran() {
-        let nama = document.getElementById("santri").value;
-        let jenis = document.getElementById("jenis").value;
-        let nominal = document.getElementById("nominal").value;
-
-        if (!nama || !jenis || !nominal) {
-            alert("Data belum lengkap");
-            return;
-        }
-
-        let riwayatArr = JSON.parse(localStorage.getItem("pembayaran")) || [];
-
-        riwayatArr.push({
-            nama,
-            jenis,
-            nominal,
-            tanggal: new Date().toLocaleDateString("id-ID")
-        });
-
-        localStorage.setItem("pembayaran", JSON.stringify(riwayatArr));
-        alert("✅ Pembayaran berhasil disimpan");
-        
-        // Reset form
-        document.getElementById("nominal").value = "";
-        document.getElementById("jenis").value = "";
-        document.getElementById("santri").value = "";
-        document.getElementById("berasPilihan").style.display = "none";
-
-        tampilkanRiwayat();
-    }
-
-    function tampilkanRiwayat() {
-        let box = document.getElementById("riwayat");
-        box.innerHTML = "";
-
-        let riwayatArr = JSON.parse(localStorage.getItem("pembayaran")) || [];
-
-        if (riwayatArr.length === 0) {
-            box.innerHTML = `
-            <li class="list-group-item text-muted text-center border-0 py-3">
-                Belum ada transaksi
-            </li>`;
-            return;
-        }
-
-        // Tampilkan dari yang terbaru
-        riwayatArr.slice().reverse().forEach((item) => {
-            box.innerHTML += `
-            <li class="list-group-item d-flex justify-content-between align-items-center border-0 border-bottom py-3 bg-transparent">
-                <div>
-                    <b class="d-block text-dark">${item.nama}</b>
-                    <small class="text-muted">${item.jenis} • ${item.tanggal}</small>
-                </div>
-                <div class="text-success fw-bold">
-                    Rp ${Number(item.nominal).toLocaleString("id-ID")}
-                </div>
-            </li>`;
-        });
-    }
+);
 </script>
-
-<!-- Script Tambahan Pendukung -->
-<script type="module" src="js/pembayaran.js?v=3"></script>
+<!-- =====================================================
+     LOGIKA PEMBAYARAN
+====================================================== -->
+<script>
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        const jenis =
+            document.getElementById(
+                "jenis"
+            );
+        const tipeBeras =
+            document.getElementById(
+                "tipeBeras"
+            );
+        const berasPilihan =
+            document.getElementById(
+                "berasPilihan"
+            );
+        const nominal =
+            document.getElementById(
+                "nominal"
+            );
+        const nominalHint =
+            document.getElementById(
+                "nominalHint"
+            );
+        if (
+            !jenis ||
+            !tipeBeras ||
+            !berasPilihan ||
+            !nominal
+        ) {
+            return;
+        }
+        function pilihPembayaran() {
+            const nilai =
+                jenis.value;
+            berasPilihan.style.display =
+                "none";
+            nominal.value =
+                "";
+            nominal.step =
+                "1";
+            nominal.placeholder =
+                "Masukkan nominal";
+            if (nominalHint) {
+                nominalHint.textContent =
+                    "Masukkan jumlah pembayaran.";
+            }
+            if (nilai === "SPP") {
+                nominal.value =
+                    "50000";
+            }
+            else if (
+                nilai === "Syahriyyah"
+            ) {
+                nominal.value =
+                    "80000";
+            }
+            else if (
+                nilai === "Kas"
+            ) {
+                nominal.value =
+                    "30000";
+            }
+            else if (
+                nilai === "Beras"
+            ) {
+                berasPilihan.style.display =
+                    "block";
+                aturBeras();
+            }
+        }
+        function aturBeras() {
+            if (
+                jenis.value !== "Beras"
+            ) {
+                return;
+            }
+            const tipe =
+                tipeBeras.value;
+            if (
+                tipe === "uang"
+            ) {
+                nominal.value =
+                    "120000";
+                nominal.step =
+                    "1";
+                nominal.placeholder =
+                    "Masukkan nominal";
+                if (nominalHint) {
+                    nominalHint.textContent =
+                        "Masukkan nominal pembayaran beras dalam rupiah.";
+                }
+            }
+            else {
+                nominal.value =
+                    "";
+                nominal.step =
+                    "0.1";
+                nominal.placeholder =
+                    "Masukkan jumlah liter";
+                if (nominalHint) {
+                    nominalHint.textContent =
+                        "Masukkan jumlah beras dalam liter.";
+                }
+            }
+        }
+        jenis.addEventListener(
+            "change",
+            pilihPembayaran
+        );
+        tipeBeras.addEventListener(
+            "change",
+            aturBeras
+        );
+    }
+);
+</script>
+<!-- =====================================================
+     PEMBAYARAN
+====================================================== -->
+<script type="module">
+import "./js/pembayaran.js?v=4";
+</script>
+<!-- =====================================================
+     THEME
+====================================================== -->
 <script src="js/theme.js"></script>
-<script type="module" src="js/auth-guard.js"></script>
-
+<!-- =====================================================
+     AUTH GUARD
+====================================================== -->
+<script
+    type="module"
+    src="js/auth-guard.js"
+></script>
+<!-- =====================================================
+     BOOTSTRAP JS
+====================================================== -->
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+></script>
 </body>
 </html>
