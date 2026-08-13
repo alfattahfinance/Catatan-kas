@@ -49,7 +49,22 @@
 
             }, 0);
     }
+    function getApkDownloadUrl(version) {
+    const cleanVersion = String(version || "")
+        .trim()
+        .replace(/^v/i, "");
 
+    if (!cleanVersion) {
+        return null;
+    }
+
+    return (
+        "https://github.com/alfattahfinance/Catatan-kas/releases/download/" +
+        "v" + encodeURIComponent(cleanVersion) +
+        "/Keuangan-v" + encodeURIComponent(cleanVersion) +
+        ".apk"
+    );
+}
 
     /* =================================================
        CEK APAKAH VERSI BARU
@@ -284,21 +299,7 @@
 
         }
 
-        if (nowButton) {
-            nowButton.addEventListener(
-                "click",
-                function () {
-                    // Jika di version.json disediakan link download/url, arahkan ke sana, jika tidak lakukan hard reload cache
-                    if (data.url) {
-                        window.location.href = data.url;
-                    } else {
-                        // Memaksa reload bersih untuk memuat file terbaru
-                        window.location.reload(true);
-                    }
-                }
-            );
-        }
-
+        
     }
 
 
@@ -314,7 +315,35 @@
             ")."
         );
 
-    }
+    if (nowButton) {
+    nowButton.addEventListener(
+        "click",
+        function () {
+
+            const apkUrl =
+                getApkDownloadUrl(data.version);
+
+            if (!apkUrl) {
+                alert(
+                    "Link APK versi terbaru tidak dapat dibuat."
+                );
+                return;
+            }
+
+            nowButton.disabled = true;
+
+            nowButton.innerHTML =
+                '<i class="bi bi-download"></i> Membuka APK...';
+
+            console.log(
+                "APK update:",
+                apkUrl
+            );
+
+            window.location.href = apkUrl;
+        }
+    );
+}
 
 
     /* =================================================
