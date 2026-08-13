@@ -11,8 +11,6 @@ import {
     collection,
     addDoc,
     getDocs,
-    query,
-    orderBy,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
@@ -102,7 +100,7 @@ window.simpanPengeluaran = async function() {
             keterangan,
             tanggal,
             jumlah,
-            nominal: jumlah, // Menyimpan cadangan key agar aman dibaca script lain
+            nominal: jumlah,
             satuan,
             createdAt: serverTimestamp()
         };
@@ -126,38 +124,6 @@ window.simpanPengeluaran = async function() {
     }
 };
 
-// Contoh fungsi simpan pengaturan termasuk logo dan tema
-async function simpanPengaturanAplikasi() {
-    const inputLogo = document.getElementById("inputLogo"); // sesuaikan id input file logo Anda
-    const selectTema = document.getElementById("temaAplikasi"); // sesuaikan id select tema Anda
-    const namaPondok = document.getElementById("namaPondok")?.value || "";
-
-    let pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
-    pengaturan.namaPondok = namaPondok;
-    if (selectTema) {
-        pengaturan.tema = selectTema.value; // simpan "light", "dark", atau "system"
-    }
-
-    // Jika user memilih file logo baru
-    if (inputLogo && inputLogo.files && inputLogo.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const base64Logo = e.target.result;
-            localStorage.setItem("logoDashboard", base64Logo);
-            
-            // Simpan sisa pengaturan lalu reload/beritahu berhasil
-            localStorage.setItem("pengaturanAplikasi", JSON.stringify(pengaturan));
-            alert("Pengaturan dan logo berhasil disimpan!");
-            location.reload();
-        };
-        reader.readAsDataURL(inputLogo.files[0]);
-    } else {
-        // Jika tidak mengganti logo, simpan pengaturan teks/tema saja
-        localStorage.setItem("pengaturanAplikasi", JSON.stringify(pengaturan));
-        alert("Pengaturan berhasil disimpan!");
-        location.reload();
-    }
-}
 
 // ======================================
 // MUAT RIWAYAT PENGELUARAN
@@ -184,7 +150,7 @@ async function muatRiwayatPengeluaran() {
             });
         });
 
-        // Urutkan berdasarkan tanggal terbaru jika ada
+        // Urutkan berdasarkan tanggal terbaru
         dataRiwayat.sort((a, b) => {
             const tA = bacaTanggal(a) || new Date(0);
             const tB = bacaTanggal(b) || new Date(0);
