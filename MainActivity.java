@@ -5,13 +5,11 @@ import android.os.Bundle;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
-import androidx.webkit.WebViewFeature;
 
 public class MainActivity extends AppCompatActivity {
     private WebView webView;
@@ -46,20 +44,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-            WebSettingsCompat.setForceDark(
-                    settings, WebSettingsCompat.FORCE_DARK_OFF);
-        }
-
+        // Memuat halaman utama web lokal dari assets
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-    }
 
-    @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        // Menangani tombol Back modern menggunakan OnBackPressedDispatcher
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack();
+                } else {
+                    finish(); // Keluar aplikasi jika WebView sudah di halaman paling awal
+                }
+            }
+        });
     }
 }
