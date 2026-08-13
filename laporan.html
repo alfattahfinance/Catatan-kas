@@ -39,8 +39,11 @@
         }
 
         .mobile-container {
-            max-width: 600px;
-            margin: auto;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
         }
 
         .custom-card {
@@ -169,6 +172,51 @@
             }
         }
 
+/* =================================================
+   RESPONSIVE TABLET & LAYAR BESAR
+================================================= */
+
+@media (min-width: 768px) {
+
+    .mobile-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 30px !important;
+        padding-right: 30px !important;
+    }
+
+    .ck-topbar {
+        padding: 20px;
+    }
+
+    .ck-logo {
+        width: 72px;
+        height: 72px;
+    }
+
+    .ck-title {
+        font-size: 1.35rem;
+    }
+
+    .ck-subtitle {
+        font-size: 1rem;
+    }
+
+    .custom-card {
+        border-radius: 22px;
+    }
+
+    .form-select {
+        min-height: 52px;
+        font-size: 1rem;
+    }
+
+    .table {
+        font-size: 1rem;
+    }
+
+}
+        
         /* DARK MODE */
         body.dark-mode {
             background: #121212 !important;
