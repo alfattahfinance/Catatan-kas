@@ -34,10 +34,11 @@
         }
 
         .mobile-container {
-            max-width: 600px;
-            margin: auto;
-            padding: 15px;
-        }
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto;
+            padding: 20px !important;
+       }
 
         .custom-card {
             border: none;
@@ -106,8 +107,8 @@
         }
 
         .ck-bottom-inner {
-            width: 100%;
-            max-width: 600px;
+            width: 100% !important;
+            max-width: 100% !important;
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -176,6 +177,81 @@
         body.dark-mode .ck-bottom a.active {
             color: #51cf66 !important;
         }
+
+/* =================================================
+   TAMPILAN TABLET
+================================================= */
+
+@media (min-width: 768px) {
+
+    .mobile-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 35px !important;
+        padding-right: 35px !important;
+    }
+
+    .ck-topbar {
+        padding: 20px;
+    }
+
+    .ck-logo {
+        width: 72px;
+        height: 72px;
+    }
+
+    .ck-title {
+        font-size: 1.35rem;
+    }
+
+    .ck-subtitle {
+        font-size: 1rem;
+    }
+
+    .back-btn {
+        font-size: 1rem;
+    }
+
+    h4 {
+        font-size: 1.6rem;
+    }
+
+    .custom-card {
+        border-radius: 20px;
+    }
+
+    .custom-card .card-body {
+        padding: 25px !important;
+    }
+
+    .form-control {
+        min-height: 52px;
+        font-size: 1rem;
+    }
+
+    .btn {
+        min-height: 52px;
+        font-size: 1rem;
+    }
+
+    .table {
+        font-size: 1rem;
+    }
+
+    .ck-bottom {
+        padding: 8px 25px;
+    }
+
+    .ck-bottom a {
+        font-size: .8rem;
+        padding: 8px 4px;
+    }
+
+    .ck-bottom a i {
+        font-size: 1.35rem;
+    }
+}        
+        
     </style>
 </head>
 
