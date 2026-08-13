@@ -1,365 +1,171 @@
-/* ======================================
-   CATATAN KAS
-   GLOBAL THEME / DARK MODE
-   ====================================== */
-
-
-/* ======================================
-   HTML & BODY
-   ====================================== */
-
-html.dark-mode {
-    background-color: #121212 !important;
-}
+/* =====================================================
+   GLOBAL DARK MODE
+===================================================== */
 
 body.dark-mode {
-    background-color: #121212 !important;
+    background: #121212 !important;
     color: #f1f1f1 !important;
+    animation: none !important;
 }
 
-
-/* ======================================
-   CONTAINER
-   ====================================== */
-
-body.dark-mode .container,
-body.dark-mode .container-fluid {
-    color: #f1f1f1;
-}
-
-
-/* ======================================
-   CARD
-   ====================================== */
-
+/* Card */
 body.dark-mode .card,
-body.dark-mode .custom-card {
-    background-color: #1e1e1e !important;
+body.dark-mode .custom-card,
+body.dark-mode .ck-topbar {
+    background: #1e1e1e !important;
     color: #f1f1f1 !important;
     border-color: #333 !important;
 }
 
-body.dark-mode .card-body {
-    color: #f1f1f1 !important;
+/* Header */
+body.dark-mode .ck-title,
+body.dark-mode .page-heading,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+    color: #5dd39e !important;
 }
 
-
-/* ======================================
-   HEADER
-   ====================================== */
-
-body.dark-mode .app-header {
-    background-color: #1e1e1e !important;
-    color: #f1f1f1 !important;
+/* Text */
+body.dark-mode .text-muted {
+    color: #aaa !important;
 }
 
-
-/* ======================================
-   TEKS
-   ====================================== */
-
-body.dark-mode .text-dark {
-    color: #ffffff !important;
-}
-
-body.dark-mode .text-muted,
-body.dark-mode .text-secondary {
-    color: #adb5bd !important;
-}
-
+body.dark-mode label,
 body.dark-mode .form-label {
-    color: #8fd3b4 !important;
+    color: #ddd !important;
 }
 
-body.dark-mode .summary-title {
-    color: #8fd3b4 !important;
-}
-
-
-/* ======================================
-   INPUT & SELECT
-   ====================================== */
-
-body.dark-mode input,
-body.dark-mode textarea,
-body.dark-mode select,
+/* Input & Select */
 body.dark-mode .form-control,
-body.dark-mode .form-select {
-    background-color: #2b2b2b !important;
-    color: #ffffff !important;
-    border-color: #555 !important;
+body.dark-mode .form-select,
+body.dark-mode textarea {
+    background-color: #2a2a2a !important;
+    color: #fff !important;
+    border-color: #444 !important;
 }
 
-
-/* ======================================
-   PLACEHOLDER
-   ====================================== */
-
-body.dark-mode input::placeholder,
-body.dark-mode textarea::placeholder,
 body.dark-mode .form-control::placeholder {
-    color: #aaaaaa !important;
-}
-
-
-/* ======================================
-   DROPDOWN OPTION
-   ====================================== */
-
-body.dark-mode option {
-    background-color: #2b2b2b !important;
-    color: #ffffff !important;
-}
-
-
-/* ======================================
-   MENU
-   ====================================== */
-
-body.dark-mode .menu-btn {
-    background-color: #1e1e1e !important;
-    color: #f1f1f1 !important;
-    border-color: #444 !important;
-}
-
-body.dark-mode .menu-btn:hover {
-    background-color: #292929 !important;
-    color: #75d6a5 !important;
-    border-color: #198754 !important;
-}
-
-
-/* ======================================
-   STAT CARD
-   ====================================== */
-
-body.dark-mode .stat-card {
-    background-color: #1e1e1e !important;
-}
-
-body.dark-mode .income-icon {
-    background-color: rgba(25, 135, 84, .20) !important;
-}
-
-body.dark-mode .expense-icon {
-    background-color: rgba(220, 53, 69, .20) !important;
-}
-
-
-/* ======================================
-   SALDO
-   Tetap hijau
-   ====================================== */
-
-body.dark-mode .saldo-card {
-    background:
-        linear-gradient(
-            135deg,
-            #198754,
-            #0f6f57
-        ) !important;
-
-    color: #ffffff !important;
-}
-
-
-/* ======================================
-   LIST
-   ====================================== */
-
-body.dark-mode .list-group-item {
-    background-color: #1e1e1e !important;
-    color: #f1f1f1 !important;
-    border-color: #444 !important;
-}
-
-
-/* ======================================
-   TABLE
-   ====================================== */
-
-body.dark-mode .table {
-    --bs-table-bg: #1e1e1e;
-    --bs-table-color: #ffffff;
-    --bs-table-border-color: #444;
-
-    color: #ffffff !important;
-}
-
-body.dark-mode .table-light {
-    background-color: #2b2b2b !important;
-    color: #ffffff !important;
-}
-
-body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * {
-    background-color: #252525 !important;
-    color: #ffffff !important;
-}
-
-body.dark-mode .table-hover > tbody > tr:hover > * {
-    background-color: #333333 !important;
-    color: #ffffff !important;
-}
-
-
-/* ======================================
-   DROPDOWN MENU
-   ====================================== */
-
-body.dark-mode .dropdown-menu {
-    background-color: #1e1e1e !important;
-    border-color: #444 !important;
-}
-
-body.dark-mode .dropdown-item {
-    color: #ffffff !important;
-}
-
-body.dark-mode .dropdown-item:hover {
-    background-color: #333333 !important;
-}
-
-
-/* ======================================
-   MODAL
-   ====================================== */
-
-body.dark-mode .modal-content {
-    background-color: #1e1e1e !important;
-    color: #ffffff !important;
-    border-color: #444 !important;
-}
-
-
-/* ======================================
-   ALERT
-   ====================================== */
-
-body.dark-mode .alert {
-    background-color: #2b2b2b !important;
-    color: #ffffff !important;
-    border-color: #444 !important;
-}
-
-
-/* ======================================
-   GARIS
-   ====================================== */
-
-body.dark-mode hr {
-    border-color: #444 !important;
-}
-
-
-/* ======================================
-   LINK
-   ====================================== */
-
-body.dark-mode a {
-    color: #75b798;
-}
-
-
-/* ======================================
-   BOTTOM NAVIGATION
-   ====================================== */
-
-body.dark-mode .ck-bottom {
-    background-color: rgba(30, 30, 30, .97) !important;
-    border-top-color: #333 !important;
-    color: #f1f1f1 !important;
-}
-
-body.dark-mode .ck-bottom a {
-    color: #adb5bd !important;
-}
-
-body.dark-mode .ck-bottom a:hover,
-body.dark-mode .ck-bottom a.active {
-    color: #51cf66 !important;
-    background-color: rgba(25, 135, 84, .12);
-}
-
-
-/* ======================================
-   FOOTER
-   ====================================== */
-
-body.dark-mode .dashboard-footer {
     color: #999 !important;
 }
 
-
-/* ======================================
-   BUTTON OUTLINE
-   ====================================== */
-
-body.dark-mode .btn-outline-secondary {
-    color: #cccccc !important;
-    border-color: #666 !important;
+/* Bootstrap bg-light */
+body.dark-mode .bg-light {
+    background-color: #2a2a2a !important;
+    color: #fff !important;
 }
 
-
-/* ======================================
-   FOCUS
-   ====================================== */
-
-body.dark-mode .form-control:focus,
-body.dark-mode .form-select:focus {
-    border-color: #198754 !important;
-
-    box-shadow:
-        0 0 0 .2rem
-        rgba(25, 135, 84, .20) !important;
+/* Table */
+body.dark-mode .table {
+    --bs-table-color: #eee;
+    --bs-table-bg: #1e1e1e;
+    color: #eee !important;
 }
 
-
-/* ======================================
-   BUTTON
-   ====================================== */
-
-body.dark-mode .btn-light {
-    background-color: #2b2b2b !important;
-    color: #ffffff !important;
-    border-color: #555 !important;
+body.dark-mode .table > :not(caption) > * > * {
+    background-color: #1e1e1e;
+    color: #eee;
+    border-color: #3a3a3a;
 }
 
-body.dark-mode .btn-dark {
-    background-color: #111111 !important;
-    color: #ffffff !important;
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #242424 !important;
+    color: #eee !important;
 }
 
-
-/* ======================================
-   CLOSE BUTTON
-   ====================================== */
-
-body.dark-mode .btn-close {
-    filter: invert(1) grayscale(100%);
+/* Table header */
+body.dark-mode .table-success {
+    --bs-table-bg: #173c2b !important;
+    --bs-table-color: #fff !important;
+    background-color: #173c2b !important;
+    color: #fff !important;
 }
 
+/* Badge */
+body.dark-mode .badge {
+    color: #fff !important;
+}
 
-/* ======================================
-   BORDER
-   ====================================== */
+/* Bottom navigation */
+body.dark-mode .ck-bottom {
+    background: rgba(30, 30, 30, .98) !important;
+    border-top-color: #333 !important;
+    box-shadow: 0 -3px 15px rgba(0, 0, 0, .35);
+}
 
+body.dark-mode .ck-bottom a {
+    color: #aaa !important;
+}
+
+body.dark-mode .ck-bottom a.active,
+body.dark-mode .ck-bottom a:hover {
+    color: #5dd39e !important;
+}
+
+/* Back button */
+body.dark-mode .ck-back {
+    color: #5dd39e !important;
+}
+
+body.dark-mode .ck-back:hover {
+    color: #7ee2b2 !important;
+}
+
+/* Border */
 body.dark-mode .border,
-body.dark-mode .border-top,
-body.dark-mode .border-bottom,
-body.dark-mode .border-start,
-body.dark-mode .border-end {
+body.dark-mode .border-0 {
+    border-color: #333 !important;
+}
+
+/* Modal Bootstrap */
+body.dark-mode .modal-content {
+    background: #1e1e1e !important;
+    color: #eee !important;
+    border-color: #333 !important;
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-color: #333 !important;
+}
+
+/* Dropdown */
+body.dark-mode .dropdown-menu {
+    background: #1e1e1e !important;
+    border-color: #333 !important;
+}
+
+body.dark-mode .dropdown-item {
+    color: #eee !important;
+}
+
+body.dark-mode .dropdown-item:hover {
+    background: #2a2a2a !important;
+}
+
+/* List group */
+body.dark-mode .list-group-item {
+    background: #1e1e1e !important;
+    color: #eee !important;
+    border-color: #333 !important;
+}
+
+/* Alert */
+body.dark-mode .alert {
+    background: #242424 !important;
+    color: #eee !important;
     border-color: #444 !important;
 }
 
+/* Links */
+body.dark-mode a {
+    color: #5dd39e;
+}
 
-/* ======================================
-   SHADOW
-   ====================================== */
-
-body.dark-mode .shadow,
-body.dark-mode .shadow-sm,
-body.dark-mode .shadow-lg {
-    box-shadow:
-        0 4px 15px
-        rgba(0, 0, 0, .35) !important;
+/* Logo tetap terang */
+body.dark-mode .ck-logo {
+    background: #fff !important;
 }
