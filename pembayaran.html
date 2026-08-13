@@ -930,27 +930,21 @@
             <!-- SANTRI -->
 
             <div class="mb-3">
+    <label for="namaSantriPemasukan" class="form-label">Nama Santri / Keterangan</label>
+    <input 
+        type="text" 
+        class="form-control" 
+        id="namaSantriPemasukan" 
+        list="datalistSantri" 
+        placeholder="Ketik atau cari nama santri..." 
+        autocomplete="off"
+    >
+    <datalist id="datalistSantri">
+        <!-- Daftar nama santri akan dimuat secara otomatis dari JavaScript -->
+    </datalist>
+</div>
 
-                <label
-                    class="form-label"
-                    for="santri"
-                >
-                    Nama Santri
-                </label>
-
-                <select
-                    id="santri"
-                    class="form-select"
-                >
-
-                    <option value="">
-                        Pilih Santri
-                    </option>
-
-                </select>
-
-            </div>
-
+                
 
             <!-- JENIS PEMBAYARAN -->
 
