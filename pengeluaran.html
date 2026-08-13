@@ -501,6 +501,18 @@ document.addEventListener("DOMContentLoaded", function () {
         jenis.addEventListener("change", ubahSatuan);
     }
 });
+    document.addEventListener("DOMContentLoaded", function () {
+    // Muat logo tersimpan
+    const savedLogo = localStorage.getItem("logoDashboard");
+    if (savedLogo) {
+        // Cari semua elemen gambar logo di halaman (sesuaikan ID atau class logo Anda)
+        const logoImgs = document.querySelectorAll(".ck-logo, #logoPreviewV2");
+        logoImgs.forEach(img => {
+            img.src = savedLogo;
+        });
+    }
+});
+
 </script>
 
 
