@@ -18,6 +18,27 @@
         name="description"
         content="Pembayaran Santri - Catatan Kas Ribath Madrasah Al-Fattah"
     >
+<script>
+    (function () {
+        try {
+            const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
+            const tema = data.tema || "light";
+            let dark = false;
+
+            if (tema === "dark") {
+                dark = true;
+            } else if (tema === "system") {
+                dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            }
+
+            if (dark) {
+                document.documentElement.classList.add("dark-mode");
+            }
+        } catch (error) {
+            console.warn("Gagal memuat tema:", error);
+        }
+    })();
+</script>
 
     <title>Pembayaran Santri | Catatan Kas</title>
 
