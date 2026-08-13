@@ -357,6 +357,35 @@ async function ambilDataFirebase() {
 
 }
 
+
+// ======================================
+// AMBIL DATA SANTRI UNTUK PEMBAYARAN
+// ======================================
+
+async function muatDaftarSantriPilih() {
+    const datalist = document.getElementById("datalistSantri");
+    if (!datalist) return;
+
+    try {
+        const santriSnapshot = await getDocs(collection(db, "santri"));
+        datalist.innerHTML = "";
+
+        santriSnapshot.forEach(doc => {
+            const data = doc.data();
+            const nama = data.namaSantri || data.nama || "";
+            
+            if (nama) {
+                const option = document.createElement("option");
+                option.value = nama;
+                datalist.appendChild(option);
+            }
+        });
+    } catch (error) {
+        console.error("Gagal memuat daftar santri:", error);
+    }
+}
+
+
 // ======================================
 // SIMPAN PEMASUKAN
 // ======================================
@@ -389,7 +418,7 @@ async function simpanPemasukan(event) {
     }
 
     if (!namaSantri) {
-        alert("Silakan isi nama santri / sumber dana.");
+        alert("Silakan isi nama santri / keterangan.");
         return;
     }
 
@@ -1081,12 +1110,6 @@ function tampilkanDashboard() {
         else {
 
             // Mode UANG
-            //
-            // Untuk transaksi Beras yang
-            // memang disimpan dalam rupiah,
-            // hasil.masuk dan hasil.keluar
-            // adalah nominal uang.
-
             if (totalMasukEl) {
 
                 totalMasukEl.textContent =
@@ -1489,9 +1512,6 @@ function tampilkanLaporan() {
         }
 
 
-        // Jangan masukkan beras liter
-        // ke laporan uang
-
         if (
             String(data.satuan || "").toLowerCase()
             === "liter"
@@ -1572,9 +1592,6 @@ function tampilkanLaporan() {
 
         }
 
-
-        // Jangan masukkan beras liter
-        // ke laporan uang
 
         if (
             String(data.satuan || "").toLowerCase()
@@ -2307,7 +2324,10 @@ function jalankanAplikasi() {
         "Catatan Kas siap dijalankan."
     );
 
-        // ==================================
+    // Muat daftar santri untuk fitur ketik otomatis nama santri
+    muatDaftarSantriPilih();
+
+    // ==================================
     // SIMPAN PEMASUKAN
     // ==================================
 
