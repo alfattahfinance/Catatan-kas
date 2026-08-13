@@ -1,7 +1,5 @@
 {
   "version": "2.2",
-  "versionCode": 4,
-  "name": "Keuangan",
   "message": "Versi baru Keuangan 2.2 tersedia. Silakan update untuk mendapatkan fitur terbaru.",
-  "downloadUrl": ""
+  "url": "https://github.com/alfattahfinance/Catatan-kas"
 }
