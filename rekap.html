@@ -3,6 +3,29 @@
 
 <head>
     <meta charset="UTF-8">
+    <script>
+    (function () {
+        try {
+            const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
+            const tema = data.tema || "light";
+            let dark = false;
+
+            if (tema === "dark") {
+                dark = true;
+            } else if (tema === "system") {
+                dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            }
+
+            if (dark) {
+                document.documentElement.classList.add("dark-mode");
+                document.documentElement.setAttribute("data-theme", "dark");
+            }
+        } catch (error) {
+            console.warn("Gagal memuat tema:", error);
+        }
+    })();
+</script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rekap Keuangan | Catatan Kas</title>
     
