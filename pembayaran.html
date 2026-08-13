@@ -2,29 +2,8 @@
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
-<script>
-    (function () {
-        try {
-            const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
-            const tema = data.tema || "light";
-            let dark = false;
-
-            if (tema === "dark") {
-                dark = true;
-            } else if (tema === "system") {
-                dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            }
-
-            if (dark) {
-                document.documentElement.classList.add("dark-mode");
-                document.documentElement.setAttribute("data-theme", "dark");
-            }
-        } catch (error) {
-            console.warn("Gagal memuat tema:", error);
-        }
-    })();
-</script>
 
     <meta
         name="viewport"
@@ -38,51 +17,36 @@
 
     <meta
         name="description"
-        content="Pembayaran Santri - Catatan Kas Ribath Madrasah Al-Fattah"
+        content="Pembayaran Santri - Catatan Kas"
     >
-<script>
-    (function () {
-        try {
-            const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
-            const tema = data.tema || "light";
-            let dark = false;
-
-            if (tema === "dark") {
-                dark = true;
-            } else if (tema === "system") {
-                dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            }
-
-            if (dark) {
-                document.documentElement.classList.add("dark-mode");
-            }
-        } catch (error) {
-            console.warn("Gagal memuat tema:", error);
-        }
-    })();
-</script>
 
     <title>Pembayaran Santri | Catatan Kas</title>
+
 
     <!-- =====================================================
          BOOTSTRAP
     ====================================================== -->
+
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
+
     <!-- =====================================================
          BOOTSTRAP ICONS
     ====================================================== -->
+
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     >
 
+
     <!-- =====================================================
          CSS GLOBAL APLIKASI
     ====================================================== -->
+
     <link
         rel="stylesheet"
         href="css/style.css"
@@ -93,22 +57,94 @@
         href="css/theme.css"
     >
 
+
+    <!-- =====================================================
+         TEMA AWAL
+         Mencegah halaman berkedip sebelum theme.js berjalan
+    ====================================================== -->
+
+    <script>
+
+        (function () {
+
+            try {
+
+                const data =
+                    JSON.parse(
+                        localStorage.getItem(
+                            "pengaturanAplikasi"
+                        )
+                    ) || {};
+
+                const tema =
+                    data.tema || "light";
+
+                let dark = false;
+
+                if (tema === "dark") {
+
+                    dark = true;
+
+                } else if (tema === "system") {
+
+                    dark =
+                        window.matchMedia(
+                            "(prefers-color-scheme: dark)"
+                        ).matches;
+
+                }
+
+                document.documentElement.setAttribute(
+                    "data-theme",
+                    dark ? "dark" : "light"
+                );
+
+                if (dark) {
+
+                    document.documentElement.classList.add(
+                        "dark-mode"
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "Gagal memuat tema:",
+                    error
+                );
+
+            }
+
+        })();
+
+    </script>
+
+
     <!-- =====================================================
          STYLE KHUSUS HALAMAN PEMBAYARAN
     ====================================================== -->
+
     <style>
 
         * {
             box-sizing: border-box;
         }
 
+
         html {
+
             scroll-behavior: smooth;
+
             min-height: 100%;
+
         }
 
+
         body {
+
             margin: 0;
+
             min-height: 100vh;
 
             font-family:
@@ -127,27 +163,40 @@
                     #fefae0 100%
                 );
 
-            background-size: 200% 200%;
+            background-size:
+                200% 200%;
 
             animation:
                 gradientShift 15s ease infinite;
+
         }
+
 
         @keyframes gradientShift {
 
             0% {
-                background-position: 0% 50%;
+
+                background-position:
+                    0% 50%;
+
             }
 
             50% {
-                background-position: 100% 50%;
+
+                background-position:
+                    100% 50%;
+
             }
 
             100% {
-                background-position: 0% 50%;
+
+                background-position:
+                    0% 50%;
+
             }
 
         }
+
 
         /* =================================================
            CONTAINER
@@ -161,12 +210,17 @@
 
             margin: 0 auto;
 
-            padding-left: 20px !important;
+            padding-left:
+                20px !important;
 
-            padding-right: 20px !important;
+            padding-right:
+                20px !important;
 
-            padding-bottom: 120px !important;
+            padding-bottom:
+                120px !important;
+
         }
+
 
         /* =================================================
            CARD
@@ -191,8 +245,11 @@
             -webkit-backdrop-filter:
                 blur(8px);
 
-            margin-bottom: 20px;
+            margin-bottom:
+                20px;
+
         }
+
 
         /* =================================================
            HEADER
@@ -222,7 +279,9 @@
             transition:
                 background .2s ease,
                 color .2s ease;
+
         }
+
 
         .ck-logo {
 
@@ -236,29 +295,41 @@
 
             border-radius: 14px;
 
-            background: #fff;
+            background:
+                #fff;
 
             border:
                 1px solid #eee;
+
         }
+
 
         .ck-title {
 
             margin: 0;
 
-            color: #198754;
+            color:
+                #198754;
 
-            font-weight: 800;
+            font-weight:
+                800;
 
-            font-size: 1.1rem;
+            font-size:
+                1.1rem;
+
         }
+
 
         .ck-subtitle {
 
-            color: #6c757d;
+            color:
+                #6c757d;
 
-            font-size: .8rem;
+            font-size:
+                .8rem;
+
         }
+
 
         /* =================================================
            TOMBOL KEMBALI
@@ -266,25 +337,37 @@
 
         .ck-back {
 
-            display: inline-flex;
+            display:
+                inline-flex;
 
-            align-items: center;
+            align-items:
+                center;
 
-            gap: 6px;
+            gap:
+                6px;
 
-            color: #198754;
+            color:
+                #198754;
 
-            text-decoration: none;
+            text-decoration:
+                none;
 
-            font-weight: 700;
+            font-weight:
+                700;
 
-            margin-bottom: 15px;
+            margin-bottom:
+                15px;
+
         }
+
 
         .ck-back:hover {
 
-            color: #146c43;
+            color:
+                #146c43;
+
         }
+
 
         /* =================================================
            FORM
@@ -292,30 +375,39 @@
 
         .form-label {
 
-            color: #495057;
+            color:
+                #495057;
 
-            font-weight: 600;
+            font-weight:
+                600;
+
         }
+
 
         .form-control,
         .form-select {
 
-            min-height: 48px;
+            min-height:
+                48px;
 
-            border-radius: 12px;
+            border-radius:
+                12px;
 
             border:
                 1px solid
                 rgba(0, 0, 0, .10);
 
-            box-shadow: none;
+            box-shadow:
+                none;
 
             transition:
                 border-color .2s ease,
                 box-shadow .2s ease,
                 background .2s ease,
                 color .2s ease;
+
         }
+
 
         .form-control:focus,
         .form-select:focus {
@@ -326,7 +418,9 @@
             box-shadow:
                 0 0 0 .2rem
                 rgba(25, 135, 84, .12);
+
         }
+
 
         /* =================================================
            NOMINAL HINT
@@ -334,10 +428,14 @@
 
         #nominalHint {
 
-            font-size: .78rem;
+            font-size:
+                .78rem;
 
-            color: #6c757d;
+            color:
+                #6c757d;
+
         }
+
 
         /* =================================================
            TOMBOL SIMPAN
@@ -345,12 +443,15 @@
 
         #btnSimpanPembayaran {
 
-            min-height: 50px;
+            min-height:
+                50px;
 
             transition:
                 transform .2s ease,
                 box-shadow .2s ease;
+
         }
+
 
         #btnSimpanPembayaran:hover {
 
@@ -360,13 +461,17 @@
             box-shadow:
                 0 6px 15px
                 rgba(25, 135, 84, .20);
+
         }
+
 
         #btnSimpanPembayaran:active {
 
             transform:
                 translateY(0);
+
         }
+
 
         /* =================================================
            RIWAYAT
@@ -374,10 +479,14 @@
 
         #riwayat {
 
-            border-radius: 12px;
+            border-radius:
+                12px;
 
-            overflow: hidden;
+            overflow:
+                hidden;
+
         }
+
 
         #riwayat .list-group-item {
 
@@ -386,29 +495,42 @@
 
             transition:
                 background .2s ease;
+
         }
+
 
         #riwayat .list-group-item:hover {
 
             background:
                 rgba(25, 135, 84, .05);
+
         }
+
 
         .riwayat-nama {
 
-            color: #212529;
+            color:
+                #212529;
 
-            font-weight: 700;
+            font-weight:
+                700;
+
         }
+
 
         .riwayat-nominal {
 
-            color: #198754;
+            color:
+                #198754;
 
-            font-weight: 800;
+            font-weight:
+                800;
 
-            white-space: nowrap;
+            white-space:
+                nowrap;
+
         }
+
 
         /* =================================================
            BOTTOM NAVIGATION
@@ -416,15 +538,20 @@
 
         .ck-bottom {
 
-            position: fixed;
+            position:
+                fixed;
 
-            left: 0;
+            left:
+                0;
 
-            right: 0;
+            right:
+                0;
 
-            bottom: 0;
+            bottom:
+                0;
 
-            z-index: 1050;
+            z-index:
+                1050;
 
             background:
                 rgba(255, 255, 255, .97);
@@ -444,71 +571,100 @@
 
             -webkit-backdrop-filter:
                 blur(8px);
+
         }
+
 
         .ck-bottom-inner {
 
-            width: 100% !important;
+            width:
+                100% !important;
 
-            max-width: 100% !important;
+            max-width:
+                100% !important;
 
-            margin: 0 auto;
+            margin:
+                0 auto;
 
-            display: grid;
+            display:
+                grid;
 
             grid-template-columns:
                 repeat(5, 1fr);
 
-            gap: 4px;
+            gap:
+                4px;
+
         }
+
 
         .ck-bottom a {
 
-            text-decoration: none !important;
+            text-decoration:
+                none !important;
 
-            color: #6c757d;
+            color:
+                #6c757d;
 
-            display: flex;
+            display:
+                flex;
 
-            flex-direction: column;
+            flex-direction:
+                column;
 
-            align-items: center;
+            align-items:
+                center;
 
-            justify-content: center;
+            justify-content:
+                center;
 
-            gap: 3px;
+            gap:
+                3px;
 
-            font-size: .68rem;
+            font-size:
+                .68rem;
 
             padding:
                 5px 2px;
 
-            border-radius: 10px;
+            border-radius:
+                10px;
 
             transition:
                 .2s ease;
+
         }
+
 
         .ck-bottom a i {
 
-            font-size: 1.15rem;
+            font-size:
+                1.15rem;
+
         }
+
 
         .ck-bottom a:hover {
 
-            color: #198754;
+            color:
+                #198754;
 
             background:
                 rgba(25, 135, 84, .08);
+
         }
+
 
         .ck-bottom a.active {
 
             color:
                 #198754 !important;
 
-            font-weight: 700;
+            font-weight:
+                700;
+
         }
+
 
         /* =================================================
            TABLET
@@ -523,91 +679,137 @@
 
                 padding-right:
                     35px !important;
+
             }
+
 
             .ck-topbar {
 
-                padding: 20px;
+                padding:
+                    20px;
 
-                border-radius: 20px;
+                border-radius:
+                    20px;
+
             }
+
 
             .ck-logo {
 
-                width: 72px;
+                width:
+                    72px;
 
-                height: 72px;
+                height:
+                    72px;
 
-                min-width: 72px;
+                min-width:
+                    72px;
 
-                border-radius: 16px;
+                border-radius:
+                    16px;
+
             }
+
 
             .ck-title {
 
-                font-size: 1.35rem;
+                font-size:
+                    1.35rem;
+
             }
+
 
             .ck-subtitle {
 
-                font-size: 1rem;
+                font-size:
+                    1rem;
+
             }
+
 
             .ck-back {
 
-                font-size: 1rem;
+                font-size:
+                    1rem;
+
             }
+
 
             .custom-card {
 
-                border-radius: 20px;
+                border-radius:
+                    20px;
+
             }
+
 
             .custom-card .card-body {
 
                 padding:
                     25px !important;
+
             }
+
 
             .form-label {
 
-                font-size: 1rem !important;
+                font-size:
+                    1rem !important;
+
             }
+
 
             .form-control,
             .form-select {
 
-                min-height: 52px;
+                min-height:
+                    52px;
 
-                font-size: 1rem;
+                font-size:
+                    1rem;
+
             }
+
 
             .btn {
 
-                min-height: 52px;
+                min-height:
+                    52px;
 
-                font-size: 1rem;
+                font-size:
+                    1rem;
+
             }
+
 
             .ck-bottom {
 
                 padding:
                     8px 25px;
+
             }
+
 
             .ck-bottom a {
 
-                font-size: .8rem;
+                font-size:
+                    .8rem;
 
                 padding:
                     8px 4px;
+
             }
+
 
             .ck-bottom a i {
 
-                font-size: 1.35rem;
+                font-size:
+                    1.35rem;
+
             }
+
         }
+
 
         /* =================================================
            TABLET BESAR
@@ -622,38 +824,57 @@
 
                 padding-right:
                     50px !important;
+
             }
+
 
             .ck-topbar {
 
-                padding: 24px;
+                padding:
+                    24px;
+
             }
+
 
             .ck-logo {
 
-                width: 86px;
+                width:
+                    86px;
 
-                height: 86px;
+                height:
+                    86px;
 
-                min-width: 86px;
+                min-width:
+                    86px;
+
             }
+
 
             .ck-title {
 
-                font-size: 1.5rem;
+                font-size:
+                    1.5rem;
+
             }
+
 
             .ck-subtitle {
 
-                font-size: 1.05rem;
+                font-size:
+                    1.05rem;
+
             }
+
 
             .custom-card .card-body {
 
                 padding:
                     30px !important;
+
             }
+
         }
+
 
         /* =================================================
            MOBILE KECIL
@@ -668,192 +889,75 @@
 
                 padding-right:
                     10px !important;
+
             }
+
 
             .ck-topbar {
 
-                padding: 12px;
+                padding:
+                    12px;
 
-                gap: 10px;
+                gap:
+                    10px;
+
             }
+
 
             .ck-logo {
 
-                width: 50px;
+                width:
+                    50px;
 
-                height: 50px;
+                height:
+                    50px;
 
-                min-width: 50px;
+                min-width:
+                    50px;
+
             }
+
 
             .ck-title {
 
-                font-size: 1rem;
+                font-size:
+                    1rem;
+
             }
+
 
             .ck-subtitle {
 
-                font-size: .75rem;
+                font-size:
+                    .75rem;
+
             }
+
 
             .ck-bottom a {
 
-                font-size: .62rem;
+                font-size:
+                    .62rem;
+
             }
+
 
             .ck-bottom a i {
 
-                font-size: 1.05rem;
+                font-size:
+                    1.05rem;
+
             }
-        }
 
-        /* =================================================
-           DARK MODE
-           MODE GELAP AKAN AKTIF HANYA JIKA theme.js
-           MENAMBAHKAN CLASS dark-mode
-        ================================================== */
-
-        body.dark-mode {
-
-            background:
-                #121212 !important;
-
-            color:
-                #f1f1f1 !important;
-
-            animation:
-                none !important;
-        }
-
-        body.dark-mode .custom-card {
-
-            background:
-                #1e1e1e !important;
-
-            color:
-                #f1f1f1 !important;
-
-            border-color:
-                #333 !important;
-        }
-
-        body.dark-mode .ck-topbar {
-
-            background:
-                #1e1e1e !important;
-
-            color:
-                #f1f1f1 !important;
-
-            border-color:
-                #333 !important;
-        }
-
-        body.dark-mode .ck-bottom {
-
-            background:
-                rgba(30, 30, 30, .98) !important;
-
-            border-top-color:
-                #333 !important;
-        }
-
-        body.dark-mode .ck-bottom a {
-
-            color:
-                #adb5bd !important;
-        }
-
-        body.dark-mode .ck-bottom a.active {
-
-            color:
-                #51cf66 !important;
-        }
-
-        body.dark-mode .form-label {
-
-            color:
-                #d7d7d7 !important;
-        }
-
-        body.dark-mode .form-control,
-        body.dark-mode .form-select {
-
-            background:
-                #2a2a2a !important;
-
-            color:
-                #ffffff !important;
-
-            border-color:
-                #444 !important;
-        }
-
-        body.dark-mode .form-control::placeholder {
-
-            color:
-                #999 !important;
-        }
-
-        body.dark-mode .form-text,
-        body.dark-mode #nominalHint {
-
-            color:
-                #aaa !important;
-        }
-
-        body.dark-mode .text-muted {
-
-            color:
-                #aaa !important;
-        }
-
-        body.dark-mode .list-group-item {
-
-            color:
-                #f1f1f1 !important;
-
-            border-color:
-                #333 !important;
-        }
-
-        body.dark-mode .riwayat-nama {
-
-            color:
-                #ffffff !important;
-        }
-
-        body.dark-mode .riwayat-nominal {
-
-            color:
-                #51cf66 !important;
-        }
-
-        body.dark-mode .ck-back {
-
-            color:
-                #51cf66 !important;
-        }
-
-        body.dark-mode .ck-back:hover {
-
-            color:
-                #69db7c !important;
-        }
-
-        body.dark-mode .btn-success {
-
-            background-color:
-                #198754;
-
-            border-color:
-                #198754;
         }
 
     </style>
+
 </head>
 
+
 <body>
+
 
 <!-- =====================================================
      CONTAINER UTAMA
@@ -862,6 +966,7 @@
 <div
     class="container-fluid mobile-container py-4"
 >
+
 
     <!-- =================================================
          HEADER
@@ -902,15 +1007,18 @@
 
         <div class="card-body p-1">
 
+
             <!-- KEMBALI -->
 
             <a
                 href="index.html"
                 class="ck-back"
             >
+
                 <i class="bi bi-arrow-left"></i>
 
                 Kembali ke Dashboard
+
             </a>
 
 
@@ -930,21 +1038,32 @@
             <!-- SANTRI -->
 
             <div class="mb-3">
-    <label for="namaSantriPemasukan" class="form-label">Nama Santri / Keterangan</label>
-    <input 
-        type="text" 
-        class="form-control" 
-        id="namaSantriPemasukan" 
-        list="datalistSantri" 
-        placeholder="Ketik atau cari nama santri..." 
-        autocomplete="off"
-    >
-    <datalist id="datalistSantri">
-        <!-- Daftar nama santri akan dimuat secara otomatis dari JavaScript -->
-    </datalist>
-</div>
 
-                
+                <label
+                    for="namaSantriPemasukan"
+                    class="form-label"
+                >
+                    Nama Santri / Keterangan
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="namaSantriPemasukan"
+                    list="datalistSantri"
+                    placeholder="Ketik atau cari nama santri..."
+                    autocomplete="off"
+                >
+
+                <datalist id="datalistSantri">
+                    <!--
+                        Daftar nama santri dimuat
+                        otomatis oleh pembayaran.js
+                    -->
+                </datalist>
+
+            </div>
+
 
             <!-- JENIS PEMBAYARAN -->
 
@@ -1094,6 +1213,7 @@
 
             </h5>
 
+
             <ul
                 id="riwayat"
                 class="list-group list-group-flush mt-3"
@@ -1121,6 +1241,7 @@
 <div class="ck-bottom">
 
     <div class="ck-bottom-inner">
+
 
         <a href="index.html">
 
@@ -1180,6 +1301,7 @@
 
         </a>
 
+
     </div>
 
 </div>
@@ -1195,6 +1317,7 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
+
         /* =========================================
            NAMA PONDOK
         ========================================= */
@@ -1203,6 +1326,7 @@ document.addEventListener(
             document.getElementById(
                 "namaPondokHeader"
             );
+
 
         try {
 
@@ -1213,6 +1337,7 @@ document.addEventListener(
                     )
                 ) || {};
 
+
             if (
                 namaPondok &&
                 pengaturan.namaPondok
@@ -1220,6 +1345,7 @@ document.addEventListener(
 
                 namaPondok.textContent =
                     pengaturan.namaPondok;
+
             }
 
         } catch (error) {
@@ -1241,10 +1367,14 @@ document.addEventListener(
                 "logoPreviewV2"
             );
 
+
         const logoDefault =
             "assets/logo-catatan-kas.jpg";
 
-        let logoTersimpan = null;
+
+        let logoTersimpan =
+            null;
+
 
         try {
 
@@ -1262,6 +1392,7 @@ document.addEventListener(
 
         }
 
+
         if (
             logo &&
             logoTersimpan
@@ -1269,7 +1400,9 @@ document.addEventListener(
 
             logo.src =
                 logoTersimpan;
+
         }
+
 
         if (logo) {
 
@@ -1286,7 +1419,9 @@ document.addEventListener(
 
                     logo.src =
                         logoDefault;
+
                 };
+
         }
 
     }
@@ -1306,25 +1441,30 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
+
         const jenis =
             document.getElementById(
                 "jenis"
             );
+
 
         const tipeBeras =
             document.getElementById(
                 "tipeBeras"
             );
 
+
         const berasPilihan =
             document.getElementById(
                 "berasPilihan"
             );
 
+
         const nominal =
             document.getElementById(
                 "nominal"
             );
+
 
         const nominalHint =
             document.getElementById(
@@ -1340,6 +1480,7 @@ document.addEventListener(
         ) {
 
             return;
+
         }
 
 
@@ -1348,6 +1489,7 @@ document.addEventListener(
         ========================================= */
 
         function pilihPembayaran() {
+
 
             const nilai =
                 jenis.value;
@@ -1360,8 +1502,10 @@ document.addEventListener(
             nominal.value =
                 "";
 
+
             nominal.step =
                 "1";
+
 
             nominal.placeholder =
                 "Masukkan nominal";
@@ -1371,6 +1515,7 @@ document.addEventListener(
 
                 nominalHint.textContent =
                     "Masukkan jumlah pembayaran.";
+
             }
 
 
@@ -1378,7 +1523,9 @@ document.addEventListener(
 
                 nominal.value =
                     "50000";
+
             }
+
 
             else if (
                 nilai === "Syahriyyah"
@@ -1386,7 +1533,9 @@ document.addEventListener(
 
                 nominal.value =
                     "80000";
+
             }
+
 
             else if (
                 nilai === "Kas"
@@ -1394,7 +1543,9 @@ document.addEventListener(
 
                 nominal.value =
                     "30000";
+
             }
+
 
             else if (
                 nilai === "Beras"
@@ -1404,6 +1555,7 @@ document.addEventListener(
                     "block";
 
                 aturBeras();
+
             }
 
         }
@@ -1415,11 +1567,13 @@ document.addEventListener(
 
         function aturBeras() {
 
+
             if (
                 jenis.value !== "Beras"
             ) {
 
                 return;
+
             }
 
 
@@ -1431,11 +1585,14 @@ document.addEventListener(
                 tipe === "uang"
             ) {
 
+
                 nominal.value =
                     "120000";
 
+
                 nominal.step =
                     "1";
+
 
                 nominal.placeholder =
                     "Masukkan nominal";
@@ -1445,17 +1602,22 @@ document.addEventListener(
 
                     nominalHint.textContent =
                         "Masukkan nominal pembayaran beras dalam rupiah.";
+
                 }
 
             }
 
+
             else {
+
 
                 nominal.value =
                     "";
 
+
                 nominal.step =
                     "0.1";
+
 
                 nominal.placeholder =
                     "Masukkan jumlah liter";
@@ -1465,6 +1627,7 @@ document.addEventListener(
 
                     nominalHint.textContent =
                         "Masukkan jumlah beras dalam liter.";
+
                 }
 
             }
@@ -1481,10 +1644,12 @@ document.addEventListener(
             pilihPembayaran
         );
 
+
         tipeBeras.addEventListener(
             "change",
             aturBeras
         );
+
 
     }
 
@@ -1504,14 +1669,6 @@ document.addEventListener(
 
 
 <!-- =====================================================
-     THEME GLOBAL
-     Mode gelap dikontrol oleh Pengaturan
-====================================================== -->
-
-
-
-
-<!-- =====================================================
      AUTH GUARD
 ====================================================== -->
 
@@ -1528,6 +1685,16 @@ document.addEventListener(
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
 ></script>
+
+
+<!-- =====================================================
+     THEME GLOBAL
+     Semua halaman menggunakan theme.js
+====================================================== -->
+
 <script src="js/theme.js"></script>
+
+
 </body>
+
 </html>
