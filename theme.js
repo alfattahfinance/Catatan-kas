@@ -9,7 +9,7 @@
 
 
     // ==================================
-    // AMBIL PENGATURAN
+    // AMBIL PENGATURAN APLIKASI
     // ==================================
 
     function ambilPengaturan() {
@@ -25,7 +25,7 @@
         } catch (error) {
 
             console.warn(
-                "Pengaturan aplikasi tidak valid.",
+                "Pengaturan aplikasi tidak valid:",
                 error
             );
 
@@ -37,7 +37,7 @@
 
 
     // ==================================
-    // CEK DARK MODE
+    // TENTUKAN TEMA
     // ==================================
 
     function gunakanDarkMode() {
@@ -49,7 +49,10 @@
             data.tema || "light";
 
 
+        // ------------------------------
         // DARK
+        // ------------------------------
+
         if (tema === "dark") {
 
             return true;
@@ -57,7 +60,10 @@
         }
 
 
+        // ------------------------------
         // SYSTEM
+        // ------------------------------
+
         if (tema === "system") {
 
             return window.matchMedia(
@@ -67,7 +73,10 @@
         }
 
 
+        // ------------------------------
         // LIGHT
+        // ------------------------------
+
         return false;
 
     }
@@ -79,14 +88,14 @@
 
     function terapkanTema() {
 
-        const dark =
+        const gunakanGelap =
             gunakanDarkMode();
 
 
         // HTML
         document.documentElement.classList.toggle(
             "dark-mode",
-            dark
+            gunakanGelap
         );
 
 
@@ -95,29 +104,34 @@
 
             document.body.classList.toggle(
                 "dark-mode",
-                dark
+                gunakanGelap
             );
 
         }
 
 
-        // Simpan status sementara
+        // Simpan status tema aktif
         document.documentElement.dataset.theme =
-            dark ? "dark" : "light";
+            gunakanGelap
+                ? "dark"
+                : "light";
 
 
-        // Update theme-color browser
-        const meta =
+        // ==================================
+        // UPDATE WARNA STATUS BAR
+        // ==================================
+
+        const metaTheme =
             document.querySelector(
                 'meta[name="theme-color"]'
             );
 
 
-        if (meta) {
+        if (metaTheme) {
 
-            meta.setAttribute(
+            metaTheme.setAttribute(
                 "content",
-                dark
+                gunakanGelap
                     ? "#121212"
                     : "#198754"
             );
@@ -135,18 +149,17 @@
 
 
     // ==================================
-    // JIKA BODY BELUM ADA
+    // DOM SIAP
     // ==================================
 
-    if (!document.body) {
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            terapkanTema,
-            { once: true }
-        );
+            terapkanTema();
 
-    }
+        }
+    );
 
 
     // ==================================
@@ -174,6 +187,7 @@
     }
 
 
+    // Browser modern
     if (
         typeof mediaQuery.addEventListener ===
         "function"
@@ -184,9 +198,13 @@
             cekPerubahanSystem
         );
 
-    } else {
+    }
 
-        // Support browser lama
+    // Browser lama
+    else if (
+        typeof mediaQuery.addListener ===
+        "function"
+    ) {
 
         mediaQuery.addListener(
             cekPerubahanSystem
@@ -196,21 +214,8 @@
 
 
     // ==================================
-    // UPDATE SETELAH DOM SIAP
-    // ==================================
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-
-            terapkanTema();
-
-        }
-    );
-
-
-    // ==================================
-    // BISA DIPANGGIL DARI HALAMAN LAIN
+    // FUNGSI GLOBAL
+    // Bisa dipanggil halaman lain
     // ==================================
 
     window.terapkanTemaGlobal =
