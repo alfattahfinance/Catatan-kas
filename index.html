@@ -71,6 +71,8 @@
 
         html {
             scroll-behavior: smooth;
+            min-height: 100%;
+            background-color: #f8f9fa;
         }
 
 
@@ -85,7 +87,7 @@
                 Helvetica,
                 sans-serif;
 
-            padding-bottom: 90px; /* Ruang agar konten tidak tertutup Bottom Navigation */
+            padding-bottom: 90px;
 
             background:
                 linear-gradient(
@@ -131,7 +133,7 @@
 
             animation: none;
 
-            color: #f1f1f1;
+            color: #f1f1f1 !important;
 
         }
 
@@ -142,7 +144,7 @@
             background:
                 rgba(30, 30, 30, .95) !important;
 
-            color: #f1f1f1;
+            color: #f1f1f1 !important;
 
         }
 
@@ -157,29 +159,29 @@
 
         body.dark-mode .menu-btn {
 
-            background: #1e1e1e;
+            background: #1e1e1e !important;
 
-            color: #f1f1f1;
+            color: #f1f1f1 !important;
 
-            border-color: #444;
+            border-color: #444 !important;
 
         }
 
 
         body.dark-mode .menu-btn:hover {
 
-            background: #292929;
+            background: #292929 !important;
 
         }
 
 
         body.dark-mode .form-select {
 
-            background-color: #1e1e1e;
+            background-color: #1e1e1e !important;
 
-            color: #fff;
+            color: #fff !important;
 
-            border-color: #555;
+            border-color: #555 !important;
 
         }
 
@@ -196,15 +198,23 @@
            CONTAINER
         ================================================= */
 
-     .mobile-container, 
-.container-fluid.mobile-container {
-    width: 100% !important;
-    max-width: 100% !important; /* Membuatnya melebar penuh mengikuti ukuran layar tablet */
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    margin-left: auto;
-    margin-right: auto;
-}
+        .mobile-container,
+        .container-fluid.mobile-container {
+
+            width: 100% !important;
+
+            max-width: 100% !important;
+
+            padding-left: 16px !important;
+
+            padding-right: 16px !important;
+
+            margin-left: auto;
+
+            margin-right: auto;
+
+        }
+
 
         /* =================================================
            CARD
@@ -399,7 +409,7 @@
 
         .stat-card {
 
-            min-height: 110px;
+            min-height: 115px;
 
             transition:
                 transform .2s ease,
@@ -473,11 +483,11 @@
 
             border-radius: 16px;
 
-            padding: 20px 10px;
+            padding: 18px 10px;
 
             width: 100%;
 
-            min-height: 112px;
+            min-height: 115px;
 
             height: 100%;
 
@@ -498,7 +508,7 @@
 
             justify-content: center;
 
-            gap: 10px;
+            gap: 9px;
 
             box-shadow:
                 0 2px 8px
@@ -607,240 +617,484 @@
         ================================================= */
 
         .ck-bottom {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1050;
-    background: rgba(255, 255, 255, .97);
-    border-top: 1px solid #dee2e6;
-    box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
-    padding: 6px 15px; /* Sesuaikan padding kiri-kanan */
-    backdrop-filter: blur(8px);
-}
 
-.ck-bottom-inner {
-    width: 100% !important;
-    max-width: 100% !important; /* Diubah dari pembatas sebelumnya agar full */
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-}
+            position: fixed;
+
+            left: 0;
+
+            right: 0;
+
+            bottom: 0;
+
+            z-index: 1050;
+
+            background:
+                rgba(255, 255, 255, .97);
+
+            border-top:
+                1px solid #dee2e6;
+
+            box-shadow:
+                0 -3px 15px
+                rgba(0, 0, 0, .08);
+
+            padding: 6px 15px;
+
+            backdrop-filter: blur(8px);
+
+            -webkit-backdrop-filter: blur(8px);
+
+        }
+
+
+        .ck-bottom-inner {
+
+            width: 100% !important;
+
+            max-width: 100% !important;
+
+            margin: 0 auto;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 4px;
+
+        }
 
 
         .ck-bottom a {
+
             text-decoration: none !important;
+
             color: #6c757d;
+
             display: flex;
+
             flex-direction: column;
+
             align-items: center;
+
             justify-content: center;
+
             gap: 3px;
+
             font-size: .68rem;
+
             padding: 5px 2px;
+
             border-radius: 10px;
+
             transition: .2s ease;
+
         }
+
 
         .ck-bottom a i {
+
             font-size: 1.15rem;
+
         }
+
 
         .ck-bottom a:hover {
+
             color: #198754;
-            background: rgba(25, 135, 84, .08);
+
+            background:
+                rgba(25, 135, 84, .08);
+
         }
+
 
         .ck-bottom a.active {
+
             color: #198754 !important;
+
             font-weight: 700;
+
         }
 
+
         body.dark-mode .ck-bottom a {
+
             color: #adb5bd;
+
         }
+
 
         body.dark-mode .ck-bottom a:hover,
         body.dark-mode .ck-bottom a.active {
+
             color: #51cf66 !important;
+
         }
 
-        /* =================================================
-   RESPONSIVE TABLET
-   Membuat dashboard menyesuaikan layar tablet
-================================================= */
-
-@media (min-width: 600px) {
-
-    .mobile-container {
-        padding-left: 32px !important;
-        padding-right: 32px !important;
-        padding-top: 32px !important;
-    }
-
-    .app-header .card-body {
-        padding: 24px !important;
-    }
-
-    .app-logo {
-        width: 90px !important;
-        height: 90px !important;
-        min-width: 90px;
-        flex-basis: 90px;
-        border-radius: 20px !important;
-    }
-
-    .app-name {
-        font-size: 1.45rem;
-    }
-
-    .app-header h5 {
-        font-size: 1.35rem;
-    }
-
-    .app-subtitle {
-        font-size: 1rem;
-    }
-
-    .custom-card {
-        border-radius: 22px;
-    }
-
-    .form-label {
-        font-size: 1rem;
-    }
-
-    .form-select {
-        min-height: 54px;
-        font-size: 1rem;
-    }
-
-    .summary-title {
-        font-size: 1.15rem;
-    }
-
-    .saldo-card #totalSaldo {
-        font-size: 2.4rem;
-    }
-
-    .stat-card {
-        min-height: 150px;
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 1.35rem;
-        border-radius: 15px;
-    }
-
-    .stat-card small {
-        font-size: .95rem;
-    }
-
-    .stat-card h5 {
-        font-size: 1.25rem;
-    }
-
-    .menu-btn {
-        min-height: 150px;
-        padding: 25px 15px;
-        gap: 14px;
-        border-radius: 20px;
-    }
-
-    .menu-btn i {
-        font-size: 2.6rem;
-    }
-
-    .menu-btn h6 {
-        font-size: 1.05rem;
-    }
-
-    .settings-btn {
-        min-height: 90px;
-    }
-
-    .settings-btn i {
-        font-size: 2rem;
-    }
-
-    .ck-bottom {
-        padding: 10px 25px;
-    }
-
-    .ck-bottom-inner {
-        gap: 10px;
-    }
-
-    .ck-bottom a {
-        font-size: .85rem;
-        padding: 8px 4px;
-        gap: 5px;
-    }
-
-    .ck-bottom a i {
-        font-size: 1.4rem;
-    }
-
-}
-
-
-/* =================================================
-   RESPONSIVE TABLET BESAR
-================================================= */
-
-@media (min-width: 992px) {
-
-    .mobile-container {
-        padding-left: 50px !important;
-        padding-right: 50px !important;
-    }
-
-    .app-header .card-body {
-        padding: 28px !important;
-    }
-
-    .app-logo {
-        width: 100px !important;
-        height: 100px !important;
-        min-width: 100px;
-        flex-basis: 100px;
-    }
-
-    .app-name {
-        font-size: 1.6rem;
-    }
-
-    .app-header h5 {
-        font-size: 1.5rem;
-    }
-
-    .app-subtitle {
-        font-size: 1.05rem;
-    }
-
-    .saldo-card #totalSaldo {
-        font-size: 2.7rem;
-    }
-
-    .menu-btn {
-        min-height: 165px;
-    }
-
-    .menu-btn i {
-        font-size: 2.8rem;
-    }
-
-    .menu-btn h6 {
-        font-size: 1.1rem;
-    }
-
-}
 
         /* =================================================
-           MOBILE
+           RESPONSIVE TABLET
+           600px KE ATAS
+        ================================================= */
+
+        @media (min-width: 600px) {
+
+            .mobile-container {
+
+                padding-left: 32px !important;
+
+                padding-right: 32px !important;
+
+                padding-top: 30px !important;
+
+            }
+
+
+            .app-header .card-body {
+
+                padding: 24px !important;
+
+            }
+
+
+            .app-logo {
+
+                width: 90px !important;
+
+                height: 90px !important;
+
+                min-width: 90px;
+
+                flex-basis: 90px;
+
+                border-radius: 20px !important;
+
+            }
+
+
+            .app-name {
+
+                font-size: 1.45rem;
+
+            }
+
+
+            .app-header h5 {
+
+                font-size: 1.35rem;
+
+            }
+
+
+            .app-subtitle {
+
+                font-size: 1rem;
+
+            }
+
+
+            .custom-card {
+
+                border-radius: 22px;
+
+            }
+
+
+            .form-label {
+
+                font-size: 1rem;
+
+            }
+
+
+            .form-select {
+
+                min-height: 54px;
+
+                font-size: 1rem;
+
+            }
+
+
+            .summary-title {
+
+                font-size: 1.15rem;
+
+            }
+
+
+            .saldo-card #totalSaldo {
+
+                font-size: 2.4rem;
+
+            }
+
+
+            .stat-card {
+
+                min-height: 150px;
+
+            }
+
+
+            .stat-icon {
+
+                width: 50px;
+
+                height: 50px;
+
+                font-size: 1.35rem;
+
+                border-radius: 15px;
+
+            }
+
+
+            .stat-card small {
+
+                font-size: .95rem;
+
+            }
+
+
+            .stat-card h5 {
+
+                font-size: 1.25rem;
+
+            }
+
+
+            .menu-btn {
+
+                min-height: 150px;
+
+                padding: 24px 15px;
+
+                gap: 13px;
+
+                border-radius: 20px;
+
+            }
+
+
+            .menu-btn i {
+
+                font-size: 2.5rem;
+
+            }
+
+
+            .menu-btn h6 {
+
+                font-size: 1.05rem;
+
+            }
+
+
+            .settings-btn {
+
+                min-height: 85px;
+
+            }
+
+
+            .settings-btn i {
+
+                font-size: 2rem;
+
+            }
+
+
+            .ck-bottom {
+
+                padding: 10px 24px;
+
+            }
+
+
+            .ck-bottom-inner {
+
+                gap: 8px;
+
+            }
+
+
+            .ck-bottom a {
+
+                font-size: .82rem;
+
+                padding: 8px 4px;
+
+                gap: 5px;
+
+            }
+
+
+            .ck-bottom a i {
+
+                font-size: 1.35rem;
+
+            }
+
+        }
+
+
+        /* =================================================
+           RESPONSIVE TABLET BESAR
+           992px KE ATAS
+        ================================================= */
+
+        @media (min-width: 992px) {
+
+            .mobile-container {
+
+                padding-left: 50px !important;
+
+                padding-right: 50px !important;
+
+                padding-top: 35px !important;
+
+            }
+
+
+            .app-header .card-body {
+
+                padding: 28px !important;
+
+            }
+
+
+            .app-logo {
+
+                width: 105px !important;
+
+                height: 105px !important;
+
+                min-width: 105px;
+
+                flex-basis: 105px;
+
+                border-radius: 22px !important;
+
+            }
+
+
+            .app-name {
+
+                font-size: 1.65rem;
+
+            }
+
+
+            .app-header h5 {
+
+                font-size: 1.55rem;
+
+            }
+
+
+            .app-subtitle {
+
+                font-size: 1.08rem;
+
+            }
+
+
+            .form-select {
+
+                min-height: 58px;
+
+                font-size: 1.05rem;
+
+            }
+
+
+            .summary-title {
+
+                font-size: 1.25rem;
+
+            }
+
+
+            .saldo-card #totalSaldo {
+
+                font-size: 2.8rem;
+
+            }
+
+
+            .stat-card {
+
+                min-height: 165px;
+
+            }
+
+
+            .stat-icon {
+
+                width: 55px;
+
+                height: 55px;
+
+                font-size: 1.45rem;
+
+            }
+
+
+            .stat-card small {
+
+                font-size: 1rem;
+
+            }
+
+
+            .stat-card h5 {
+
+                font-size: 1.35rem;
+
+            }
+
+
+            .menu-btn {
+
+                min-height: 170px;
+
+                padding: 28px 18px;
+
+                gap: 15px;
+
+                border-radius: 22px;
+
+            }
+
+
+            .menu-btn i {
+
+                font-size: 2.8rem;
+
+            }
+
+
+            .menu-btn h6 {
+
+                font-size: 1.15rem;
+
+            }
+
+
+            .settings-btn {
+
+                min-height: 95px;
+
+            }
+
+        }
+
+
+        /* =================================================
+           HP SANGAT KECIL
+           380px KE BAWAH
         ================================================= */
 
         @media (max-width: 380px) {
@@ -874,9 +1128,16 @@
             }
 
 
+            .app-header h5 {
+
+                font-size: .95rem;
+
+            }
+
+
             .app-subtitle {
 
-                font-size: .76rem;
+                font-size: .74rem;
 
             }
 
@@ -885,12 +1146,21 @@
 
                 min-height: 100px;
 
+                padding: 15px 8px;
+
             }
 
 
             .menu-btn i {
 
                 font-size: 1.75rem;
+
+            }
+
+
+            .menu-btn h6 {
+
+                font-size: .82rem;
 
             }
 
@@ -903,12 +1173,16 @@
 
 
             .ck-bottom a {
+
                 font-size: .62rem;
+
             }
 
 
             .ck-bottom a i {
+
                 font-size: 1.05rem;
+
             }
 
         }
@@ -944,13 +1218,15 @@
                    align-items-center
                    p-3"
         >
-        
-        <img
-               src="assets/logo-catatan-kas.jpg"
-              class="app-logo shadow-sm"
-            id="logoDashboard"
-           alt="Logo Catatan Keuangan"
-       > 
+
+            <img
+                src="assets/logo-catatan-kas.jpg"
+                class="app-logo shadow-sm"
+                id="logoDashboard"
+                alt="Logo Catatan Keuangan"
+            >
+
+
             <div class="ms-3">
 
                 <div
@@ -1173,9 +1449,7 @@
     <div class="row g-3 mb-4">
 
 
-        <!-- =============================================
-             SALDO
-        ============================================== -->
+        <!-- SALDO -->
 
         <div class="col-12">
 
@@ -1218,9 +1492,7 @@
 
 
 
-        <!-- =============================================
-             PEMASUKAN
-        ============================================== -->
+        <!-- PEMASUKAN -->
 
         <div class="col-6">
 
@@ -1277,9 +1549,7 @@
 
 
 
-        <!-- =============================================
-             PENGELUARAN
-        ============================================== -->
+        <!-- PENGELUARAN -->
 
         <div class="col-6">
 
@@ -1488,28 +1758,68 @@
 ====================================================== -->
 
 <div class="ck-bottom">
+
     <div class="ck-bottom-inner">
-        <a href="index.html" class="active">
+
+        <a
+            href="index.html"
+            class="active"
+        >
+
             <i class="bi bi-house-fill"></i>
-            <span>Beranda</span>
+
+            <span>
+                Beranda
+            </span>
+
         </a>
+
+
         <a href="santri.html">
+
             <i class="bi bi-people-fill"></i>
-            <span>Santri</span>
+
+            <span>
+                Santri
+            </span>
+
         </a>
+
+
         <a href="pembayaran.html">
+
             <i class="bi bi-cash-stack"></i>
-            <span>Bayar</span>
+
+            <span>
+                Bayar
+            </span>
+
         </a>
+
+
         <a href="pengeluaran.html">
+
             <i class="bi bi-wallet2"></i>
-            <span>Keluar</span>
+
+            <span>
+                Keluar
+            </span>
+
         </a>
+
+
         <a href="laporan.html">
+
             <i class="bi bi-bar-chart-fill"></i>
-            <span>Laporan</span>
+
+            <span>
+                Laporan
+            </span>
+
         </a>
+
     </div>
+
 </div>
 
 
@@ -1520,41 +1830,61 @@
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    const logo = document.getElementById("logoDashboard");
+        const logo =
+            document.getElementById(
+                "logoDashboard"
+            );
 
-    if (!logo) return;
+        if (!logo) return;
 
-    const logoDefault =
-        "assets/logo-catatan-keuangan.png";
 
-    const tersimpan =
-        localStorage.getItem("logoDashboard");
+        const logoDefault =
+            "assets/logo-catatan-keuangan.png";
 
-    // Gunakan logo yang tersimpan
-    if (tersimpan) {
-        logo.src = tersimpan;
+
+        const tersimpan =
+            localStorage.getItem(
+                "logoDashboard"
+            );
+
+
+        if (tersimpan) {
+
+            logo.src =
+                tersimpan;
+
+        }
+
+
+        logo.onerror =
+            function () {
+
+                console.warn(
+                    "Logo gagal dimuat. Menggunakan logo default."
+                );
+
+
+                localStorage.removeItem(
+                    "logoDashboard"
+                );
+
+
+                logo.src =
+                    logoDefault;
+
+            };
+
     }
 
-    // Jika logo gagal dimuat
-    logo.onerror = function () {
-
-        console.warn(
-            "Logo gagal dimuat. Menggunakan logo default."
-        );
-
-        // Hapus logo lama yang rusak
-        localStorage.removeItem("logoDashboard");
-
-        // Kembali ke logo default
-        logo.src = logoDefault;
-
-    };
-
-});
+);
 
 </script>
+
+
 
 <!-- =====================================================
      SCRIPT TAHUN OTOMATIS
@@ -1571,6 +1901,7 @@ document.addEventListener(
                 "tahunDashboard"
             );
 
+
         if (!select) return;
 
 
@@ -1584,7 +1915,8 @@ document.addEventListener(
             [...select.options]
                 .some(
                     option =>
-                        option.value === currentYear
+                        option.value ===
+                        currentYear
                 );
 
 
@@ -1595,11 +1927,14 @@ document.addEventListener(
                     "option"
                 );
 
+
             option.value =
                 currentYear;
 
+
             option.textContent =
                 currentYear;
+
 
             select.appendChild(
                 option
@@ -1612,6 +1947,7 @@ document.addEventListener(
             currentYear;
 
     }
+
 );
 
 </script>
@@ -1633,21 +1969,28 @@ document.addEventListener(
                 "jenisDashboard"
             );
 
+
         const modeDiv =
             document.getElementById(
                 "modeBerasDiv"
             );
 
 
-        if (!jenis || !modeDiv) {
+        if (
+            !jenis ||
+            !modeDiv
+        ) {
+
             return;
+
         }
 
 
         function tampilkanModeBeras() {
 
             if (
-                jenis.value === "beras"
+                jenis.value ===
+                "beras"
             ) {
 
                 modeDiv.style.display =
@@ -1672,6 +2015,7 @@ document.addEventListener(
         tampilkanModeBeras();
 
     }
+
 );
 
 </script>
@@ -1749,17 +2093,24 @@ document.addEventListener(
         }
 
     }
+
 );
 
 </script>
+
+
 
 <!-- =====================================================
      VERSI APLIKASI
 ====================================================== -->
 
 <script>
-    window.APP_VERSION = "2.0";
+
+window.APP_VERSION =
+    "2.0";
+
 </script>
+
 
 
 <!-- =====================================================
@@ -1772,6 +2123,7 @@ document.addEventListener(
 ></script>
 
 
+
 <!-- =====================================================
      UPDATE CHECK
 ====================================================== -->
@@ -1779,6 +2131,8 @@ document.addEventListener(
 <script
     src="js/update-check.js"
 ></script>
+
+
 
 <!-- =====================================================
      AUTH GUARD
@@ -1797,8 +2151,11 @@ document.addEventListener(
 
 <script type="module">
 
-import { auth }
-    from "./js/firebase-config.js";
+import {
+    auth
+}
+from "./js/firebase-config.js";
+
 
 import {
     signOut
@@ -1829,7 +2186,9 @@ if (logoutButton) {
 
             try {
 
-                await signOut(auth);
+                await signOut(
+                    auth
+                );
 
 
                 window.location.replace(
