@@ -1,87 +1,151 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <meta
+        name="theme-color"
+        content="#198754"
+    >
+    <meta
+        name="description"
+        content="Data Santri - Catatan Kas Ribath Madrasah Al-Fattah"
+    >
     <title>Data Santri | Catatan Kas</title>
-
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
+    <!-- =====================================================
+         BOOTSTRAP
+    ====================================================== -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <!-- =====================================================
+         BOOTSTRAP ICONS
+    ====================================================== -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    >
+    <!-- =====================================================
+         CSS APLIKASI
+    ====================================================== -->
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+    <!-- =====================================================
+         STYLE HALAMAN SANTRI
+    ====================================================== -->
     <style>
         * {
             box-sizing: border-box;
         }
-
+        html {
+            scroll-behavior: smooth;
+            min-height: 100%;
+        }
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 15s ease infinite;
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
             color: #212529;
             padding-bottom: 90px;
+            background:
+                linear-gradient(
+                    135deg,
+                    #d8e2dc 0%,
+                    #fefae0 100%
+                );
+            background-size: 200% 200%;
+            animation:
+                gradientShift 15s ease infinite;
         }
-
         @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
-
+        /* =================================================
+           CONTAINER
+        ================================================== */
         .mobile-container {
             width: 100% !important;
             max-width: 100% !important;
-            margin: 0 auto;
-            padding: 20px !important;
-       }
-
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+        /* =================================================
+           CARD
+        ================================================== */
         .custom-card {
             border: none;
             border-radius: 18px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
-            background: rgba(255, 255, 255, .92);
+            box-shadow:
+                0 4px 14px
+                rgba(0, 0, 0, .06);
+            background:
+                rgba(255, 255, 255, .92);
             backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             margin-bottom: 20px;
         }
-
-        /* HEADER TOPBAR */
+        /* =================================================
+           HEADER
+        ================================================== */
         .ck-topbar {
             display: flex;
             align-items: center;
             gap: 14px;
-            background: rgba(255, 255, 255, .92);
+            background:
+                rgba(255, 255, 255, .92);
             border-radius: 18px;
             padding: 14px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
+            box-shadow:
+                0 4px 14px
+                rgba(0, 0, 0, .05);
         }
-
         .ck-logo {
             width: 56px;
             height: 56px;
-            object-fit: cover;
+            min-width: 56px;
+            object-fit: contain;
             border-radius: 14px;
-            background: white;
-            border: 1px solid #eee;
+            background: #fff;
+            border:
+                1px solid #eee;
         }
-
         .ck-title {
             margin: 0;
             color: #198754;
             font-weight: 800;
             font-size: 1.1rem;
         }
-
         .ck-subtitle {
             color: #6c757d;
             font-size: .8rem;
         }
-
+        /* =================================================
+           TOMBOL KEMBALI
+        ================================================== */
         .back-btn {
             text-decoration: none;
             color: #198754;
@@ -91,30 +155,82 @@
             gap: 6px;
             margin-bottom: 15px;
         }
-
-        /* BOTTOM NAVIGATION */
+        .back-btn:hover {
+            color: #146c43;
+        }
+        /* =================================================
+           JUDUL HALAMAN
+        ================================================== */
+        .page-title {
+            color: #212529;
+        }
+        .page-title i {
+            color: #198754;
+        }
+        /* =================================================
+           FORM
+        ================================================== */
+        .form-label {
+            color: #245d4b;
+        }
+        .form-control {
+            border-radius: 12px;
+            min-height: 46px;
+            border-color:
+                rgba(0, 0, 0, .12);
+            box-shadow: none;
+        }
+        .form-control:focus {
+            border-color: #198754;
+            box-shadow:
+                0 0 0 .2rem
+                rgba(25, 135, 84, .12);
+        }
+        .btn-success {
+            border-radius: 12px;
+        }
+        /* =================================================
+           TABEL
+        ================================================== */
+        .table {
+            margin-bottom: 0;
+        }
+        .table thead th {
+            white-space: nowrap;
+        }
+        .table td,
+        .table th {
+            vertical-align: middle;
+        }
+        /* =================================================
+           BOTTOM NAVIGATION
+        ================================================== */
         .ck-bottom {
             position: fixed;
             left: 0;
             right: 0;
             bottom: 0;
             z-index: 1050;
-            background: rgba(255, 255, 255, .97);
-            border-top: 1px solid #dee2e6;
-            box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
+            background:
+                rgba(255, 255, 255, .97);
+            border-top:
+                1px solid #dee2e6;
+            box-shadow:
+                0 -3px 15px
+                rgba(0, 0, 0, .08);
             padding: 6px 8px;
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
-
         .ck-bottom-inner {
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns:
+                repeat(5, 1fr);
             gap: 4px;
         }
-
         .ck-bottom a {
             text-decoration: none !important;
             color: #6c757d;
@@ -128,186 +244,270 @@
             border-radius: 10px;
             transition: .2s ease;
         }
-
         .ck-bottom a i {
             font-size: 1.15rem;
         }
-
         .ck-bottom a:hover {
             color: #198754;
-            background: rgba(25, 135, 84, .08);
+            background:
+                rgba(25, 135, 84, .08);
         }
-
         .ck-bottom a.active {
             color: #198754 !important;
             font-weight: 700;
         }
-
-        /* DARK MODE */
-        body.dark-mode {
-            background: #121212 !important;
-            animation: none !important;
-            color: #eee !important;
+        /* =================================================
+           RESPONSIVE TABLET
+        ================================================== */
+        @media (min-width: 768px) {
+            .mobile-container {
+                padding-left: 35px !important;
+                padding-right: 35px !important;
+            }
+            .ck-topbar {
+                padding: 20px;
+            }
+            .ck-logo {
+                width: 72px;
+                height: 72px;
+                min-width: 72px;
+            }
+            .ck-title {
+                font-size: 1.35rem;
+            }
+            .ck-subtitle {
+                font-size: 1rem;
+            }
+            .back-btn {
+                font-size: 1rem;
+            }
+            .page-title {
+                font-size: 1.6rem;
+            }
+            .custom-card {
+                border-radius: 20px;
+            }
+            .custom-card .card-body {
+                padding: 25px !important;
+            }
+            .form-control {
+                min-height: 52px;
+                font-size: 1rem;
+            }
+            .btn {
+                min-height: 52px;
+                font-size: 1rem;
+            }
+            .table {
+                font-size: 1rem;
+            }
+            .ck-bottom {
+                padding:
+                    8px 25px;
+            }
+            .ck-bottom a {
+                font-size: .8rem;
+                padding:
+                    8px 4px;
+            }
+            .ck-bottom a i {
+                font-size: 1.35rem;
+            }
         }
-
-        body.dark-mode .custom-card,
-        body.dark-mode .ck-topbar,
-        body.dark-mode .ck-bottom {
-            background: #1e1e1e !important;
-            color: #eee !important;
-            border-color: #333 !important;
+        /* =================================================
+           TABLET BESAR
+        ================================================== */
+        @media (min-width: 992px) {
+            .mobile-container {
+                padding-left: 50px !important;
+                padding-right: 50px !important;
+            }
+            .ck-topbar {
+                padding: 24px;
+            }
+            .ck-logo {
+                width: 82px;
+                height: 82px;
+                min-width: 82px;
+            }
+            .ck-title {
+                font-size: 1.5rem;
+            }
+            .ck-subtitle {
+                font-size: 1.05rem;
+            }
         }
-
-        body.dark-mode .form-control,
-        body.dark-mode .form-select {
-            background: #2a2a2a;
-            color: #fff;
-            border-color: #444;
+        /* =================================================
+           MOBILE KECIL
+        ================================================== */
+        @media (max-width: 380px) {
+            .mobile-container {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+            .ck-topbar {
+                padding: 12px;
+                gap: 10px;
+            }
+            .ck-logo {
+                width: 52px;
+                height: 52px;
+                min-width: 52px;
+            }
+            .ck-title {
+                font-size: 1rem;
+            }
+            .ck-subtitle {
+                font-size: .74rem;
+            }
+            .ck-bottom a {
+                font-size: .62rem;
+            }
+            .ck-bottom a i {
+                font-size: 1.05rem;
+            }
         }
-
-        body.dark-mode .text-muted {
-            color: #aaa !important;
-        }
-
-        body.dark-mode .ck-bottom a {
-            color: #adb5bd;
-        }
-
-        body.dark-mode .ck-bottom a:hover,
-        body.dark-mode .ck-bottom a.active {
-            color: #51cf66 !important;
-        }
-
-/* =================================================
-   TAMPILAN TABLET
-================================================= */
-
-@media (min-width: 768px) {
-
-    .mobile-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding-left: 35px !important;
-        padding-right: 35px !important;
-    }
-
-    .ck-topbar {
-        padding: 20px;
-    }
-
-    .ck-logo {
-        width: 72px;
-        height: 72px;
-    }
-
-    .ck-title {
-        font-size: 1.35rem;
-    }
-
-    .ck-subtitle {
-        font-size: 1rem;
-    }
-
-    .back-btn {
-        font-size: 1rem;
-    }
-
-    h4 {
-        font-size: 1.6rem;
-    }
-
-    .custom-card {
-        border-radius: 20px;
-    }
-
-    .custom-card .card-body {
-        padding: 25px !important;
-    }
-
-    .form-control {
-        min-height: 52px;
-        font-size: 1rem;
-    }
-
-    .btn {
-        min-height: 52px;
-        font-size: 1rem;
-    }
-
-    .table {
-        font-size: 1rem;
-    }
-
-    .ck-bottom {
-        padding: 8px 25px;
-    }
-
-    .ck-bottom a {
-        font-size: .8rem;
-        padding: 8px 4px;
-    }
-
-    .ck-bottom a i {
-        font-size: 1.35rem;
-    }
-}        
-        
     </style>
 </head>
-
 <body>
-
-<div class="container-fluid mobile-container py-3">
-
-    <!-- HEADER -->
+<!-- =====================================================
+     CONTAINER UTAMA
+====================================================== -->
+<div
+    class="container-fluid mobile-container py-3"
+>
+    <!-- =================================================
+         HEADER
+    ================================================== -->
     <div class="ck-topbar">
-        <img id="logoPreviewV2" src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo">
+        <img
+            id="logoPreviewV2"
+            src="assets/logo-catatan-kas.jpg"
+            class="ck-logo"
+            alt="Logo Catatan Kas"
+        >
         <div>
-            <p class="ck-title">Catatan Kas</p>
-            <span class="ck-subtitle" id="namaPondokHeader">Madrasah Al-Fattah</span>
+            <p class="ck-title">
+                Catatan Kas
+            </p>
+            <span
+                class="ck-subtitle"
+                id="namaPondokHeader"
+            >
+                Madrasah Al-Fattah
+            </span>
         </div>
     </div>
-
-    <!-- KEMBALI & JUDUL -->
-    <a href="index.html" class="back-btn">
-        <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+    <!-- =================================================
+         KEMBALI
+    ================================================== -->
+    <a
+        href="index.html"
+        class="back-btn"
+    >
+        <i class="bi bi-arrow-left"></i>
+        Kembali ke Dashboard
     </a>
-
+    <!-- =================================================
+         JUDUL
+    ================================================== -->
     <div class="mb-3">
-        <h4 class="fw-bold mb-0">
-            <i class="bi bi-mortarboard-fill text-success"></i> Data Santri
+        <h4
+            class="fw-bold mb-0 page-title"
+        >
+            <i
+                class="bi bi-mortarboard-fill"
+            ></i>
+            Data Santri
         </h4>
-        <small class="text-muted">Kelola data santri pondok</small>
+        <small class="text-muted">
+            Kelola data santri pondok
+        </small>
     </div>
-
-    <!-- FORM TAMBAH SANTRI -->
+    <!-- =================================================
+         FORM TAMBAH SANTRI
+    ================================================== -->
     <div class="card custom-card">
         <div class="card-body">
-            <h5 class="fw-bold mb-3 text-success">Tambah Santri Baru</h5>
+            <h5
+                class="fw-bold mb-3 text-success"
+            >
+                Tambah Santri Baru
+            </h5>
+            <!-- NAMA -->
             <div class="mb-3">
-                <label class="form-label fw-semibold">Nama Santri</label>
-                <input type="text" class="form-control" id="namaSantri" placeholder="Masukkan nama santri">
+                <label
+                    class="form-label fw-semibold"
+                    for="namaSantri"
+                >
+                    Nama Santri
+                </label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="namaSantri"
+                    placeholder="Masukkan nama santri"
+                    autocomplete="name"
+                >
             </div>
+            <!-- KELAS -->
             <div class="mb-3">
-                <label class="form-label fw-semibold">Kelas</label>
-                <input type="text" class="form-control" id="kelasSantri" placeholder="Contoh: 1 Ula / 7 A">
+                <label
+                    class="form-label fw-semibold"
+                    for="kelasSantri"
+                >
+                    Kelas
+                </label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="kelasSantri"
+                    placeholder="Contoh: 1 Ula / 7 A"
+                >
             </div>
+            <!-- HP WALI -->
             <div class="mb-3">
-                <label class="form-label fw-semibold">No. HP Wali</label>
-                <input type="tel" class="form-control" id="hpSantri" placeholder="Contoh: 08123456789">
+                <label
+                    class="form-label fw-semibold"
+                    for="hpSantri"
+                >
+                    No. HP Wali
+                </label>
+                <input
+                    type="tel"
+                    class="form-control"
+                    id="hpSantri"
+                    placeholder="Contoh: 08123456789"
+                    autocomplete="tel"
+                    inputmode="tel"
+                >
             </div>
-            <button type="button" class="btn btn-success w-100 py-2 fw-bold" id="btnSimpanSantri">
-                <i class="bi bi-plus-circle"></i> Tambah Santri
+            <!-- TOMBOL -->
+            <button
+                type="button"
+                class="btn btn-success w-100 py-2 fw-bold"
+                id="btnSimpanSantri"
+            >
+                <i class="bi bi-plus-circle"></i>
+                Tambah Santri
             </button>
         </div>
     </div>
-
-    <!-- DAFTAR SANTRI -->
+    <!-- =================================================
+         DAFTAR SANTRI
+    ================================================== -->
     <div class="card custom-card">
         <div class="card-body">
-            <h5 class="fw-bold mb-3 text-success">Daftar Santri</h5>
+            <h5
+                class="fw-bold mb-3 text-success"
+            >
+                Daftar Santri
+            </h5>
             <div class="table-responsive">
-                <table class="table table-hover align-middle" id="tabelSantri">
+                <table
+                    class="table table-hover align-middle"
+                    id="tabelSantri"
+                >
                     <thead class="table-light">
                         <tr>
                             <th>No</th>
@@ -318,56 +518,142 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-3">Memuat data santri...</td>
+                            <td
+                                colspan="4"
+                                class="text-center text-muted py-3"
+                            >
+                                Memuat data santri...
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
 </div>
-
-<!-- BOTTOM NAVIGATION -->
+<!-- =====================================================
+     BOTTOM NAVIGATION
+====================================================== -->
 <div class="ck-bottom">
     <div class="ck-bottom-inner">
+        <!-- BERANDA -->
         <a href="index.html">
             <i class="bi bi-house-fill"></i>
-            <span>Beranda</span>
+            <span>
+                Beranda
+            </span>
         </a>
-        <a href="santri.html" class="active">
+        <!-- SANTRI -->
+        <a
+            href="santri.html"
+            class="active"
+            aria-current="page"
+        >
             <i class="bi bi-people-fill"></i>
-            <span>Santri</span>
+            <span>
+                Santri
+            </span>
         </a>
+        <!-- PEMBAYARAN -->
         <a href="pembayaran.html">
             <i class="bi bi-cash-stack"></i>
-            <span>Bayar</span>
+            <span>
+                Bayar
+            </span>
         </a>
+        <!-- PENGELUARAN -->
         <a href="pengeluaran.html">
             <i class="bi bi-wallet2"></i>
-            <span>Keluar</span>
+            <span>
+                Keluar
+            </span>
         </a>
+        <!-- LAPORAN -->
         <a href="laporan.html">
             <i class="bi bi-bar-chart-fill"></i>
-            <span>Laporan</span>
+            <span>
+                Laporan
+            </span>
         </a>
     </div>
 </div>
-
+<!-- =====================================================
+     DATA PENGATURAN
+====================================================== -->
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
-        if (pengaturan && pengaturan.namaPondok) {
-            document.getElementById("namaPondokHeader").textContent = pengaturan.namaPondok;
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        /* =========================================
+           NAMA PONDOK
+        ========================================= */
+        const namaHeader =
+            document.getElementById(
+                "namaPondokHeader"
+            );
+        try {
+            const pengaturan =
+                JSON.parse(
+                    localStorage.getItem(
+                        "pengaturanAplikasi"
+                    )
+                ) || {};
+            if (
+                namaHeader &&
+                pengaturan.namaPondok
+            ) {
+                namaHeader.textContent =
+                    pengaturan.namaPondok;
+            }
+        } catch (error) {
+            console.warn(
+                "Data pengaturan tidak valid:",
+                error
+            );
         }
-        const savedLogo = localStorage.getItem("logoDashboard");
+        /* =========================================
+           LOGO DASHBOARD
+        ========================================= */
+        const logo =
+            document.getElementById(
+                "logoPreviewV2"
+            );
+        if (!logo) return;
+        const logoDefault =
+            "assets/logo-catatan-kas.jpg";
+        const savedLogo =
+            localStorage.getItem(
+                "logoDashboard"
+            );
         if (savedLogo) {
-            document.getElementById("logoPreviewV2").src = savedLogo;
+            logo.src =
+                savedLogo;
         }
-    });
+        logo.onerror =
+            function () {
+                console.warn(
+                    "Logo tersimpan gagal dimuat."
+                );
+                localStorage.removeItem(
+                    "logoDashboard"
+                );
+                logo.src =
+                    logoDefault;
+            };
+    }
+);
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-
+<!-- =====================================================
+     THEME GLOBAL
+====================================================== -->
+<script
+    src="js/theme.js"
+></script>
+<!-- =====================================================
+     BOOTSTRAP JS
+====================================================== -->
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+></script>
 </body>
 </html>
