@@ -24,6 +24,64 @@
 
 
     <!-- =====================================================
+         TERAPKAN TEMA SEBELUM HALAMAN TAMPIL
+         Mencegah layar berkedip putih saat Dark Mode
+    ====================================================== -->
+
+    <script>
+
+        (function () {
+
+            try {
+
+                const data =
+                    JSON.parse(
+                        localStorage.getItem(
+                            "pengaturanAplikasi"
+                        )
+                    ) || {};
+
+                const tema =
+                    data.tema || "light";
+
+                let dark = false;
+
+                if (tema === "dark") {
+
+                    dark = true;
+
+                } else if (tema === "system") {
+
+                    dark =
+                        window.matchMedia(
+                            "(prefers-color-scheme: dark)"
+                        ).matches;
+
+                }
+
+                if (dark) {
+
+                    document.documentElement.classList.add(
+                        "dark-mode"
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "Tema awal tidak dapat dibaca:",
+                    error
+                );
+
+            }
+
+        })();
+
+    </script>
+
+
+    <!-- =====================================================
          BOOTSTRAP
     ====================================================== -->
 
@@ -70,9 +128,20 @@
 
 
         html {
+
             scroll-behavior: smooth;
+
             min-height: 100%;
+
             background-color: #f8f9fa;
+
+        }
+
+
+        html.dark-mode {
+
+            background-color: #121212 !important;
+
         }
 
 
@@ -103,6 +172,10 @@
 
             color: #212529;
 
+            transition:
+                background-color .25s ease,
+                color .25s ease;
+
         }
 
 
@@ -127,9 +200,11 @@
            DARK MODE
         ================================================= */
 
+        html.dark-mode body,
         body.dark-mode {
 
-            background: #121212 !important;
+            background:
+                #121212 !important;
 
             animation: none;
 
@@ -138,58 +213,154 @@
         }
 
 
-        body.dark-mode .custom-card,
-        body.dark-mode .ck-bottom {
+        html.dark-mode .custom-card,
+        body.dark-mode .custom-card {
 
             background:
-                rgba(30, 30, 30, .95) !important;
+                rgba(30, 30, 30, .96) !important;
 
             color: #f1f1f1 !important;
+
+            border-color: #333 !important;
 
         }
 
 
+        html.dark-mode .app-header,
         body.dark-mode .app-header {
 
             background:
-                rgba(30, 30, 30, .95) !important;
-
-        }
-
-
-        body.dark-mode .menu-btn {
-
-            background: #1e1e1e !important;
+                rgba(30, 30, 30, .97) !important;
 
             color: #f1f1f1 !important;
 
-            border-color: #444 !important;
+        }
+
+
+        html.dark-mode .menu-btn,
+        body.dark-mode .menu-btn {
+
+            background:
+                #1e1e1e !important;
+
+            color:
+                #f1f1f1 !important;
+
+            border-color:
+                #444 !important;
 
         }
 
 
+        html.dark-mode .menu-btn:hover,
         body.dark-mode .menu-btn:hover {
 
-            background: #292929 !important;
+            background:
+                #292929 !important;
+
+            color:
+                #75d6a7 !important;
 
         }
 
 
+        html.dark-mode .form-select,
         body.dark-mode .form-select {
 
-            background-color: #1e1e1e !important;
+            background-color:
+                #2b2b2b !important;
 
-            color: #fff !important;
+            color:
+                #ffffff !important;
 
-            border-color: #555 !important;
+            border-color:
+                #555 !important;
 
         }
 
 
+        html.dark-mode .form-select:focus,
+        body.dark-mode .form-select:focus {
+
+            border-color:
+                #198754 !important;
+
+            box-shadow:
+                0 0 0 .2rem
+                rgba(25, 135, 84, .20);
+
+        }
+
+
+        html.dark-mode .form-label,
+        body.dark-mode .form-label {
+
+            color:
+                #8fd3b4 !important;
+
+        }
+
+
+        html.dark-mode .summary-title,
+        body.dark-mode .summary-title {
+
+            color:
+                #8fd3b4 !important;
+
+        }
+
+
+        html.dark-mode .text-muted,
+        html.dark-mode .text-secondary,
         body.dark-mode .text-muted,
         body.dark-mode .text-secondary {
 
-            color: #adb5bd !important;
+            color:
+                #adb5bd !important;
+
+        }
+
+
+        html.dark-mode .dashboard-footer,
+        body.dark-mode .dashboard-footer {
+
+            color:
+                #999 !important;
+
+        }
+
+
+        html.dark-mode .ck-bottom,
+        body.dark-mode .ck-bottom {
+
+            background:
+                rgba(30, 30, 30, .97) !important;
+
+            border-top-color:
+                #333 !important;
+
+            color:
+                #f1f1f1 !important;
+
+        }
+
+
+        html.dark-mode .ck-bottom a,
+        body.dark-mode .ck-bottom a {
+
+            color:
+                #adb5bd !important;
+
+        }
+
+
+        html.dark-mode .ck-bottom a:hover,
+        html.dark-mode .ck-bottom a.active,
+        body.dark-mode .ck-bottom a:hover,
+        body.dark-mode .ck-bottom a.active {
+
+            color:
+                #51cf66 !important;
 
         }
 
@@ -198,16 +369,15 @@
            CONTAINER
         ================================================= */
 
-        .mobile-container,
-        .container-fluid.mobile-container {
+        .mobile-container {
 
             width: 100% !important;
 
             max-width: 100% !important;
 
-            padding-left: 16px !important;
+            padding-left: 20px !important;
 
-            padding-right: 16px !important;
+            padding-right: 20px !important;
 
             margin-left: auto;
 
@@ -222,9 +392,11 @@
 
         .custom-card {
 
-            border: none;
+            border:
+                none;
 
-            border-radius: 18px;
+            border-radius:
+                18px;
 
             box-shadow:
                 0 4px 15px
@@ -233,9 +405,16 @@
             background:
                 rgba(255, 255, 255, .84);
 
-            backdrop-filter: blur(8px);
+            backdrop-filter:
+                blur(8px);
 
-            -webkit-backdrop-filter: blur(8px);
+            -webkit-backdrop-filter:
+                blur(8px);
+
+            transition:
+                background-color .25s ease,
+                color .25s ease,
+                box-shadow .25s ease;
 
         }
 
@@ -246,9 +425,11 @@
 
         .app-header {
 
-            border: 0 !important;
+            border:
+                0 !important;
 
-            overflow: hidden;
+            overflow:
+                hidden;
 
             background:
                 rgba(255, 255, 255, .94) !important;
@@ -258,23 +439,32 @@
 
         .app-logo {
 
-            width: 68px !important;
+            width:
+                68px !important;
 
-            height: 68px !important;
+            height:
+                68px !important;
 
-            min-width: 68px;
+            min-width:
+                68px;
 
-            object-fit: contain;
+            object-fit:
+                contain;
 
-            border-radius: 18px !important;
+            border-radius:
+                18px !important;
 
-            flex: 0 0 68px;
+            flex:
+                0 0 68px;
 
-            display: block;
+            display:
+                block;
 
-            background: #ffffff;
+            background:
+                #ffffff;
 
-            border: 1px solid
+            border:
+                1px solid
                 rgba(0, 0, 0, .05);
 
         }
@@ -282,16 +472,19 @@
 
         .app-name {
 
-            font-size: 1.15rem;
+            font-size:
+                1.15rem;
 
-            letter-spacing: -.2px;
+            letter-spacing:
+                -.2px;
 
         }
 
 
         .app-subtitle {
 
-            font-size: .82rem;
+            font-size:
+                .82rem;
 
         }
 
@@ -302,42 +495,41 @@
 
         .filter-card {
 
-            padding: 2px;
+            padding:
+                2px;
 
         }
 
 
         .form-label {
 
-            color: #245d4b;
-
-        }
-
-
-        body.dark-mode .form-label {
-
-            color: #8fd3b4;
+            color:
+                #245d4b;
 
         }
 
 
         .form-select {
 
-            border-radius: 12px;
+            border-radius:
+                12px;
 
-            min-height: 46px;
+            min-height:
+                46px;
 
             border-color:
                 rgba(0, 0, 0, .12);
 
-            box-shadow: none;
+            box-shadow:
+                none;
 
         }
 
 
         .form-select:focus {
 
-            border-color: #198754;
+            border-color:
+                #198754;
 
             box-shadow:
                 0 0 0 .2rem
@@ -352,18 +544,14 @@
 
         .summary-title {
 
-            font-size: .95rem;
+            font-size:
+                .95rem;
 
-            font-weight: 800;
+            font-weight:
+                800;
 
-            color: #245d4b;
-
-        }
-
-
-        body.dark-mode .summary-title {
-
-            color: #8fd3b4;
+            color:
+                #245d4b;
 
         }
 
@@ -374,7 +562,8 @@
 
         .saldo-card {
 
-            border: 0 !important;
+            border:
+                0 !important;
 
             background:
                 linear-gradient(
@@ -387,18 +576,22 @@
                 0 8px 22px
                 rgba(25, 135, 84, .22) !important;
 
-            color: #fff !important;
+            color:
+                #fff !important;
 
         }
 
 
         .saldo-card #totalSaldo {
 
-            font-size: 1.8rem;
+            font-size:
+                1.8rem;
 
-            font-weight: 800;
+            font-weight:
+                800;
 
-            letter-spacing: -.5px;
+            letter-spacing:
+                -.5px;
 
         }
 
@@ -409,7 +602,8 @@
 
         .stat-card {
 
-            min-height: 115px;
+            min-height:
+                110px;
 
             transition:
                 transform .2s ease,
@@ -420,7 +614,8 @@
 
         .stat-card:hover {
 
-            transform: translateY(-2px);
+            transform:
+                translateY(-2px);
 
             box-shadow:
                 0 8px 18px
@@ -431,21 +626,29 @@
 
         .stat-icon {
 
-            width: 38px;
+            width:
+                38px;
 
-            height: 38px;
+            height:
+                38px;
 
-            border-radius: 12px;
+            border-radius:
+                12px;
 
-            display: flex;
+            display:
+                flex;
 
-            align-items: center;
+            align-items:
+                center;
 
-            justify-content: center;
+            justify-content:
+                center;
 
-            margin: 0 auto 8px;
+            margin:
+                0 auto 8px;
 
-            font-size: 1.1rem;
+            font-size:
+                1.1rem;
 
         }
 
@@ -455,7 +658,8 @@
             background:
                 rgba(25, 135, 84, .12);
 
-            color: #198754;
+            color:
+                #198754;
 
         }
 
@@ -465,7 +669,8 @@
             background:
                 rgba(220, 53, 69, .12);
 
-            color: #dc3545;
+            color:
+                #dc3545;
 
         }
 
@@ -476,39 +681,53 @@
 
         .menu-btn {
 
-            background: #ffffff;
+            background:
+                #ffffff;
 
             border:
                 1px solid #d4d8d4;
 
-            border-radius: 16px;
+            border-radius:
+                16px;
 
-            padding: 18px 10px;
+            padding:
+                20px 10px;
 
-            width: 100%;
+            width:
+                100%;
 
-            min-height: 115px;
+            min-height:
+                112px;
 
-            height: 100%;
+            height:
+                100%;
 
-            text-align: center;
+            text-align:
+                center;
 
-            color: #333;
+            color:
+                #333;
 
             transition:
                 all .25s ease;
 
-            text-decoration: none;
+            text-decoration:
+                none;
 
-            display: flex;
+            display:
+                flex;
 
-            flex-direction: column;
+            flex-direction:
+                column;
 
-            align-items: center;
+            align-items:
+                center;
 
-            justify-content: center;
+            justify-content:
+                center;
 
-            gap: 9px;
+            gap:
+                10px;
 
             box-shadow:
                 0 2px 8px
@@ -519,11 +738,14 @@
 
         .menu-btn:hover {
 
-            background: #eaf0ed;
+            background:
+                #eaf0ed;
 
-            color: #198754;
+            color:
+                #198754;
 
-            border-color: #198754;
+            border-color:
+                #198754;
 
             transform:
                 translateY(-3px);
@@ -545,27 +767,33 @@
 
         .menu-btn i {
 
-            font-size: 2rem;
+            font-size:
+                2rem;
 
-            color: #198754;
+            color:
+                #198754;
 
         }
 
 
         .menu-btn.red-icon i {
 
-            color: #dc3545;
+            color:
+                #dc3545;
 
         }
 
 
         .menu-btn h6 {
 
-            margin: 0;
+            margin:
+                0;
 
-            font-size: .9rem;
+            font-size:
+                .9rem;
 
-            font-weight: 600;
+            font-weight:
+                600;
 
         }
 
@@ -576,20 +804,25 @@
 
         .settings-btn {
 
-            min-height: 70px;
+            min-height:
+                70px;
 
-            flex-direction: row;
+            flex-direction:
+                row;
 
-            gap: 15px;
+            gap:
+                15px;
 
-            padding: 15px;
+            padding:
+                15px;
 
         }
 
 
         .settings-btn i {
 
-            font-size: 1.5rem;
+            font-size:
+                1.5rem;
 
         }
 
@@ -600,11 +833,14 @@
 
         .dashboard-footer {
 
-            text-align: center;
+            text-align:
+                center;
 
-            font-size: .75rem;
+            font-size:
+                .75rem;
 
-            color: #6c757d;
+            color:
+                #6c757d;
 
             padding:
                 4px 0 20px;
@@ -618,15 +854,20 @@
 
         .ck-bottom {
 
-            position: fixed;
+            position:
+                fixed;
 
-            left: 0;
+            left:
+                0;
 
-            right: 0;
+            right:
+                0;
 
-            bottom: 0;
+            bottom:
+                0;
 
-            z-index: 1050;
+            z-index:
+                1050;
 
             background:
                 rgba(255, 255, 255, .97);
@@ -638,70 +879,91 @@
                 0 -3px 15px
                 rgba(0, 0, 0, .08);
 
-            padding: 6px 15px;
+            padding:
+                6px 15px;
 
-            backdrop-filter: blur(8px);
+            backdrop-filter:
+                blur(8px);
 
-            -webkit-backdrop-filter: blur(8px);
+            -webkit-backdrop-filter:
+                blur(8px);
 
         }
 
 
         .ck-bottom-inner {
 
-            width: 100% !important;
+            width:
+                100% !important;
 
-            max-width: 100% !important;
+            max-width:
+                100% !important;
 
-            margin: 0 auto;
+            margin:
+                0 auto;
 
-            display: grid;
+            display:
+                grid;
 
             grid-template-columns:
                 repeat(5, 1fr);
 
-            gap: 4px;
+            gap:
+                4px;
 
         }
 
 
         .ck-bottom a {
 
-            text-decoration: none !important;
+            text-decoration:
+                none !important;
 
-            color: #6c757d;
+            color:
+                #6c757d;
 
-            display: flex;
+            display:
+                flex;
 
-            flex-direction: column;
+            flex-direction:
+                column;
 
-            align-items: center;
+            align-items:
+                center;
 
-            justify-content: center;
+            justify-content:
+                center;
 
-            gap: 3px;
+            gap:
+                3px;
 
-            font-size: .68rem;
+            font-size:
+                .68rem;
 
-            padding: 5px 2px;
+            padding:
+                5px 2px;
 
-            border-radius: 10px;
+            border-radius:
+                10px;
 
-            transition: .2s ease;
+            transition:
+                .2s ease;
 
         }
 
 
         .ck-bottom a i {
 
-            font-size: 1.15rem;
+            font-size:
+                1.15rem;
 
         }
 
 
         .ck-bottom a:hover {
 
-            color: #198754;
+            color:
+                #198754;
 
             background:
                 rgba(25, 135, 84, .08);
@@ -711,229 +973,254 @@
 
         .ck-bottom a.active {
 
-            color: #198754 !important;
+            color:
+                #198754 !important;
 
-            font-weight: 700;
-
-        }
-
-
-        body.dark-mode .ck-bottom a {
-
-            color: #adb5bd;
-
-        }
-
-
-        body.dark-mode .ck-bottom a:hover,
-        body.dark-mode .ck-bottom a.active {
-
-            color: #51cf66 !important;
+            font-weight:
+                700;
 
         }
 
 
         /* =================================================
            RESPONSIVE TABLET
-           600px KE ATAS
         ================================================= */
 
         @media (min-width: 600px) {
 
             .mobile-container {
 
-                padding-left: 32px !important;
+                padding-left:
+                    32px !important;
 
-                padding-right: 32px !important;
+                padding-right:
+                    32px !important;
 
-                padding-top: 30px !important;
+                padding-top:
+                    32px !important;
 
             }
 
 
             .app-header .card-body {
 
-                padding: 24px !important;
+                padding:
+                    24px !important;
 
             }
 
 
             .app-logo {
 
-                width: 90px !important;
+                width:
+                    90px !important;
 
-                height: 90px !important;
+                height:
+                    90px !important;
 
-                min-width: 90px;
+                min-width:
+                    90px;
 
-                flex-basis: 90px;
+                flex-basis:
+                    90px;
 
-                border-radius: 20px !important;
+                border-radius:
+                    20px !important;
 
             }
 
 
             .app-name {
 
-                font-size: 1.45rem;
+                font-size:
+                    1.45rem;
 
             }
 
 
             .app-header h5 {
 
-                font-size: 1.35rem;
+                font-size:
+                    1.35rem;
 
             }
 
 
             .app-subtitle {
 
-                font-size: 1rem;
+                font-size:
+                    1rem;
 
             }
 
 
             .custom-card {
 
-                border-radius: 22px;
+                border-radius:
+                    22px;
 
             }
 
 
             .form-label {
 
-                font-size: 1rem;
+                font-size:
+                    1rem;
 
             }
 
 
             .form-select {
 
-                min-height: 54px;
+                min-height:
+                    54px;
 
-                font-size: 1rem;
+                font-size:
+                    1rem;
 
             }
 
 
             .summary-title {
 
-                font-size: 1.15rem;
+                font-size:
+                    1.15rem;
 
             }
 
 
             .saldo-card #totalSaldo {
 
-                font-size: 2.4rem;
+                font-size:
+                    2.4rem;
 
             }
 
 
             .stat-card {
 
-                min-height: 150px;
+                min-height:
+                    150px;
 
             }
 
 
             .stat-icon {
 
-                width: 50px;
+                width:
+                    50px;
 
-                height: 50px;
+                height:
+                    50px;
 
-                font-size: 1.35rem;
+                font-size:
+                    1.35rem;
 
-                border-radius: 15px;
+                border-radius:
+                    15px;
 
             }
 
 
             .stat-card small {
 
-                font-size: .95rem;
+                font-size:
+                    .95rem;
 
             }
 
 
             .stat-card h5 {
 
-                font-size: 1.25rem;
+                font-size:
+                    1.25rem;
 
             }
 
 
             .menu-btn {
 
-                min-height: 150px;
+                min-height:
+                    150px;
 
-                padding: 24px 15px;
+                padding:
+                    25px 15px;
 
-                gap: 13px;
+                gap:
+                    14px;
 
-                border-radius: 20px;
+                border-radius:
+                    20px;
 
             }
 
 
             .menu-btn i {
 
-                font-size: 2.5rem;
+                font-size:
+                    2.6rem;
 
             }
 
 
             .menu-btn h6 {
 
-                font-size: 1.05rem;
+                font-size:
+                    1.05rem;
 
             }
 
 
             .settings-btn {
 
-                min-height: 85px;
+                min-height:
+                    90px;
 
             }
 
 
             .settings-btn i {
 
-                font-size: 2rem;
+                font-size:
+                    2rem;
 
             }
 
 
             .ck-bottom {
 
-                padding: 10px 24px;
+                padding:
+                    10px 25px;
 
             }
 
 
             .ck-bottom-inner {
 
-                gap: 8px;
+                gap:
+                    10px;
 
             }
 
 
             .ck-bottom a {
 
-                font-size: .82rem;
+                font-size:
+                    .85rem;
 
-                padding: 8px 4px;
+                padding:
+                    8px 4px;
 
-                gap: 5px;
+                gap:
+                    5px;
 
             }
 
 
             .ck-bottom a i {
 
-                font-size: 1.35rem;
+                font-size:
+                    1.4rem;
 
             }
 
@@ -942,150 +1229,98 @@
 
         /* =================================================
            RESPONSIVE TABLET BESAR
-           992px KE ATAS
         ================================================= */
 
         @media (min-width: 992px) {
 
             .mobile-container {
 
-                padding-left: 50px !important;
+                padding-left:
+                    50px !important;
 
-                padding-right: 50px !important;
-
-                padding-top: 35px !important;
+                padding-right:
+                    50px !important;
 
             }
 
 
             .app-header .card-body {
 
-                padding: 28px !important;
+                padding:
+                    28px !important;
 
             }
 
 
             .app-logo {
 
-                width: 105px !important;
+                width:
+                    100px !important;
 
-                height: 105px !important;
+                height:
+                    100px !important;
 
-                min-width: 105px;
+                min-width:
+                    100px;
 
-                flex-basis: 105px;
-
-                border-radius: 22px !important;
+                flex-basis:
+                    100px;
 
             }
 
 
             .app-name {
 
-                font-size: 1.65rem;
+                font-size:
+                    1.6rem;
 
             }
 
 
             .app-header h5 {
 
-                font-size: 1.55rem;
+                font-size:
+                    1.5rem;
 
             }
 
 
             .app-subtitle {
 
-                font-size: 1.08rem;
-
-            }
-
-
-            .form-select {
-
-                min-height: 58px;
-
-                font-size: 1.05rem;
-
-            }
-
-
-            .summary-title {
-
-                font-size: 1.25rem;
+                font-size:
+                    1.05rem;
 
             }
 
 
             .saldo-card #totalSaldo {
 
-                font-size: 2.8rem;
-
-            }
-
-
-            .stat-card {
-
-                min-height: 165px;
-
-            }
-
-
-            .stat-icon {
-
-                width: 55px;
-
-                height: 55px;
-
-                font-size: 1.45rem;
-
-            }
-
-
-            .stat-card small {
-
-                font-size: 1rem;
-
-            }
-
-
-            .stat-card h5 {
-
-                font-size: 1.35rem;
+                font-size:
+                    2.7rem;
 
             }
 
 
             .menu-btn {
 
-                min-height: 170px;
-
-                padding: 28px 18px;
-
-                gap: 15px;
-
-                border-radius: 22px;
+                min-height:
+                    165px;
 
             }
 
 
             .menu-btn i {
 
-                font-size: 2.8rem;
+                font-size:
+                    2.8rem;
 
             }
 
 
             .menu-btn h6 {
 
-                font-size: 1.15rem;
-
-            }
-
-
-            .settings-btn {
-
-                min-height: 95px;
+                font-size:
+                    1.1rem;
 
             }
 
@@ -1093,95 +1328,91 @@
 
 
         /* =================================================
-           HP SANGAT KECIL
-           380px KE BAWAH
+           MOBILE KECIL
         ================================================= */
 
         @media (max-width: 380px) {
 
             .mobile-container {
 
-                padding-left: 10px !important;
+                padding-left:
+                    10px !important;
 
-                padding-right: 10px !important;
+                padding-right:
+                    10px !important;
 
             }
 
 
             .app-logo {
 
-                width: 58px !important;
+                width:
+                    58px !important;
 
-                height: 58px !important;
+                height:
+                    58px !important;
 
-                min-width: 58px;
+                min-width:
+                    58px;
 
-                flex-basis: 58px;
+                flex-basis:
+                    58px;
 
             }
 
 
             .app-name {
 
-                font-size: 1rem;
-
-            }
-
-
-            .app-header h5 {
-
-                font-size: .95rem;
+                font-size:
+                    1rem;
 
             }
 
 
             .app-subtitle {
 
-                font-size: .74rem;
+                font-size:
+                    .76rem;
 
             }
 
 
             .menu-btn {
 
-                min-height: 100px;
-
-                padding: 15px 8px;
+                min-height:
+                    100px;
 
             }
 
 
             .menu-btn i {
 
-                font-size: 1.75rem;
-
-            }
-
-
-            .menu-btn h6 {
-
-                font-size: .82rem;
+                font-size:
+                    1.75rem;
 
             }
 
 
             .saldo-card #totalSaldo {
 
-                font-size: 1.55rem;
+                font-size:
+                    1.55rem;
 
             }
 
 
             .ck-bottom a {
 
-                font-size: .62rem;
+                font-size:
+                    .62rem;
 
             }
 
 
             .ck-bottom a i {
 
-                font-size: 1.05rem;
+                font-size:
+                    1.05rem;
 
             }
 
@@ -1314,7 +1545,6 @@
                 </div>
 
 
-
                 <!-- TAHUN -->
 
                 <div class="col-6">
@@ -1364,7 +1594,6 @@
                     </select>
 
                 </div>
-
 
 
                 <!-- MODE BERAS -->
@@ -1437,13 +1666,10 @@
 
 
         <small class="text-muted">
-
             Catatan Kas
-
         </small>
 
     </div>
-
 
 
     <div class="row g-3 mb-4">
@@ -1489,7 +1715,6 @@
             </div>
 
         </div>
-
 
 
         <!-- PEMASUKAN -->
@@ -1546,7 +1771,6 @@
             </div>
 
         </div>
-
 
 
         <!-- PENGELUARAN -->
@@ -1637,7 +1861,6 @@
         </div>
 
 
-
         <!-- PENGELUARAN -->
 
         <div class="col-6">
@@ -1658,7 +1881,6 @@
             </a>
 
         </div>
-
 
 
         <!-- PEMBAYARAN -->
@@ -1683,7 +1905,6 @@
         </div>
 
 
-
         <!-- LAPORAN -->
 
         <div class="col-6">
@@ -1704,7 +1925,6 @@
             </a>
 
         </div>
-
 
 
         <!-- PENGATURAN -->
@@ -1843,7 +2063,7 @@ document.addEventListener(
 
 
         const logoDefault =
-            "assets/logo-catatan-keuangan.png";
+            "assets/logo-catatan-kas.jpg";
 
 
         const tersimpan =
@@ -1879,7 +2099,6 @@ document.addEventListener(
             };
 
     }
-
 );
 
 </script>
@@ -1947,7 +2166,6 @@ document.addEventListener(
             currentYear;
 
     }
-
 );
 
 </script>
@@ -1976,13 +2194,8 @@ document.addEventListener(
             );
 
 
-        if (
-            !jenis ||
-            !modeDiv
-        ) {
-
+        if (!jenis || !modeDiv) {
             return;
-
         }
 
 
@@ -2015,7 +2228,6 @@ document.addEventListener(
         tampilkanModeBeras();
 
     }
-
 );
 
 </script>
@@ -2032,7 +2244,8 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-        let data = null;
+        let data =
+            null;
 
 
         try {
@@ -2093,7 +2306,6 @@ document.addEventListener(
         }
 
     }
-
 );
 
 </script>
@@ -2106,8 +2318,8 @@ document.addEventListener(
 
 <script>
 
-window.APP_VERSION =
-    "2.0";
+    window.APP_VERSION =
+        "2.0";
 
 </script>
 
@@ -2151,11 +2363,8 @@ window.APP_VERSION =
 
 <script type="module">
 
-import {
-    auth
-}
-from "./js/firebase-config.js";
-
+import { auth }
+    from "./js/firebase-config.js";
 
 import {
     signOut
