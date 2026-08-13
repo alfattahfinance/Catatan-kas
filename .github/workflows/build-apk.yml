@@ -154,6 +154,17 @@ jobs:
           EOF
 
 
+              # ==========================================
+      # CREATE GRADLE PROPERTIES
+      # ==========================================
+      - name: Create gradle.properties
+        run: |
+          cat > gradle.properties <<'EOF'
+          android.useAndroidX=true
+          android.enableJetifier=true
+          EOF
+
+
       # ==========================================
       # CREATE SETTINGS.GRADLE
       # ==========================================
