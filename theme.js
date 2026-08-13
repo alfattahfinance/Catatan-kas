@@ -1,7 +1,6 @@
 // ======================================
 // CATATAN KAS
-// THEME MANAGER
-// Versi final
+// GLOBAL THEME MANAGER
 // ======================================
 
 (function () {
@@ -9,31 +8,24 @@
     "use strict";
 
 
-    // ======================================
-    // DEFAULT THEME
-    // ======================================
-
-    const DEFAULT_THEME = "light";
-
-    const STORAGE_KEY = "pengaturanAplikasi";
-
-
-    // ======================================
+    // ==================================
     // AMBIL PENGATURAN
-    // ======================================
+    // ==================================
 
     function ambilPengaturan() {
 
         try {
 
             return JSON.parse(
-                localStorage.getItem(STORAGE_KEY)
+                localStorage.getItem(
+                    "pengaturanAplikasi"
+                )
             ) || {};
 
         } catch (error) {
 
             console.warn(
-                "Pengaturan aplikasi tidak valid:",
+                "Pengaturan aplikasi tidak valid.",
                 error
             );
 
@@ -44,64 +36,20 @@
     }
 
 
-    // ======================================
-    // AMBIL TEMA
-    // ======================================
+    // ==================================
+    // CEK DARK MODE
+    // ==================================
 
-    function ambilTema() {
+    function gunakanDarkMode() {
 
         const data =
             ambilPengaturan();
 
         const tema =
-            data.tema || DEFAULT_THEME;
+            data.tema || "light";
 
 
-        // Hanya izinkan:
-        // light
-        // dark
-        // system
-
-        if (
-            tema === "dark" ||
-            tema === "system" ||
-            tema === "light"
-        ) {
-
-            return tema;
-
-        }
-
-
-        return DEFAULT_THEME;
-
-    }
-
-
-    // ======================================
-    // CEK SYSTEM DARK MODE
-    // ======================================
-
-    function systemMenggunakanDarkMode() {
-
-        return window.matchMedia &&
-            window.matchMedia(
-                "(prefers-color-scheme: dark)"
-            ).matches;
-
-    }
-
-
-    // ======================================
-    // TENTUKAN APAKAH DARK MODE AKTIF
-    // ======================================
-
-    function gunakanDarkMode() {
-
-        const tema =
-            ambilTema();
-
-
+        // DARK
         if (tema === "dark") {
 
             return true;
@@ -109,236 +57,164 @@
         }
 
 
+        // SYSTEM
         if (tema === "system") {
 
-            return systemMenggunakanDarkMode();
+            return window.matchMedia(
+                "(prefers-color-scheme: dark)"
+            ).matches;
 
         }
 
 
+        // LIGHT
         return false;
 
     }
 
 
-    // ======================================
-    // TERAPKAN THEME COLOR
-    // ======================================
+    // ==================================
+    // TERAPKAN TEMA
+    // ==================================
 
-    function terapkanThemeColor(
-        gunakanGelap
-    ) {
+    function terapkanTema() {
 
-        let meta =
+        const dark =
+            gunakanDarkMode();
+
+
+        // HTML
+        document.documentElement.classList.toggle(
+            "dark-mode",
+            dark
+        );
+
+
+        // BODY
+        if (document.body) {
+
+            document.body.classList.toggle(
+                "dark-mode",
+                dark
+            );
+
+        }
+
+
+        // Simpan status sementara
+        document.documentElement.dataset.theme =
+            dark ? "dark" : "light";
+
+
+        // Update theme-color browser
+        const meta =
             document.querySelector(
                 'meta[name="theme-color"]'
             );
 
 
-        if (!meta) {
+        if (meta) {
 
-            meta =
-                document.createElement("meta");
-
-            meta.name =
-                "theme-color";
-
-            document.head.appendChild(meta);
-
-        }
-
-
-        meta.setAttribute(
-            "content",
-            gunakanGelap
-                ? "#121212"
-                : "#198754"
-        );
-
-    }
-
-
-    // ======================================
-    // TERAPKAN TEMA GLOBAL
-    // ======================================
-
-    function terapkanTemaGlobal() {
-
-        const gunakanGelap =
-            gunakanDarkMode();
-
-
-        const html =
-            document.documentElement;
-
-        const body =
-            document.body;
-
-
-        // HTML
-
-        html.classList.toggle(
-            "dark-mode",
-            gunakanGelap
-        );
-
-
-        // BODY
-
-        if (body) {
-
-            body.classList.toggle(
-                "dark-mode",
-                gunakanGelap
+            meta.setAttribute(
+                "content",
+                dark
+                    ? "#121212"
+                    : "#198754"
             );
 
         }
 
-
-        // Theme color browser
-
-        terapkanThemeColor(
-            gunakanGelap
-        );
-
-
-        // Simpan status aktif
-        // agar halaman lain bisa membacanya
-
-        html.setAttribute(
-            "data-theme",
-            gunakanGelap
-                ? "dark"
-                : "light"
-        );
-
     }
 
 
-    // ======================================
+    // ==================================
     // TERAPKAN SECEPAT MUNGKIN
-    // ======================================
+    // ==================================
 
-    // Jalankan sekarang apabila body sudah ada.
-    // Kalau belum ada, jalankan setelah DOM siap.
+    terapkanTema();
 
-    if (document.body) {
 
-        terapkanTemaGlobal();
+    // ==================================
+    // JIKA BODY BELUM ADA
+    // ==================================
 
-    } else {
+    if (!document.body) {
 
         document.addEventListener(
             "DOMContentLoaded",
-            terapkanTemaGlobal,
+            terapkanTema,
             { once: true }
         );
 
     }
 
 
-    // ======================================
-    // IKUTI PERUBAHAN TEMA PERANGKAT
-    // ======================================
+    // ==================================
+    // SYSTEM THEME BERUBAH
+    // ==================================
 
     const mediaQuery =
-        window.matchMedia
-            ? window.matchMedia(
-                "(prefers-color-scheme: dark)"
-            )
-            : null;
+        window.matchMedia(
+            "(prefers-color-scheme: dark)"
+        );
 
 
-    if (mediaQuery) {
+    function cekPerubahanSystem() {
 
-        const perubahanSystem =
-            function () {
-
-                const tema =
-                    ambilTema();
+        const data =
+            ambilPengaturan();
 
 
-                // Hanya mengikuti perangkat
-                // jika pilihan = system
+        if (data.tema === "system") {
 
-                if (tema === "system") {
-
-                    terapkanTemaGlobal();
-
-                }
-
-            };
-
-
-        // Browser modern
-
-        if (
-            typeof mediaQuery.addEventListener ===
-            "function"
-        ) {
-
-            mediaQuery.addEventListener(
-                "change",
-                perubahanSystem
-            );
-
-        }
-
-        // Kompatibilitas browser lama
-
-        else if (
-            typeof mediaQuery.addListener ===
-            "function"
-        ) {
-
-            mediaQuery.addListener(
-                perubahanSystem
-            );
+            terapkanTema();
 
         }
 
     }
 
 
-    // ======================================
-    // EVENT CUSTOM
-    // ======================================
-    //
-    // Bisa dipanggil dari halaman pengaturan
-    // setelah pengguna mengganti tema:
-    //
-    // window.dispatchEvent(
-    //     new Event("temaBerubah")
-    // );
-    //
-    // ======================================
+    if (
+        typeof mediaQuery.addEventListener ===
+        "function"
+    ) {
 
-    window.addEventListener(
-        "temaBerubah",
+        mediaQuery.addEventListener(
+            "change",
+            cekPerubahanSystem
+        );
+
+    } else {
+
+        // Support browser lama
+
+        mediaQuery.addListener(
+            cekPerubahanSystem
+        );
+
+    }
+
+
+    // ==================================
+    // UPDATE SETELAH DOM SIAP
+    // ==================================
+
+    document.addEventListener(
+        "DOMContentLoaded",
         function () {
 
-            terapkanTemaGlobal();
+            terapkanTema();
 
         }
     );
 
 
-    // ======================================
-    // FUNGSI GLOBAL
-    // ======================================
+    // ==================================
+    // BISA DIPANGGIL DARI HALAMAN LAIN
+    // ==================================
 
-    window.CatatanKasTheme = {
-
-        ambilTema:
-            ambilTema,
-
-        gunakanDarkMode:
-            gunakanDarkMode,
-
-        terapkanTema:
-            terapkanTemaGlobal
-
-    };
+    window.terapkanTemaGlobal =
+        terapkanTema;
 
 
 })();
