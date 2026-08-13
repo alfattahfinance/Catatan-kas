@@ -1,4 +1,4 @@
-Name: Build Keuangan APK
+name: Build Keuangan APK
 
 on:
   workflow_dispatch:
