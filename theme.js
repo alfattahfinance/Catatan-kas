@@ -1,8 +1,6 @@
 (function () {
     "use strict";
 
-    const THEME_KEY = "themeMode";
-
     const SETTING_KEY = "pengaturanAplikasi";
 
     /* =====================================================
@@ -34,20 +32,20 @@
             normalizedTheme === "dark";
 
 
-        /* BODY */
+        /* BODY & HTML (Class dark-mode ditambahkan ke keduanya agar CSS global aktif) */
 
         document.body.classList.toggle(
             "dark-mode",
             isDark
         );
 
-
-        /* HTML (Tambahkan juga class agar CSS mendeteksinya secara global) */
-
         document.documentElement.classList.toggle(
             "dark-mode",
             isDark
         );
+
+
+        /* ATRIBUT HTML */
 
         document.documentElement.setAttribute(
             "data-theme",
@@ -64,7 +62,6 @@
         } catch (e) {
             console.warn("Gagal menyimpan tema:", e);
         }
-
 
 
         /* EVENT */
@@ -205,10 +202,18 @@
         const savedTheme =
             getSavedTheme();
 
+        const isDark =
+            savedTheme === "dark";
+
 
         /*
-         * Terapkan ke HTML terlebih dahulu.
+         * Terapkan ke HTML & BODY terlebih dahulu.
          */
+
+        document.documentElement.classList.toggle(
+            "dark-mode",
+            isDark
+        );
 
         document.documentElement.setAttribute(
             "data-theme",
@@ -216,15 +221,11 @@
         );
 
 
-        /*
-         * Kemudian BODY.
-         */
-
         if (document.body) {
 
             document.body.classList.toggle(
                 "dark-mode",
-                savedTheme === "dark"
+                isDark
             );
 
         }
