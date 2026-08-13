@@ -38,9 +38,11 @@
         }
 
         .mobile-container {
-            max-width: 600px;
-            margin: auto;
-            padding-bottom: 90px;
+           width: 100% !important;
+           max-width: 100% !important;
+           margin: 0 auto;
+           padding: 20px !important;
+           padding-bottom: 110px !important;
         }
 
         .custom-card {
@@ -141,7 +143,89 @@
             color: #198754;
             font-weight: 800;
         }
+/* =================================================
+   TAMPILAN TABLET
+================================================= */
 
+@media (min-width: 768px) {
+
+    .mobile-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 35px !important;
+        padding-right: 35px !important;
+    }
+
+    .ck-topbar {
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .ck-logo {
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+    }
+
+    .ck-title {
+        font-size: 1.35rem;
+    }
+
+    .ck-subtitle {
+        font-size: 1rem;
+    }
+
+    .ck-back {
+        font-size: 1rem;
+    }
+
+    .custom-card {
+        border-radius: 20px;
+    }
+
+    .custom-card .card-body {
+        padding: 25px !important;
+    }
+
+    .custom-card h4 {
+        font-size: 1.6rem;
+    }
+
+    .custom-card h5 {
+        font-size: 1.3rem;
+    }
+
+    .form-label {
+        font-size: 1rem !important;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 52px;
+        font-size: 1rem;
+    }
+
+    .btn {
+        min-height: 52px;
+        font-size: 1rem;
+    }
+
+    .ck-bottom {
+        padding: 8px 25px;
+    }
+
+    .ck-bottom a {
+        font-size: .8rem;
+        padding: 8px 4px;
+    }
+
+    .ck-bottom a i {
+        font-size: 1.35rem;
+    }
+
+}
+
+        
         /* DARK MODE */
         body.dark-mode {
             background: #121212 !important;
@@ -172,7 +256,7 @@
 
 <body>
 
-<div class="container mobile-container py-4">
+<div class="container-fluid mobile-container py-4">
 
     <!-- Topbar Header -->
     <div class="ck-topbar">
