@@ -94,8 +94,10 @@
         ================================================= */
         .page-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 100%;
             margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
         }
 
         /* =================================================
@@ -171,6 +173,57 @@
             padding: 15px 12px;
             background: transparent;
         }
+
+        /* =================================================
+   RESPONSIVE TABLET & LAYAR BESAR
+================================================= */
+
+@media (min-width: 768px) {
+
+    .page-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 30px !important;
+        padding-right: 30px !important;
+    }
+
+    .ck-topbar {
+        padding: 20px;
+    }
+
+    .ck-logo {
+        width: 72px;
+        height: 72px;
+    }
+
+    .ck-title-top {
+        font-size: 1.35rem;
+    }
+
+    .ck-subtitle-top {
+        font-size: 1rem;
+    }
+
+    .pengeluaran-card {
+        border-radius: 22px;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 52px;
+        font-size: 1rem;
+    }
+
+    .btn-simpan {
+        min-height: 54px;
+        font-size: 1rem;
+    }
+
+    .riwayat-title {
+        font-size: 1.2rem;
+    }
+
+}
 
         /* =================================================
            DARK MODE
