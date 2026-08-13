@@ -30,10 +30,10 @@ body.dark-mode {
     animation: none !important;
 }
 
-/* Container mengikuti layar */
+/* Container mengikuti layar (Full penuh di tablet) */
 .mobile-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 100% !important;
     margin: auto;
     padding: 10px;
 }
@@ -124,16 +124,92 @@ body {
 }
 
 
-/* Catatan Kas V2 — konsistensi tampilan mobile */
-.ck-page { max-width: 600px; margin: 0 auto; padding-bottom: 90px; }
-.ck-topbar { display:flex; align-items:center; gap:12px; padding:14px 0 18px; }
-.ck-logo { width:48px; height:48px; border-radius:14px; object-fit:cover; box-shadow:0 3px 10px rgba(0,0,0,.08); }
-.ck-title { margin:0; font-size:1.05rem; font-weight:800; color:#198754; }
-.ck-subtitle { display:block; font-size:.75rem; color:#6c757d; margin-top:2px; }
-.ck-back { display:inline-flex; align-items:center; gap:6px; color:#198754; text-decoration:none; font-weight:700; margin:2px 0 12px; }
-.ck-back:hover { color:#146c43; }
-.ck-bottom { position:fixed; left:0; right:0; bottom:0; z-index:1000; background:rgba(255,255,255,.96); border-top:1px solid #e9ecef; padding:9px 12px calc(9px + env(safe-area-inset-bottom)); backdrop-filter:blur(8px); }
-.ck-bottom-inner { max-width:600px; margin:auto; display:flex; justify-content:space-around; }
-.ck-bottom a { color:#6c757d; text-decoration:none; font-size:.68rem; text-align:center; min-width:58px; }
-.ck-bottom a i { display:block; font-size:1.15rem; line-height:1.1; }
-.ck-bottom a.active { color:#198754; font-weight:800; }
+/* Catatan Kas V2 — Diubah agar full memenuhi layar tablet */
+.ck-page { 
+    width: 100%;
+    max-width: 100% !important; 
+    margin: 0 auto; 
+    padding-bottom: 90px; 
+}
+
+.ck-topbar { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    padding: 14px 0 18px; 
+}
+
+.ck-logo { 
+    width: 48px; 
+    height: 48px; 
+    border-radius: 14px; 
+    object-fit: cover; 
+    box-shadow: 0 3px 10px rgba(0,0,0,.08); 
+}
+
+.ck-title { 
+    margin: 0; 
+    font-size: 1.05rem; 
+    font-weight: 800; 
+    color: #198754; 
+}
+
+.ck-subtitle { 
+    display: block; 
+    font-size: .75rem; 
+    color: #6c757d; 
+    margin-top: 2px; 
+}
+
+.ck-back { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 6px; 
+    color: #198754; 
+    text-decoration: none; 
+    font-weight: 700; 
+    margin: 2px 0 12px; 
+}
+
+.ck-back:hover { 
+    color: #146c43; 
+}
+
+.ck-bottom { 
+    position: fixed; 
+    left: 0; 
+    right: 0; 
+    bottom: 0; 
+    z-index: 1000; 
+    background: rgba(255,255,255,.96); 
+    border-top: 1px solid #e9ecef; 
+    padding: 9px 12px calc(9px + env(safe-area-inset-bottom)); 
+    backdrop-filter: blur(8px); 
+}
+
+.ck-bottom-inner { 
+    width: 100%;
+    max-width: 100% !important; 
+    margin: auto; 
+    display: flex; 
+    justify-content: space-around; 
+}
+
+.ck-bottom a { 
+    color: #6c757d; 
+    text-decoration: none; 
+    font-size: .68rem; 
+    text-align: center; 
+    min-width: 58px; 
+}
+
+.ck-bottom a i { 
+    display: block; 
+    font-size: 1.15rem; 
+    line-height: 1.1; 
+}
+
+.ck-bottom a.active { 
+    color: #198754; 
+    font-weight: 800; 
+}
