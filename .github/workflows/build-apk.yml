@@ -144,7 +144,7 @@ jobs:
 
 
       # ==========================================
-      # CREATE GRADLE PROPERTIES (Agar AndroidX & Jetifier Aktif)
+      # CREATE GRADLE PROPERTIES (Root & App level)
       # ==========================================
       - name: Create gradle.properties
         run: |
@@ -153,13 +153,7 @@ jobs:
           android.enableJetifier=true
           EOF
 
-
-              # ==========================================
-      # CREATE GRADLE PROPERTIES
-      # ==========================================
-      - name: Create gradle.properties
-        run: |
-          cat > gradle.properties <<'EOF'
+          cat > app/gradle.properties <<'EOF'
           android.useAndroidX=true
           android.enableJetifier=true
           EOF
