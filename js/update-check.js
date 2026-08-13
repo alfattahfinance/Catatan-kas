@@ -68,7 +68,7 @@
     }
 
 
-    /* =================================================
+     /* =================================================
        NOTIFIKASI UPDATE
     ================================================= */
 
@@ -187,23 +187,42 @@
                 </div>
 
 
-                <button
-                    id="updateLaterButton"
-                    type="button"
-                    style="
-                        width:100%;
-                        border:1px solid #198754;
-                        background:#ffffff;
-                        color:#198754;
-                        border-radius:12px;
-                        padding:10px;
-                        font-weight:700;
-                    "
-                >
+                <div style="
+                    display: flex;
+                    gap: 10px;
+                ">
+                    <button
+                        id="updateNowButton"
+                        type="button"
+                        style="
+                            flex: 1;
+                            border: 0;
+                            background: #198754;
+                            color: #ffffff;
+                            border-radius: 12px;
+                            padding: 10px;
+                            font-weight: 700;
+                        "
+                    >
+                        Perbarui Sekarang
+                    </button>
 
-                    Nanti
-
-                </button>
+                    <button
+                        id="updateLaterButton"
+                        type="button"
+                        style="
+                            flex: 1;
+                            border: 1px solid #198754;
+                            background: #ffffff;
+                            color: #198754;
+                            border-radius: 12px;
+                            padding: 10px;
+                            font-weight: 700;
+                        "
+                    >
+                        Nanti
+                    </button>
+                </div>
 
             </div>
 
@@ -224,6 +243,11 @@
         const laterButton =
             document.getElementById(
                 "updateLaterButton"
+            );
+
+        const nowButton =
+            document.getElementById(
+                "updateNowButton"
             );
 
 
@@ -258,6 +282,21 @@
                 closeNotification
             );
 
+        }
+
+        if (nowButton) {
+            nowButton.addEventListener(
+                "click",
+                function () {
+                    // Jika di version.json disediakan link download/url, arahkan ke sana, jika tidak lakukan hard reload cache
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else {
+                        // Memaksa reload bersih untuk memuat file terbaru
+                        window.location.reload(true);
+                    }
+                }
+            );
         }
 
     }
