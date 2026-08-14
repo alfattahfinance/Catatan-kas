@@ -1,25 +1,112 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<?xml version="1.0" encoding="utf-8"?>
 
-    <!-- Izin Utama -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- =====================================================
+         INTERNET
+         Untuk Firebase, GitHub, version.json, dan download APK
+    ====================================================== -->
+
+    <uses-permission
+        android:name="android.permission.INTERNET" />
+
+    <!-- =====================================================
+         NOTIFIKASI DOWNLOAD
+    ====================================================== -->
+
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- =====================================================
+         IZIN INSTALL APK
+         Android akan meminta izin "Install unknown apps"
+    ====================================================== -->
+
+    <uses-permission
+        android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- =====================================================
+         STORAGE
+         Tidak wajib untuk Android modern, tetapi aman
+         untuk kompatibilitas perangkat lama.
+    ====================================================== -->
+
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+
+    <!-- =====================================================
+         APLIKASI
+    ====================================================== -->
 
     <application
-        android:theme="@style/AppTheme"
-        android:label="Catatan Kas"
-        android:usesCleartextTraffic="true"
+
         android:allowBackup="true"
-        android:supportsRtl="true">
-        
+
+        android:usesCleartextTraffic="false"
+
+        android:theme="@style/Theme.CatatanKas"
+
+        android:label="Catatan Kas"
+
+        android:icon="@drawable/ic_launcher">
+
+
+        <!-- =================================================
+             FILE PROVIDER
+
+             Digunakan untuk membuka APK hasil download
+             dengan aman melalui Android Package Installer.
+        ================================================== -->
+
+        <provider
+
+            android:name="androidx.core.content.FileProvider"
+
+            android:authorities="${applicationId}.fileprovider"
+
+            android:exported="false"
+
+            android:grantUriPermissions="true">
+
+            <meta-data
+
+                android:name="android.support.FILE_PROVIDER_PATHS"
+
+                android:resource="@xml/file_paths" />
+
+        </provider>
+
+
+        <!-- =================================================
+             MAIN ACTIVITY
+        ================================================== -->
+
         <activity
+
             android:name=".MainActivity"
-            android:screenOrientation="portrait"
+
             android:exported="true">
+
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+
+                <action
+                    android:name="android.intent.action.MAIN" />
+
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
+
         </activity>
 
     </application>
+
 </manifest>
