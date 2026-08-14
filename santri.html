@@ -6,53 +6,50 @@
 
     <!-- =====================================================
          TEMA SEBELUM HALAMAN DITAMPILKAN
-         Mencegah layar berkedip putih saat dark mode
+         Mencegah layar berkedip saat dark mode
     ====================================================== -->
     <script>
-        (function () {
-            try {
-                const data =
-                    JSON.parse(
-                        localStorage.getItem("pengaturanAplikasi")
-                    ) || {};
+    (function () {
+        try {
+            const data =
+                JSON.parse(
+                    localStorage.getItem("pengaturanAplikasi")
+                ) || {};
 
-                const tema =
-                    data.tema || "light";
+            const tema = data.tema || "light";
 
-                let dark = false;
+            let theme = "light";
 
-                if (tema === "dark") {
-                    dark = true;
-                } else if (tema === "system") {
-                    dark =
-                        window.matchMedia(
-                            "(prefers-color-scheme: dark)"
-                        ).matches;
-                }
-
-                if (dark) {
-                    document.documentElement.classList.add(
-                        "dark-mode"
-                    );
-
-                    document.documentElement.setAttribute(
-                        "data-theme",
-                        "dark"
-                    );
-                } else {
-                    document.documentElement.setAttribute(
-                        "data-theme",
-                        "light"
-                    );
-                }
-
-            } catch (error) {
-                console.warn(
-                    "Gagal memuat tema:",
-                    error
-                );
+            if (tema === "dark") {
+                theme = "dark";
+            } else if (tema === "system") {
+                theme =
+                    window.matchMedia(
+                        "(prefers-color-scheme: dark)"
+                    ).matches
+                        ? "dark"
+                        : "light";
             }
-        })();
+
+            document.documentElement.setAttribute(
+                "data-theme",
+                theme
+            );
+
+            if (theme === "dark") {
+                document.documentElement.classList.add("dark-mode");
+            } else {
+                document.documentElement.classList.remove("dark-mode");
+            }
+
+        } catch (error) {
+            console.warn("Gagal memuat tema:", error);
+            document.documentElement.setAttribute(
+                "data-theme",
+                "light"
+            );
+        }
+    })();
     </script>
 
     <meta
@@ -76,7 +73,6 @@
     <!-- =====================================================
          BOOTSTRAP
     ====================================================== -->
-
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
         rel="stylesheet"
@@ -86,7 +82,6 @@
     <!-- =====================================================
          BOOTSTRAP ICONS
     ====================================================== -->
-
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
@@ -96,7 +91,6 @@
     <!-- =====================================================
          CSS GLOBAL
     ====================================================== -->
-
     <link
         rel="stylesheet"
         href="css/style.css"
@@ -111,23 +105,19 @@
     <!-- =====================================================
          STYLE KHUSUS SANTRI
     ====================================================== -->
-
     <style>
 
         * {
             box-sizing: border-box;
         }
 
-
         html {
             scroll-behavior: smooth;
             min-height: 100%;
         }
 
-
         body {
             margin: 0;
-
             min-height: 100vh;
 
             font-family:
@@ -156,7 +146,6 @@
                 color .25s ease;
         }
 
-
         @keyframes gradientShift {
 
             0% {
@@ -180,13 +169,11 @@
 
         .mobile-container {
             width: 100% !important;
-
             max-width: 100% !important;
 
             margin: 0 auto;
 
             padding-left: 20px !important;
-
             padding-right: 20px !important;
         }
 
@@ -198,7 +185,6 @@
         .ck-topbar {
 
             display: flex;
-
             align-items: center;
 
             gap: 14px;
@@ -232,9 +218,7 @@
         .ck-logo {
 
             width: 56px;
-
             height: 56px;
-
             min-width: 56px;
 
             object-fit: contain;
@@ -244,6 +228,10 @@
             background: #fff;
 
             border: 1px solid #eee;
+
+            transition:
+                background .25s ease,
+                border-color .25s ease;
         }
 
 
@@ -289,6 +277,9 @@
             gap: 6px;
 
             margin-bottom: 15px;
+
+            transition:
+                color .2s ease;
         }
 
 
@@ -368,7 +359,8 @@
             transition:
                 background .25s ease,
                 color .25s ease,
-                border-color .25s ease;
+                border-color .25s ease,
+                box-shadow .25s ease;
         }
 
 
@@ -393,6 +385,10 @@
 
         .table {
             margin-bottom: 0;
+
+            --bs-table-bg: transparent;
+            --bs-table-color: #212529;
+            --bs-table-border-color: #dee2e6;
         }
 
 
@@ -422,16 +418,12 @@
         ================================================== */
 
         .empty-santri {
-
-            padding:
-                35px 15px !important;
+            padding: 35px 15px !important;
         }
 
 
         .empty-santri i {
-
             font-size: 3rem;
-
             opacity: .45;
         }
 
@@ -443,13 +435,11 @@
         .btn-action {
 
             width: 38px;
-
             height: 38px;
 
             display: inline-flex;
 
             align-items: center;
-
             justify-content: center;
 
             border-radius: 10px;
@@ -467,9 +457,7 @@
             position: fixed;
 
             left: 0;
-
             right: 0;
-
             bottom: 0;
 
             z-index: 1050;
@@ -495,14 +483,14 @@
 
             transition:
                 background .25s ease,
-                border-color .25s ease;
+                border-color .25s ease,
+                box-shadow .25s ease;
         }
 
 
         .ck-bottom-inner {
 
             width: 100% !important;
-
             max-width: 100% !important;
 
             margin: 0 auto;
@@ -527,7 +515,6 @@
             flex-direction: column;
 
             align-items: center;
-
             justify-content: center;
 
             gap: 3px;
@@ -568,14 +555,9 @@
 
 
         /* =================================================
-           =================================================
            DARK MODE
-           =================================================
-           PENTING:
-           Menggunakan html.dark-mode
-           BUKAN body.dark-mode
+           SAMA DENGAN HALAMAN SEBELUMNYA
         ================================================== */
-
 
         html.dark-mode body {
 
@@ -589,8 +571,6 @@
                 none !important;
         }
 
-
-        /* TOPBAR */
 
         html.dark-mode .ck-topbar {
 
@@ -616,14 +596,19 @@
         }
 
 
+        html.dark-mode .ck-title {
+
+            color:
+                #51cf66 !important;
+        }
+
+
         html.dark-mode .ck-subtitle {
 
             color:
                 #a9a9a9 !important;
         }
 
-
-        /* BACK */
 
         html.dark-mode .back-btn {
 
@@ -639,8 +624,6 @@
         }
 
 
-        /* TITLE */
-
         html.dark-mode .page-title {
 
             color:
@@ -654,8 +637,6 @@
                 #51cf66 !important;
         }
 
-
-        /* CARD */
 
         html.dark-mode .custom-card {
 
@@ -671,8 +652,6 @@
         }
 
 
-        /* CARD TEXT */
-
         html.dark-mode .custom-card h5 {
 
             color:
@@ -687,15 +666,13 @@
         }
 
 
-        /* INPUT */
-
         html.dark-mode .form-control {
 
             background:
                 #292929 !important;
 
             color:
-                #fff !important;
+                #ffffff !important;
 
             border-color:
                 #444 !important;
@@ -720,24 +697,25 @@
         }
 
 
-        /* TABLE */
+        /* TABLE DARK MODE */
 
         html.dark-mode .table {
 
             --bs-table-bg:
-                transparent;
+                transparent !important;
 
             --bs-table-color:
-                #eeeeee;
+                #eeeeee !important;
 
             --bs-table-border-color:
-                #3b3b3b;
+                #3b3b3b !important;
 
             color:
                 #eeeeee !important;
         }
 
 
+        html.dark-mode .table thead,
         html.dark-mode .table-light {
 
             --bs-table-bg:
@@ -745,6 +723,9 @@
 
             --bs-table-color:
                 #ffffff !important;
+
+            --bs-table-border-color:
+                #444 !important;
 
             color:
                 #ffffff !important;
@@ -754,10 +735,23 @@
         html.dark-mode .table > :not(caption) > * > * {
 
             background-color:
-                transparent;
+                transparent !important;
 
             color:
-                #eeeeee;
+                #eeeeee !important;
+
+            border-color:
+                #3b3b3b !important;
+        }
+
+
+        html.dark-mode .table > thead > tr > th {
+
+            background-color:
+                #292929 !important;
+
+            color:
+                #ffffff !important;
         }
 
 
@@ -792,8 +786,6 @@
         }
 
 
-        /* EMPTY */
-
         html.dark-mode .empty-santri {
 
             color:
@@ -808,7 +800,7 @@
         }
 
 
-        /* BUTTON EDIT */
+        /* EDIT */
 
         html.dark-mode .btn-outline-primary {
 
@@ -830,7 +822,7 @@
         }
 
 
-        /* BUTTON DELETE */
+        /* DELETE */
 
         html.dark-mode .btn-outline-danger {
 
@@ -852,7 +844,7 @@
         }
 
 
-        /* BOTTOM NAV */
+        /* BOTTOM */
 
         html.dark-mode .ck-bottom {
 
@@ -932,36 +924,42 @@
 
 
             .ck-title {
+
                 font-size:
                     1.35rem;
             }
 
 
             .ck-subtitle {
+
                 font-size:
                     1rem;
             }
 
 
             .back-btn {
+
                 font-size:
                     1rem;
             }
 
 
             .page-title {
+
                 font-size:
                     1.6rem;
             }
 
 
             .custom-card {
+
                 border-radius:
                     20px;
             }
 
 
             .custom-card .card-body {
+
                 padding:
                     25px !important;
             }
@@ -1037,6 +1035,7 @@
 
 
             .ck-topbar {
+
                 padding:
                     24px;
             }
@@ -1235,8 +1234,6 @@
             </h5>
 
 
-            <!-- NAMA -->
-
             <div class="mb-3">
 
                 <label
@@ -1257,8 +1254,6 @@
             </div>
 
 
-            <!-- KELAS -->
-
             <div class="mb-3">
 
                 <label
@@ -1277,8 +1272,6 @@
 
             </div>
 
-
-            <!-- HP WALI -->
 
             <div class="mb-3">
 
@@ -1300,8 +1293,6 @@
 
             </div>
 
-
-            <!-- TOMBOL SIMPAN -->
 
             <button
                 type="button"
@@ -1366,17 +1357,11 @@
 
                         <tr>
 
-                            <th>
-                                No
-                            </th>
+                            <th>No</th>
 
-                            <th>
-                                Nama
-                            </th>
+                            <th>Nama</th>
 
-                            <th>
-                                Kelas
-                            </th>
+                            <th>Kelas</th>
 
                             <th class="text-center">
                                 Aksi
@@ -1428,9 +1413,7 @@
 
             <i class="bi bi-house-fill"></i>
 
-            <span>
-                Beranda
-            </span>
+            <span>Beranda</span>
 
         </a>
 
@@ -1443,9 +1426,7 @@
 
             <i class="bi bi-people-fill"></i>
 
-            <span>
-                Santri
-            </span>
+            <span>Santri</span>
 
         </a>
 
@@ -1454,9 +1435,7 @@
 
             <i class="bi bi-cash-stack"></i>
 
-            <span>
-                Bayar
-            </span>
+            <span>Bayar</span>
 
         </a>
 
@@ -1465,9 +1444,7 @@
 
             <i class="bi bi-wallet2"></i>
 
-            <span>
-                Keluar
-            </span>
+            <span>Keluar</span>
 
         </a>
 
@@ -1476,9 +1453,7 @@
 
             <i class="bi bi-bar-chart-fill"></i>
 
-            <span>
-                Laporan
-            </span>
+            <span>Laporan</span>
 
         </a>
 
@@ -1497,7 +1472,6 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-
         /* =================================================
            NAMA PONDOK
         ================================================== */
@@ -1507,7 +1481,6 @@ document.addEventListener(
                 "namaPondokHeader"
             );
 
-
         try {
 
             const pengaturan =
@@ -1516,7 +1489,6 @@ document.addEventListener(
                         "pengaturanAplikasi"
                     )
                 ) || {};
-
 
             if (
                 namaHeader &&
@@ -1547,10 +1519,8 @@ document.addEventListener(
                 "logoPreviewV2"
             );
 
-
         const logoDefault =
             "assets/logo-catatan-kas.jpg";
-
 
         if (logo) {
 
@@ -1559,14 +1529,12 @@ document.addEventListener(
                     "logoDashboard"
                 );
 
-
             if (savedLogo) {
 
                 logo.src =
                     savedLogo;
 
             }
-
 
             logo.onerror =
                 function () {
@@ -1584,7 +1552,7 @@ document.addEventListener(
 
 
         /* =================================================
-           TAMPILKAN DATA SANTRI
+           TAMPILKAN DATA
         ================================================== */
 
         tampilkanSantri();
@@ -1598,7 +1566,6 @@ document.addEventListener(
             document.getElementById(
                 "btnSimpanSantri"
             );
-
 
         if (tombol) {
 
@@ -1628,7 +1595,6 @@ function ambilSantri() {
                 )
             );
 
-
         if (
             Array.isArray(data)
         ) {
@@ -1646,7 +1612,6 @@ function ambilSantri() {
 
     }
 
-
     return [];
 
 }
@@ -1658,31 +1623,30 @@ function ambilSantri() {
 
 function simpanSantri() {
 
-    const nama =
-        document
-            .getElementById(
-                "namaSantri"
-            )
-            .value
-            .trim();
+    const namaInput =
+        document.getElementById(
+            "namaSantri"
+        );
 
+    const kelasInput =
+        document.getElementById(
+            "kelasSantri"
+        );
+
+    const hpInput =
+        document.getElementById(
+            "hpSantri"
+        );
+
+
+    const nama =
+        namaInput.value.trim();
 
     const kelas =
-        document
-            .getElementById(
-                "kelasSantri"
-            )
-            .value
-            .trim();
-
+        kelasInput.value.trim();
 
     const hp =
-        document
-            .getElementById(
-                "hpSantri"
-            )
-            .value
-            .trim();
+        hpInput.value.trim();
 
 
     if (!nama) {
@@ -1691,11 +1655,7 @@ function simpanSantri() {
             "Nama santri belum diisi."
         );
 
-        document
-            .getElementById(
-                "namaSantri"
-            )
-            .focus();
+        namaInput.focus();
 
         return;
 
@@ -1708,11 +1668,7 @@ function simpanSantri() {
             "Kelas santri belum diisi."
         );
 
-        document
-            .getElementById(
-                "kelasSantri"
-            )
-            .focus();
+        kelasInput.focus();
 
         return;
 
@@ -1722,6 +1678,8 @@ function simpanSantri() {
     const daftar =
         ambilSantri();
 
+
+    /* CEK DUPLIKAT */
 
     const sudahAda =
         daftar.some(
@@ -1751,6 +1709,8 @@ function simpanSantri() {
 
     }
 
+
+    /* DATA BARU */
 
     const santriBaru = {
 
@@ -1782,25 +1742,11 @@ function simpanSantri() {
     );
 
 
-    document
-        .getElementById(
-            "namaSantri"
-        )
-        .value = "";
+    /* RESET FORM */
 
-
-    document
-        .getElementById(
-            "kelasSantri"
-        )
-        .value = "";
-
-
-    document
-        .getElementById(
-            "hpSantri"
-        )
-        .value = "";
+    namaInput.value = "";
+    kelasInput.value = "";
+    hpInput.value = "";
 
 
     tampilkanSantri();
@@ -1824,7 +1770,6 @@ function tampilkanSantri() {
             "tbodySantri"
         );
 
-
     const jumlah =
         document.getElementById(
             "jumlahSantri"
@@ -1832,15 +1777,15 @@ function tampilkanSantri() {
 
 
     if (!tbody) {
-
         return;
-
     }
 
 
     const daftar =
         ambilSantri();
 
+
+    /* JUMLAH */
 
     if (jumlah) {
 
@@ -1850,6 +1795,8 @@ function tampilkanSantri() {
 
     }
 
+
+    /* KOSONG */
 
     if (
         daftar.length === 0
@@ -1889,23 +1836,23 @@ function tampilkanSantri() {
     }
 
 
+    /* ISI TABEL */
+
     tbody.innerHTML = "";
 
 
     daftar.forEach(
-        function (item,index) {
+        function (item, index) {
 
             const nama =
                 escapeHtml(
                     item.nama || "-"
                 );
 
-
             const kelas =
                 escapeHtml(
                     item.kelas || "-"
                 );
-
 
             const hp =
                 escapeHtml(
@@ -1935,13 +1882,10 @@ function tampilkanSantri() {
                         hp
                         ?
                         `
-                        <small class="text-muted">
-
-                            <i class="bi bi-telephone"></i>
-
-                            ${hp}
-
-                        </small>
+                            <small class="text-muted">
+                                <i class="bi bi-telephone"></i>
+                                ${hp}
+                            </small>
                         `
                         :
                         ""
@@ -2101,10 +2045,8 @@ function editSantri(index) {
     data.nama =
         nama;
 
-
     data.kelas =
         kelas;
-
 
     data.hp =
         hpBaru.trim();
