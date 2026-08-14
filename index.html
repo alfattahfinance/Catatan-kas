@@ -2,18 +2,11 @@
 <html lang="id">
 
 <head>
-
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="theme-color"
-        content="#198754"
-    >
+    <meta name="theme-color" content="#198754">
 
     <meta
         name="description"
@@ -22,62 +15,40 @@
 
     <title>Catatan Kas</title>
 
-
     <!-- =====================================================
-         TERAPKAN TEMA SEBELUM HALAMAN TAMPIL
-         Mencegah layar berkedip putih saat Dark Mode
+         TEMA AWAL
+         Mencegah layar putih sebelum halaman tampil
     ====================================================== -->
 
     <script>
+    (function () {
+        try {
+            const data =
+                JSON.parse(
+                    localStorage.getItem("pengaturanAplikasi")
+                ) || {};
 
-        (function () {
+            const tema = data.tema || "light";
 
-            try {
+            let dark = false;
 
-                const data =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "pengaturanAplikasi"
-                        )
-                    ) || {};
-
-                const tema =
-                    data.tema || "light";
-
-                let dark = false;
-
-                if (tema === "dark") {
-
-                    dark = true;
-
-                } else if (tema === "system") {
-
-                    dark =
-                        window.matchMedia(
-                            "(prefers-color-scheme: dark)"
-                        ).matches;
-
-                }
-
-                if (dark) {
-
-                    document.documentElement.classList.add(
-                        "dark-mode"
-                    );
-
-                }
-
-            } catch (error) {
-
-                console.warn(
-                    "Tema awal tidak dapat dibaca:",
-                    error
-                );
-
+            if (tema === "dark") {
+                dark = true;
+            } else if (tema === "system") {
+                dark =
+                    window.matchMedia(
+                        "(prefers-color-scheme: dark)"
+                    ).matches;
             }
 
-        })();
+            if (dark) {
+                document.documentElement.classList.add("dark-mode");
+            }
 
+        } catch (error) {
+            console.warn("Tema awal tidak dapat dibaca:", error);
+        }
+    })();
     </script>
 
 
@@ -86,34 +57,17 @@
     ====================================================== -->
 
     <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
-
-
-    <!-- =====================================================
-         BOOTSTRAP ICONS
-    ====================================================== -->
 
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     >
 
-
-    <!-- =====================================================
-         CUSTOM CSS
-    ====================================================== -->
-
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="css/theme.css"
-    >
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme.css">
 
 
     <!-- =====================================================
@@ -126,29 +80,18 @@
             box-sizing: border-box;
         }
 
-
         html {
-
-            scroll-behavior: smooth;
-
             min-height: 100%;
-
-            background-color: #f8f9fa;
-
+            background: #f8f9fa;
+            scroll-behavior: smooth;
         }
-
 
         html.dark-mode {
-
-            background-color: #121212 !important;
-
+            background: #121212 !important;
         }
 
-
         body {
-
             margin: 0;
-
             min-height: 100vh;
 
             font-family:
@@ -173,11 +116,9 @@
             color: #212529;
 
             transition:
-                background-color .25s ease,
+                background .25s ease,
                 color .25s ease;
-
         }
-
 
         @keyframes gradientShift {
 
@@ -196,50 +137,43 @@
         }
 
 
-        /* =================================================
+        /* =====================================================
            DARK MODE
-        ================================================= */
+        ====================================================== */
 
         html.dark-mode body,
         body.dark-mode {
-
-            background:
-                #121212 !important;
-
-            animation: none;
-
+            background: #121212 !important;
             color: #f1f1f1 !important;
-
+            animation: none !important;
         }
-
 
         html.dark-mode .custom-card,
         body.dark-mode .custom-card {
-
             background:
-                rgba(30, 30, 30, .96) !important;
+                rgba(30,30,30,.96) !important;
 
             color: #f1f1f1 !important;
 
             border-color: #333 !important;
-
         }
-
 
         html.dark-mode .app-header,
         body.dark-mode .app-header {
-
             background:
-                rgba(30, 30, 30, .97) !important;
+                rgba(30,30,30,.97) !important;
 
             color: #f1f1f1 !important;
-
         }
 
+        html.dark-mode .app-logo,
+        body.dark-mode .app-logo {
+            background: #222 !important;
+            border-color: #444 !important;
+        }
 
         html.dark-mode .menu-btn,
         body.dark-mode .menu-btn {
-
             background:
                 #1e1e1e !important;
 
@@ -248,322 +182,214 @@
 
             border-color:
                 #444 !important;
-
         }
-
 
         html.dark-mode .menu-btn:hover,
         body.dark-mode .menu-btn:hover {
-
             background:
                 #292929 !important;
 
             color:
                 #75d6a7 !important;
-
         }
-
 
         html.dark-mode .form-select,
         body.dark-mode .form-select {
-
             background-color:
                 #2b2b2b !important;
 
             color:
-                #ffffff !important;
+                #fff !important;
 
             border-color:
                 #555 !important;
-
         }
-
-
-        html.dark-mode .form-select:focus,
-        body.dark-mode .form-select:focus {
-
-            border-color:
-                #198754 !important;
-
-            box-shadow:
-                0 0 0 .2rem
-                rgba(25, 135, 84, .20);
-
-        }
-
 
         html.dark-mode .form-label,
         body.dark-mode .form-label {
-
             color:
                 #8fd3b4 !important;
-
         }
-
 
         html.dark-mode .summary-title,
         body.dark-mode .summary-title {
-
             color:
                 #8fd3b4 !important;
-
         }
-
 
         html.dark-mode .text-muted,
         html.dark-mode .text-secondary,
         body.dark-mode .text-muted,
         body.dark-mode .text-secondary {
-
             color:
                 #adb5bd !important;
-
         }
-
 
         html.dark-mode .dashboard-footer,
         body.dark-mode .dashboard-footer {
-
             color:
                 #999 !important;
-
         }
-
 
         html.dark-mode .ck-bottom,
         body.dark-mode .ck-bottom {
-
             background:
-                rgba(30, 30, 30, .97) !important;
+                rgba(30,30,30,.97) !important;
 
             border-top-color:
                 #333 !important;
 
             color:
                 #f1f1f1 !important;
-
         }
-
 
         html.dark-mode .ck-bottom a,
         body.dark-mode .ck-bottom a {
-
             color:
                 #adb5bd !important;
-
         }
-
 
         html.dark-mode .ck-bottom a:hover,
         html.dark-mode .ck-bottom a.active,
         body.dark-mode .ck-bottom a:hover,
         body.dark-mode .ck-bottom a.active {
-
             color:
                 #51cf66 !important;
-
         }
 
 
-        /* =================================================
+        /* =====================================================
            CONTAINER
-        ================================================= */
+        ====================================================== */
 
         .mobile-container {
-
             width: 100% !important;
-
             max-width: 100% !important;
 
             padding-left: 20px !important;
-
             padding-right: 20px !important;
 
             margin-left: auto;
-
             margin-right: auto;
-
         }
 
 
-        /* =================================================
+        /* =====================================================
            CARD
-        ================================================= */
+        ====================================================== */
 
         .custom-card {
-
-            border:
-                none;
-
-            border-radius:
-                18px;
+            border: none;
+            border-radius: 18px;
 
             box-shadow:
                 0 4px 15px
-                rgba(0, 0, 0, .06);
+                rgba(0,0,0,.06);
 
             background:
-                rgba(255, 255, 255, .84);
+                rgba(255,255,255,.84);
 
-            backdrop-filter:
-                blur(8px);
-
-            -webkit-backdrop-filter:
-                blur(8px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
 
             transition:
-                background-color .25s ease,
-                color .25s ease,
-                box-shadow .25s ease;
-
+                background .25s ease,
+                color .25s ease;
         }
 
 
-        /* =================================================
-           APP HEADER
-        ================================================= */
+        /* =====================================================
+           HEADER
+        ====================================================== */
 
         .app-header {
-
-            border:
-                0 !important;
-
-            overflow:
-                hidden;
+            border: 0 !important;
+            overflow: hidden;
 
             background:
-                rgba(255, 255, 255, .94) !important;
-
+                rgba(255,255,255,.94) !important;
         }
 
-
         .app-logo {
+            width: 68px !important;
+            height: 68px !important;
+            min-width: 68px;
 
-            width:
-                68px !important;
+            object-fit: contain;
 
-            height:
-                68px !important;
+            border-radius: 18px !important;
 
-            min-width:
-                68px;
+            display: block;
 
-            object-fit:
-                contain;
-
-            border-radius:
-                18px !important;
-
-            flex:
-                0 0 68px;
-
-            display:
-                block;
-
-            background:
-                #ffffff;
+            background: #fff;
 
             border:
                 1px solid
-                rgba(0, 0, 0, .05);
+                rgba(0,0,0,.05);
 
+            transition:
+                background .25s ease,
+                border-color .25s ease;
         }
-
 
         .app-name {
-
-            font-size:
-                1.15rem;
-
-            letter-spacing:
-                -.2px;
-
+            font-size: 1.15rem;
+            letter-spacing: -.2px;
         }
-
 
         .app-subtitle {
-
-            font-size:
-                .82rem;
-
+            font-size: .82rem;
         }
 
 
-        /* =================================================
+        /* =====================================================
            FILTER
-        ================================================= */
+        ====================================================== */
 
         .filter-card {
-
-            padding:
-                2px;
-
+            padding: 2px;
         }
-
 
         .form-label {
-
-            color:
-                #245d4b;
-
+            color: #245d4b;
         }
-
 
         .form-select {
-
-            border-radius:
-                12px;
-
-            min-height:
-                46px;
+            border-radius: 12px;
+            min-height: 46px;
 
             border-color:
-                rgba(0, 0, 0, .12);
+                rgba(0,0,0,.12);
 
-            box-shadow:
-                none;
-
+            box-shadow: none;
         }
 
-
         .form-select:focus {
-
-            border-color:
-                #198754;
+            border-color: #198754;
 
             box-shadow:
                 0 0 0 .2rem
-                rgba(25, 135, 84, .12);
-
+                rgba(25,135,84,.12);
         }
 
 
-        /* =================================================
+        /* =====================================================
            RINGKASAN
-        ================================================= */
+        ====================================================== */
 
         .summary-title {
-
-            font-size:
-                .95rem;
-
-            font-weight:
-                800;
-
-            color:
-                #245d4b;
-
+            font-size: .95rem;
+            font-weight: 800;
+            color: #245d4b;
         }
 
 
-        /* =================================================
+        /* =====================================================
            SALDO
-        ================================================= */
+        ====================================================== */
 
         .saldo-card {
-
-            border:
-                0 !important;
+            border: 0 !important;
 
             background:
                 linear-gradient(
@@ -574,310 +400,202 @@
 
             box-shadow:
                 0 8px 22px
-                rgba(25, 135, 84, .22) !important;
+                rgba(25,135,84,.22) !important;
 
-            color:
-                #fff !important;
-
+            color: #fff !important;
         }
-
 
         .saldo-card #totalSaldo {
-
-            font-size:
-                1.8rem;
-
-            font-weight:
-                800;
-
-            letter-spacing:
-                -.5px;
-
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -.5px;
         }
 
 
-        /* =================================================
-           KARTU PEMASUKAN / PENGELUARAN
-        ================================================= */
+        /* =====================================================
+           STAT CARD
+        ====================================================== */
 
         .stat-card {
-
-            min-height:
-                110px;
+            min-height: 110px;
 
             transition:
                 transform .2s ease,
                 box-shadow .2s ease;
-
         }
 
-
         .stat-card:hover {
-
-            transform:
-                translateY(-2px);
+            transform: translateY(-2px);
 
             box-shadow:
                 0 8px 18px
-                rgba(0, 0, 0, .08);
-
+                rgba(0,0,0,.08);
         }
-
 
         .stat-icon {
+            width: 38px;
+            height: 38px;
 
-            width:
-                38px;
+            border-radius: 12px;
 
-            height:
-                38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-            border-radius:
-                12px;
+            margin: 0 auto 8px;
 
-            display:
-                flex;
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            margin:
-                0 auto 8px;
-
-            font-size:
-                1.1rem;
-
+            font-size: 1.1rem;
         }
 
-
         .income-icon {
-
             background:
-                rgba(25, 135, 84, .12);
+                rgba(25,135,84,.12);
 
             color:
                 #198754;
-
         }
 
-
         .expense-icon {
-
             background:
-                rgba(220, 53, 69, .12);
+                rgba(220,53,69,.12);
 
             color:
                 #dc3545;
-
         }
 
 
-        /* =================================================
+        /* =====================================================
            MENU
-        ================================================= */
+        ====================================================== */
 
         .menu-btn {
-
-            background:
-                #ffffff;
+            background: #fff;
 
             border:
-                1px solid #d4d8d4;
+                1px solid
+                #d4d8d4;
 
-            border-radius:
-                16px;
+            border-radius: 16px;
 
-            padding:
-                20px 10px;
+            padding: 20px 10px;
 
-            width:
-                100%;
+            width: 100%;
+            min-height: 112px;
+            height: 100%;
 
-            min-height:
-                112px;
+            text-align: center;
 
-            height:
-                100%;
+            color: #333;
 
-            text-align:
-                center;
+            transition: all .25s ease;
 
-            color:
-                #333;
+            text-decoration: none;
 
-            transition:
-                all .25s ease;
+            display: flex;
+            flex-direction: column;
 
-            text-decoration:
-                none;
+            align-items: center;
+            justify-content: center;
 
-            display:
-                flex;
-
-            flex-direction:
-                column;
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            gap:
-                10px;
+            gap: 10px;
 
             box-shadow:
                 0 2px 8px
-                rgba(0, 0, 0, .03);
-
+                rgba(0,0,0,.03);
         }
 
-
         .menu-btn:hover {
+            background: #eaf0ed;
 
-            background:
-                #eaf0ed;
+            color: #198754;
 
-            color:
-                #198754;
-
-            border-color:
-                #198754;
+            border-color: #198754;
 
             transform:
                 translateY(-3px);
 
             box-shadow:
                 0 7px 18px
-                rgba(25, 135, 84, .12);
-
+                rgba(25,135,84,.12);
         }
-
 
         .menu-btn:active {
-
-            transform:
-                translateY(0);
-
+            transform: translateY(0);
         }
-
 
         .menu-btn i {
-
-            font-size:
-                2rem;
-
-            color:
-                #198754;
-
+            font-size: 2rem;
+            color: #198754;
         }
-
 
         .menu-btn.red-icon i {
-
-            color:
-                #dc3545;
-
+            color: #dc3545;
         }
-
 
         .menu-btn h6 {
-
-            margin:
-                0;
-
-            font-size:
-                .9rem;
-
-            font-weight:
-                600;
-
+            margin: 0;
+            font-size: .9rem;
+            font-weight: 600;
         }
 
 
-        /* =================================================
-           PENGATURAN
-        ================================================= */
+        /* =====================================================
+           SETTINGS
+        ====================================================== */
 
         .settings-btn {
+            min-height: 70px;
 
-            min-height:
-                70px;
+            flex-direction: row;
 
-            flex-direction:
-                row;
+            gap: 15px;
 
-            gap:
-                15px;
-
-            padding:
-                15px;
-
+            padding: 15px;
         }
-
 
         .settings-btn i {
-
-            font-size:
-                1.5rem;
-
+            font-size: 1.5rem;
         }
 
 
-        /* =================================================
+        /* =====================================================
            FOOTER
-        ================================================= */
+        ====================================================== */
 
         .dashboard-footer {
+            text-align: center;
 
-            text-align:
-                center;
+            font-size: .75rem;
 
-            font-size:
-                .75rem;
-
-            color:
-                #6c757d;
+            color: #6c757d;
 
             padding:
                 4px 0 20px;
-
         }
 
 
-        /* =================================================
+        /* =====================================================
            BOTTOM NAVIGATION
-        ================================================= */
+        ====================================================== */
 
         .ck-bottom {
+            position: fixed;
 
-            position:
-                fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
 
-            left:
-                0;
-
-            right:
-                0;
-
-            bottom:
-                0;
-
-            z-index:
-                1050;
+            z-index: 1050;
 
             background:
-                rgba(255, 255, 255, .97);
+                rgba(255,255,255,.97);
 
             border-top:
                 1px solid #dee2e6;
 
             box-shadow:
                 0 -3px 15px
-                rgba(0, 0, 0, .08);
+                rgba(0,0,0,.08);
 
             padding:
                 6px 15px;
@@ -887,533 +605,130 @@
 
             -webkit-backdrop-filter:
                 blur(8px);
-
         }
-
 
         .ck-bottom-inner {
+            width: 100% !important;
+            max-width: 100% !important;
 
-            width:
-                100% !important;
+            margin: 0 auto;
 
-            max-width:
-                100% !important;
-
-            margin:
-                0 auto;
-
-            display:
-                grid;
+            display: grid;
 
             grid-template-columns:
-                repeat(5, 1fr);
+                repeat(5,1fr);
 
-            gap:
-                4px;
-
+            gap: 4px;
         }
-
 
         .ck-bottom a {
+            text-decoration: none !important;
 
-            text-decoration:
-                none !important;
+            color: #6c757d;
 
-            color:
-                #6c757d;
+            display: flex;
 
-            display:
-                flex;
+            flex-direction: column;
 
-            flex-direction:
-                column;
+            align-items: center;
+            justify-content: center;
 
-            align-items:
-                center;
+            gap: 3px;
 
-            justify-content:
-                center;
+            font-size: .68rem;
 
-            gap:
-                3px;
+            padding: 5px 2px;
 
-            font-size:
-                .68rem;
-
-            padding:
-                5px 2px;
-
-            border-radius:
-                10px;
-
-            transition:
-                .2s ease;
-
+            border-radius: 10px;
         }
-
 
         .ck-bottom a i {
-
-            font-size:
-                1.15rem;
-
+            font-size: 1.15rem;
         }
-
-
-        .ck-bottom a:hover {
-
-            color:
-                #198754;
-
-            background:
-                rgba(25, 135, 84, .08);
-
-        }
-
 
         .ck-bottom a.active {
-
-            color:
-                #198754 !important;
-
-            font-weight:
-                700;
-
+            color: #198754 !important;
+            font-weight: 700;
         }
 
 
-        /* =================================================
-           RESPONSIVE TABLET
-        ================================================= */
+        /* =====================================================
+           RESPONSIVE
+        ====================================================== */
 
-        @media (min-width: 600px) {
+        @media (min-width:768px) {
 
             .mobile-container {
-
-                padding-left:
-                    32px !important;
-
-                padding-right:
-                    32px !important;
-
-                padding-top:
-                    32px !important;
-
+                padding-left: 35px !important;
+                padding-right: 35px !important;
             }
-
-
-            .app-header .card-body {
-
-                padding:
-                    24px !important;
-
-            }
-
 
             .app-logo {
-
-                width:
-                    90px !important;
-
-                height:
-                    90px !important;
-
-                min-width:
-                    90px;
-
-                flex-basis:
-                    90px;
-
-                border-radius:
-                    20px !important;
-
+                width: 78px !important;
+                height: 78px !important;
+                min-width: 78px;
             }
-
 
             .app-name {
-
-                font-size:
-                    1.45rem;
-
+                font-size: 1.35rem;
             }
-
-
-            .app-header h5 {
-
-                font-size:
-                    1.35rem;
-
-            }
-
 
             .app-subtitle {
-
-                font-size:
-                    1rem;
-
+                font-size: 1rem;
             }
-
-
-            .custom-card {
-
-                border-radius:
-                    22px;
-
-            }
-
-
-            .form-label {
-
-                font-size:
-                    1rem;
-
-            }
-
-
-            .form-select {
-
-                min-height:
-                    54px;
-
-                font-size:
-                    1rem;
-
-            }
-
-
-            .summary-title {
-
-                font-size:
-                    1.15rem;
-
-            }
-
-
-            .saldo-card #totalSaldo {
-
-                font-size:
-                    2.4rem;
-
-            }
-
-
-            .stat-card {
-
-                min-height:
-                    150px;
-
-            }
-
-
-            .stat-icon {
-
-                width:
-                    50px;
-
-                height:
-                    50px;
-
-                font-size:
-                    1.35rem;
-
-                border-radius:
-                    15px;
-
-            }
-
-
-            .stat-card small {
-
-                font-size:
-                    .95rem;
-
-            }
-
-
-            .stat-card h5 {
-
-                font-size:
-                    1.25rem;
-
-            }
-
 
             .menu-btn {
-
-                min-height:
-                    150px;
-
-                padding:
-                    25px 15px;
-
-                gap:
-                    14px;
-
-                border-radius:
-                    20px;
-
+                min-height: 125px;
             }
 
+        }
 
-            .menu-btn i {
+        @media (min-width:992px) {
 
-                font-size:
-                    2.6rem;
-
+            .mobile-container {
+                padding-left: 50px !important;
+                padding-right: 50px !important;
             }
 
-
-            .menu-btn h6 {
-
-                font-size:
-                    1.05rem;
-
+            .app-logo {
+                width: 82px !important;
+                height: 82px !important;
+                min-width: 82px;
             }
 
-
-            .settings-btn {
-
-                min-height:
-                    90px;
-
+            .app-name {
+                font-size: 1.5rem;
             }
 
+        }
 
-            .settings-btn i {
+        @media (max-width:380px) {
 
-                font-size:
-                    2rem;
-
+            .mobile-container {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
             }
 
-
-            .ck-bottom {
-
-                padding:
-                    10px 25px;
-
+            .app-logo {
+                width: 56px !important;
+                height: 56px !important;
+                min-width: 56px;
             }
 
-
-            .ck-bottom-inner {
-
-                gap:
-                    10px;
-
+            .app-name {
+                font-size: 1rem;
             }
 
+            .app-subtitle {
+                font-size: .75rem;
+            }
 
             .ck-bottom a {
-
-                font-size:
-                    .85rem;
-
-                padding:
-                    8px 4px;
-
-                gap:
-                    5px;
-
+                font-size: .62rem;
             }
-
 
             .ck-bottom a i {
-
-                font-size:
-                    1.4rem;
-
-            }
-
-        }
-
-
-        /* =================================================
-           RESPONSIVE TABLET BESAR
-        ================================================= */
-
-        @media (min-width: 992px) {
-
-            .mobile-container {
-
-                padding-left:
-                    50px !important;
-
-                padding-right:
-                    50px !important;
-
-            }
-
-
-            .app-header .card-body {
-
-                padding:
-                    28px !important;
-
-            }
-
-
-            .app-logo {
-
-                width:
-                    100px !important;
-
-                height:
-                    100px !important;
-
-                min-width:
-                    100px;
-
-                flex-basis:
-                    100px;
-
-            }
-
-
-            .app-name {
-
-                font-size:
-                    1.6rem;
-
-            }
-
-
-            .app-header h5 {
-
-                font-size:
-                    1.5rem;
-
-            }
-
-
-            .app-subtitle {
-
-                font-size:
-                    1.05rem;
-
-            }
-
-
-            .saldo-card #totalSaldo {
-
-                font-size:
-                    2.7rem;
-
-            }
-
-
-            .menu-btn {
-
-                min-height:
-                    165px;
-
-            }
-
-
-            .menu-btn i {
-
-                font-size:
-                    2.8rem;
-
-            }
-
-
-            .menu-btn h6 {
-
-                font-size:
-                    1.1rem;
-
-            }
-
-        }
-
-
-        /* =================================================
-           MOBILE KECIL
-        ================================================= */
-
-        @media (max-width: 380px) {
-
-            .mobile-container {
-
-                padding-left:
-                    10px !important;
-
-                padding-right:
-                    10px !important;
-
-            }
-
-
-            .app-logo {
-
-                width:
-                    58px !important;
-
-                height:
-                    58px !important;
-
-                min-width:
-                    58px;
-
-                flex-basis:
-                    58px;
-
-            }
-
-
-            .app-name {
-
-                font-size:
-                    1rem;
-
-            }
-
-
-            .app-subtitle {
-
-                font-size:
-                    .76rem;
-
-            }
-
-
-            .menu-btn {
-
-                min-height:
-                    100px;
-
-            }
-
-
-            .menu-btn i {
-
-                font-size:
-                    1.75rem;
-
-            }
-
-
-            .saldo-card #totalSaldo {
-
-                font-size:
-                    1.55rem;
-
-            }
-
-
-            .ck-bottom a {
-
-                font-size:
-                    .62rem;
-
-            }
-
-
-            .ck-bottom a i {
-
-                font-size:
-                    1.05rem;
-
+                font-size: 1.05rem;
             }
 
         }
@@ -1426,213 +741,38 @@
 <body>
 
 
-<!-- =====================================================
-     CONTAINER UTAMA
-====================================================== -->
-
-<div
-    class="container-fluid mobile-container py-4"
->
+<div class="container-fluid mobile-container py-3">
 
 
-    <!-- =================================================
-         HEADER
-    ================================================== -->
+    <!-- =====================================================
+         HEADER DASHBOARD
+    ====================================================== -->
 
-    <div
-        class="card custom-card app-header mb-4"
-    >
+    <div class="card custom-card app-header mb-3">
 
-        <div
-            class="card-body
-                   d-flex
-                   align-items-center
-                   p-3"
-        >
+        <div class="card-body d-flex align-items-center gap-3">
 
             <img
-                src="assets/logo-catatan-kas.jpg"
-                class="app-logo shadow-sm"
                 id="logoDashboard"
-                alt="Logo Catatan Keuangan"
+                class="app-logo"
+                src="assets/logo-catatan-kas.jpg"
+                alt="Logo Catatan Kas"
             >
 
-
-            <div class="ms-3">
+            <div class="flex-grow-1">
 
                 <div
-                    class="text-success
-                           fw-bold
-                           app-name"
-                >
-                    Catatan Keuangan
-                </div>
-
-
-                <h5
-                    id="namaPondokDashboard"
-                    class="mb-1 fw-bold"
+                    class="app-name fw-bold text-success"
+                    id="namaPondokHeader"
                 >
                     Ribath Madrasah Al-Fattah
-                </h5>
+                </div>
 
-
-                <small
-                    id="subJudulDashboard"
-                    class="text-secondary app-subtitle"
+                <div
+                    class="app-subtitle text-muted"
+                    id="subJudulHeader"
                 >
                     Dashboard Keuangan Pondok
-                </small>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- =================================================
-         FILTER DASHBOARD
-    ================================================== -->
-
-    <div
-        class="card custom-card mb-4"
-    >
-
-        <div class="card-body p-3">
-
-            <div class="row g-3">
-
-
-                <!-- JENIS -->
-
-                <div class="col-6">
-
-                    <label
-                        class="form-label fw-semibold"
-                        for="jenisDashboard"
-                    >
-
-                        <i
-                            class="bi bi-funnel me-1"
-                        ></i>
-
-                        Jenis
-
-                    </label>
-
-
-                    <select
-                        class="form-select"
-                        id="jenisDashboard"
-                    >
-
-                        <option value="syahriyyah">
-                            Syahriyyah
-                        </option>
-
-                        <option value="kas">
-                            Kas
-                        </option>
-
-                        <option value="beras">
-                            Beras
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- TAHUN -->
-
-                <div class="col-6">
-
-                    <label
-                        class="form-label fw-semibold"
-                        for="tahunDashboard"
-                    >
-
-                        <i
-                            class="bi bi-calendar3 me-1"
-                        ></i>
-
-                        Tahun
-
-                    </label>
-
-
-                    <select
-                        class="form-select"
-                        id="tahunDashboard"
-                    >
-
-                        <option value="2024">
-                            2024
-                        </option>
-
-                        <option value="2025">
-                            2025
-                        </option>
-
-                        <option
-                            value="2026"
-                            selected
-                        >
-                            2026
-                        </option>
-
-                        <option value="2027">
-                            2027
-                        </option>
-
-                        <option value="2028">
-                            2028
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- MODE BERAS -->
-
-                <div
-                    class="col-12"
-                    id="modeBerasDiv"
-                    style="display:none;"
-                >
-
-                    <label
-                        class="form-label fw-semibold"
-                        for="modeBeras"
-                    >
-
-                        <i
-                            class="bi bi-box-seam me-1"
-                        ></i>
-
-                        Mode Beras
-
-                    </label>
-
-
-                    <select
-                        class="form-select"
-                        id="modeBeras"
-                    >
-
-                        <option value="liter">
-                            Liter
-                        </option>
-
-                        <option value="uang">
-                            Uang (Rp)
-                        </option>
-
-                    </select>
-
                 </div>
 
             </div>
@@ -1642,185 +782,137 @@
     </div>
 
 
+    <!-- =====================================================
+         FILTER
+    ====================================================== -->
 
-    <!-- =================================================
-         RINGKASAN KEUANGAN
-    ================================================== -->
+    <div class="card custom-card mb-3">
 
-    <div
-        class="d-flex
-               align-items-center
-               justify-content-between
-               mb-2"
-    >
+        <div class="card-body">
 
-        <div class="summary-title">
+            <label
+                for="filterKategori"
+                class="form-label fw-bold"
+            >
+                Kategori
+            </label>
 
-            <i
-                class="bi bi-graph-up-arrow me-1"
-            ></i>
+            <select
+                id="filterKategori"
+                class="form-select"
+            >
 
+                <option value="Semua">
+                    Semua kategori
+                </option>
+
+                <option value="Syahriyyah">
+                    Syahriyyah
+                </option>
+
+                <option value="Kas">
+                    Kas
+                </option>
+
+                <option value="Beras">
+                    Beras
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RINGKASAN
+    ====================================================== -->
+
+    <div class="mb-3">
+
+        <div class="summary-title mb-2">
             Ringkasan Keuangan
-
         </div>
 
 
-        <small class="text-muted">
-            Catatan Kas
-        </small>
+        <div class="row g-3">
 
-    </div>
+            <div class="col-12">
 
+                <div class="card saldo-card">
 
-    <div class="row g-3 mb-4">
+                    <div class="card-body">
 
+                        <small>
+                            Saldo Saat Ini
+                        </small>
 
-        <!-- SALDO -->
+                        <div id="totalSaldo">
+                            Rp0
+                        </div>
 
-        <div class="col-12">
-
-            <div
-                class="card
-                       custom-card
-                       saldo-card"
-            >
-
-                <div
-                    class="card-body
-                           p-4
-                           text-center"
-                >
-
-                    <small
-                        class="text-white-50
-                               text-uppercase
-                               fw-bold"
-                        style="
-                            letter-spacing: 1px;
-                        "
-                    >
-                        Saldo Saat Ini
-                    </small>
-
-
-                    <h3
-                        class="mt-2 mb-0"
-                        id="totalSaldo"
-                    >
-                        Rp 0
-                    </h3>
+                    </div>
 
                 </div>
 
             </div>
 
-        </div>
 
+            <div class="col-6">
 
-        <!-- PEMASUKAN -->
+                <div class="card custom-card stat-card">
 
-        <div class="col-6">
+                    <div class="card-body text-center">
 
-            <div
-                class="card
-                       custom-card
-                       stat-card
-                       h-100"
-            >
+                        <div class="stat-icon income-icon">
 
-                <div
-                    class="card-body
-                           p-3
-                           text-center
-                           d-flex
-                           flex-column
-                           justify-content-center"
-                >
+                            <i class="bi bi-arrow-down-circle"></i>
 
-                    <div
-                        class="stat-icon income-icon"
-                    >
+                        </div>
 
-                        <i
-                            class="bi bi-arrow-down-circle"
-                        ></i>
+                        <small class="text-muted">
+                            Total Pemasukan
+                        </small>
+
+                        <div
+                            id="totalMasuk"
+                            class="fw-bold text-success"
+                        >
+                            Rp0
+                        </div>
 
                     </div>
-
-
-                    <small
-                        class="text-muted
-                               d-block
-                               mb-2"
-                    >
-                        Total Pemasukan
-                    </small>
-
-
-                    <h5
-                        class="mb-0
-                               fw-bold
-                               text-success"
-                        id="totalMasuk"
-                    >
-                        Rp 0
-                    </h5>
 
                 </div>
 
             </div>
 
-        </div>
 
+            <div class="col-6">
 
-        <!-- PENGELUARAN -->
+                <div class="card custom-card stat-card">
 
-        <div class="col-6">
+                    <div class="card-body text-center">
 
-            <div
-                class="card
-                       custom-card
-                       stat-card
-                       h-100"
-            >
+                        <div class="stat-icon expense-icon">
 
-                <div
-                    class="card-body
-                           p-3
-                           text-center
-                           d-flex
-                           flex-column
-                           justify-content-center"
-                >
+                            <i class="bi bi-arrow-up-circle"></i>
 
-                    <div
-                        class="stat-icon expense-icon"
-                    >
+                        </div>
 
-                        <i
-                            class="bi bi-arrow-up-circle"
-                        ></i>
+                        <small class="text-muted">
+                            Total Pengeluaran
+                        </small>
+
+                        <div
+                            id="totalKeluar"
+                            class="fw-bold text-danger"
+                        >
+                            Rp0
+                        </div>
 
                     </div>
-
-
-                    <small
-                        class="text-muted
-                               d-block
-                               mb-2"
-                    >
-                        Total Pengeluaran
-                    </small>
-
-
-                    <h5
-                        class="mb-0
-                               fw-bold
-                               text-danger"
-                        id="totalKeluar"
-                    >
-                        Rp 0
-                    </h5>
 
                 </div>
 
@@ -1831,15 +923,11 @@
     </div>
 
 
-
-    <!-- =================================================
+    <!-- =====================================================
          MENU UTAMA
-    ================================================== -->
+    ====================================================== -->
 
     <div class="row g-3 mb-4">
-
-
-        <!-- DATA SANTRI -->
 
         <div class="col-6">
 
@@ -1848,9 +936,7 @@
                 class="menu-btn"
             >
 
-                <i
-                    class="bi bi-people-fill"
-                ></i>
+                <i class="bi bi-people-fill"></i>
 
                 <h6>
                     Data Santri
@@ -1861,7 +947,23 @@
         </div>
 
 
-        <!-- PENGELUARAN -->
+        <div class="col-6">
+
+            <a
+                href="pembayaran.html"
+                class="menu-btn"
+            >
+
+                <i class="bi bi-cash-stack"></i>
+
+                <h6>
+                    Pembayaran
+                </h6>
+
+            </a>
+
+        </div>
+
 
         <div class="col-6">
 
@@ -1870,9 +972,7 @@
                 class="menu-btn red-icon"
             >
 
-                <i
-                    class="bi bi-wallet2"
-                ></i>
+                <i class="bi bi-wallet2"></i>
 
                 <h6>
                     Pengeluaran
@@ -1883,30 +983,6 @@
         </div>
 
 
-        <!-- PEMBAYARAN -->
-
-        <div class="col-6">
-
-            <a
-                href="pembayaran.html"
-                class="menu-btn"
-            >
-
-                <i
-                    class="bi bi-cash-stack"
-                ></i>
-
-                <h6>
-                    Pembayaran Santri
-                </h6>
-
-            </a>
-
-        </div>
-
-
-        <!-- LAPORAN -->
-
         <div class="col-6">
 
             <a
@@ -1914,9 +990,7 @@
                 class="menu-btn"
             >
 
-                <i
-                    class="bi bi-bar-chart-fill"
-                ></i>
+                <i class="bi bi-bar-chart-fill"></i>
 
                 <h6>
                     Laporan Keuangan
@@ -1927,8 +1001,6 @@
         </div>
 
 
-        <!-- PENGATURAN -->
-
         <div class="col-12">
 
             <a
@@ -1936,9 +1008,7 @@
                 class="menu-btn settings-btn"
             >
 
-                <i
-                    class="bi bi-gear-fill"
-                ></i>
+                <i class="bi bi-gear-fill"></i>
 
                 <h6>
                     Pengaturan Aplikasi
@@ -1951,26 +1021,17 @@
     </div>
 
 
-
-    <!-- =================================================
+    <!-- =====================================================
          FOOTER
-    ================================================== -->
+    ====================================================== -->
 
     <div class="dashboard-footer">
 
-        <div>
-            Catatan Kas
-        </div>
-
-        <div>
-            Ribath Madrasah Al-Fattah
-        </div>
+        Catatan Kas • Dashboard Keuangan
 
     </div>
 
-
 </div>
-
 
 
 <!-- =====================================================
@@ -1984,6 +1045,7 @@
         <a
             href="index.html"
             class="active"
+            aria-current="page"
         >
 
             <i class="bi bi-house-fill"></i>
@@ -2043,307 +1105,224 @@
 </div>
 
 
-
 <!-- =====================================================
-     SCRIPT LOGO
+     LOGO DASHBOARD
+     SISTEM INI TERHUBUNG DENGAN pengaturan.html
 ====================================================== -->
 
 <script>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+(function () {
+
+    const LOGO_DEFAULT =
+        "assets/logo-catatan-kas.jpg";
+
+
+    function tampilkanLogoDashboard() {
 
         const logo =
             document.getElementById(
                 "logoDashboard"
             );
 
-        if (!logo) return;
+
+        if (!logo) {
+            return;
+        }
 
 
-        const logoDefault =
-            "assets/logo-catatan-kas.jpg";
+        let savedLogo = null;
 
 
-        const tersimpan =
-            localStorage.getItem(
-                "logoDashboard"
+        try {
+
+            savedLogo =
+                localStorage.getItem(
+                    "logoDashboard"
+                );
+
+        } catch (error) {
+
+            console.warn(
+                "Gagal membaca logo Dashboard:",
+                error
             );
 
-
-        if (tersimpan) {
-
-            logo.src =
-                tersimpan;
-
         }
+
+
+        const logoYangDipakai =
+            savedLogo || LOGO_DEFAULT;
+
+
+        logo.src =
+            logoYangDipakai;
 
 
         logo.onerror =
             function () {
 
                 console.warn(
-                    "Logo gagal dimuat. Menggunakan logo default."
+                    "Logo tersimpan tidak dapat ditampilkan. Menggunakan logo bawaan."
                 );
 
 
-                localStorage.removeItem(
-                    "logoDashboard"
-                );
+                try {
 
+                    localStorage.removeItem(
+                        "logoDashboard"
+                    );
+
+                } catch (error) {}
+
+                logo.onerror = null;
 
                 logo.src =
-                    logoDefault;
+                    LOGO_DEFAULT;
 
             };
 
     }
-);
+
+
+    /*
+     * Jalankan segera.
+     * Tidak menunggu Firebase atau app.js.
+     */
+
+    tampilkanLogoDashboard();
+
+
+    /*
+     * Jalankan lagi setelah DOM siap
+     * untuk memastikan elemen logo tersedia.
+     */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        tampilkanLogoDashboard
+    );
+
+
+    /*
+     * Jika logo diubah dari halaman Pengaturan
+     * lalu kembali ke Dashboard, tampilkan logo terbaru.
+     */
+
+    window.addEventListener(
+        "pageshow",
+        tampilkanLogoDashboard
+    );
+
+
+    /*
+     * Fungsi global agar halaman lain
+     * dapat memanggilnya bila diperlukan.
+     */
+
+    window.muatLogoDashboard =
+        tampilkanLogoDashboard;
+
+})();
 
 </script>
 
 
-
 <!-- =====================================================
-     SCRIPT TAHUN OTOMATIS
+     INFORMASI PENGATURAN
 ====================================================== -->
 
 <script>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+(function () {
 
-        const select =
-            document.getElementById(
-                "tahunDashboard"
-            );
-
-
-        if (!select) return;
-
-
-        const currentYear =
-            new Date()
-                .getFullYear()
-                .toString();
-
-
-        const sudahAda =
-            [...select.options]
-                .some(
-                    option =>
-                        option.value ===
-                        currentYear
-                );
-
-
-        if (!sudahAda) {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                currentYear;
-
-
-            option.textContent =
-                currentYear;
-
-
-            select.appendChild(
-                option
-            );
-
-        }
-
-
-        select.value =
-            currentYear;
-
-    }
-);
-
-</script>
-
-
-
-<!-- =====================================================
-     SCRIPT MODE BERAS
-====================================================== -->
-
-<script>
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        const jenis =
-            document.getElementById(
-                "jenisDashboard"
-            );
-
-
-        const modeDiv =
-            document.getElementById(
-                "modeBerasDiv"
-            );
-
-
-        if (!jenis || !modeDiv) {
-            return;
-        }
-
-
-        function tampilkanModeBeras() {
-
-            if (
-                jenis.value ===
-                "beras"
-            ) {
-
-                modeDiv.style.display =
-                    "block";
-
-            } else {
-
-                modeDiv.style.display =
-                    "none";
-
-            }
-
-        }
-
-
-        jenis.addEventListener(
-            "change",
-            tampilkanModeBeras
-        );
-
-
-        tampilkanModeBeras();
-
-    }
-);
-
-</script>
-
-
-
-<!-- =====================================================
-     PENGATURAN APLIKASI
-====================================================== -->
-
-<script>
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        let data =
-            null;
-
+    function muatInformasiPondok() {
 
         try {
 
-            data =
+            const data =
                 JSON.parse(
                     localStorage.getItem(
                         "pengaturanAplikasi"
                     )
+                ) || {};
+
+
+            const nama =
+                data.namaPondok ||
+                "Ribath Madrasah Al-Fattah";
+
+
+            const subJudul =
+                data.subJudul ||
+                "Dashboard Keuangan Pondok";
+
+
+            const namaElement =
+                document.getElementById(
+                    "namaPondokHeader"
                 );
+
+
+            const subElement =
+                document.getElementById(
+                    "subJudulHeader"
+                );
+
+
+            if (namaElement) {
+
+                namaElement.textContent =
+                    nama;
+
+            }
+
+
+            if (subElement) {
+
+                subElement.textContent =
+                    subJudul;
+
+            }
 
         } catch (error) {
 
-            console.error(
-                "Data pengaturan tidak valid:",
+            console.warn(
+                "Gagal memuat pengaturan:",
                 error
             );
-
-            return;
-
-        }
-
-
-        if (!data) return;
-
-
-        const namaPondok =
-            document.getElementById(
-                "namaPondokDashboard"
-            );
-
-
-        const subJudul =
-            document.getElementById(
-                "subJudulDashboard"
-            );
-
-
-        if (
-            namaPondok &&
-            data.namaPondok
-        ) {
-
-            namaPondok.textContent =
-                data.namaPondok;
-
-        }
-
-
-        if (
-            subJudul &&
-            data.subJudul
-        ) {
-
-            subJudul.textContent =
-                data.subJudul;
 
         }
 
     }
-);
+
+
+    muatInformasiPondok();
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        muatInformasiPondok
+    );
+
+    window.addEventListener(
+        "pageshow",
+        muatInformasiPondok
+    );
+
+})();
 
 </script>
 
 
-
 <!-- =====================================================
-     VERSI APLIKASI
-====================================================== -->
-
-<script>
-
-    window.APP_VERSION =
-        "2.4";
-
-</script>
-
-
-
-<!-- =====================================================
-     APP JAVASCRIPT
+     APP DATA
 ====================================================== -->
 
 <script
     type="module"
     src="js/app.js"
 ></script>
-
-
-
-<!-- =====================================================
-     UPDATE CHECK
-====================================================== -->
-
-<script
-    src="js/update-check.js"
-></script>
-
 
 
 <!-- =====================================================
@@ -2356,86 +1335,11 @@ document.addEventListener(
 ></script>
 
 
-
-<!-- =====================================================
-     LOGOUT
-====================================================== -->
-
-<script type="module">
-
-import { auth }
-    from "./js/firebase-config.js";
-
-import {
-    signOut
-}
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-
-
-const logoutButton =
-    document.getElementById(
-        "logoutButton"
-    );
-
-
-if (logoutButton) {
-
-    logoutButton.addEventListener(
-        "click",
-        async () => {
-
-            const yakin =
-                confirm(
-                    "Apakah kamu yakin ingin logout?"
-                );
-
-
-            if (!yakin) return;
-
-
-            try {
-
-                await signOut(
-                    auth
-                );
-
-
-                window.location.replace(
-                    "login.html"
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Logout gagal:",
-                    error
-                );
-
-
-                alert(
-                    "Logout gagal. Silakan coba lagi."
-                );
-
-            }
-
-        }
-    );
-
-}
-
-</script>
-
-
-
 <!-- =====================================================
      THEME
 ====================================================== -->
 
-<script
-    src="js/theme.js"
-></script>
-
+<script src="js/theme.js"></script>
 
 
 <!-- =====================================================
@@ -2443,7 +1347,7 @@ if (logoutButton) {
 ====================================================== -->
 
 <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
 ></script>
 
 
