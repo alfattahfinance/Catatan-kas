@@ -7,9 +7,8 @@ permissions:
   contents: read
 
 jobs:
-
   build:
-
+    name: Build Keuangan APK
     runs-on: ubuntu-latest
 
     steps:
@@ -35,7 +34,17 @@ jobs:
 
 
       # ==========================================================
-      # 3. SETUP ANDROID SDK
+      # 3. SETUP GRADLE
+      # ==========================================================
+
+      - name: Setup Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+
+      # ==========================================================
+      # 4. SETUP ANDROID SDK
       # ==========================================================
 
       - name: Setup Android SDK
@@ -43,12 +52,11 @@ jobs:
 
 
       # ==========================================================
-      # 4. INSTALL ANDROID SDK
+      # 5. INSTALL ANDROID SDK
       # ==========================================================
 
       - name: Install Android SDK packages
         run: |
-
           yes | sdkmanager --licenses || true
 
           sdkmanager \
@@ -58,93 +66,29 @@ jobs:
 
 
       # ==========================================================
-      # 5. CREATE ANDROID PROJECT STRUCTURE
+      # 6. CREATE ANDROID PROJECT STRUCTURE
       # ==========================================================
 
       - name: Create Android project structure
         run: |
-
           mkdir -p app/src/main/java/com/catatankas/app
-          mkdir -p app/src/main/assets
           mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/xml
-
+          mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/res/mipmap-hdpi
           mkdir -p app/src/main/res/mipmap-mdpi
           mkdir -p app/src/main/res/mipmap-xhdpi
           mkdir -p app/src/main/res/mipmap-xxhdpi
           mkdir -p app/src/main/res/mipmap-xxxhdpi
+          mkdir -p app/src/main/assets
 
 
       # ==========================================================
-      # 6. COPY WEBSITE FILES
-      # ==========================================================
-
-      - name: Copy web application to Android assets
-        run: |
-
-          echo "======================================"
-          echo "MENYALIN FILE APLIKASI WEB"
-          echo "======================================"
-
-          for file in *.html *.js *.json; do
-
-            if [ -f "$file" ]; then
-              cp "$file" app/src/main/assets/
-            fi
-
-          done
-
-
-          for dir in css js images assets img icon icons; do
-
-            if [ -d "$dir" ]; then
-              cp -R "$dir" app/src/main/assets/
-            fi
-
-          done
-
-
-      # ==========================================================
-      # 7. CHECK ASSETS
-      # ==========================================================
-
-      - name: Check application assets
-        run: |
-
-          echo ""
-          echo "======================================"
-          echo "ISI ASSETS"
-          echo "======================================"
-
-          find app/src/main/assets -type f | sort
-
-          echo ""
-          echo "======================================"
-          echo "CEK INDEX"
-          echo "======================================"
-
-          if [ -f app/src/main/assets/index.html ]; then
-
-            echo "index.html ditemukan."
-
-          else
-
-            echo "ERROR: index.html tidak ditemukan."
-            exit 1
-
-          fi
-
-
-      # ==========================================================
-      # 8. CREATE SETTINGS GRADLE
+      # 7. CREATE SETTINGS GRADLE
       # ==========================================================
 
       - name: Create settings.gradle
         run: |
-
           cat > settings.gradle <<'EOF'
-
           pluginManagement {
               repositories {
                   google()
@@ -154,176 +98,224 @@ jobs:
           }
 
           dependencyResolutionManagement {
-              repositoriesMode.set(
-                  RepositoriesMode.FAIL_ON_PROJECT_REPOS
-              )
-
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
               repositories {
                   google()
                   mavenCentral()
               }
           }
 
-          rootProject.name = "CatatanKas"
-
+          rootProject.name = "Keuangan"
           include(":app")
-
           EOF
 
 
       # ==========================================================
-      # 9. CREATE ROOT BUILD GRADLE
+      # 8. CREATE ROOT BUILD GRADLE
       # ==========================================================
 
       - name: Create root build.gradle
         run: |
-
           cat > build.gradle <<'EOF'
-
           plugins {
               id 'com.android.application' version '8.7.3' apply false
           }
-
           EOF
 
 
       # ==========================================================
-      # 10. CREATE GRADLE PROPERTIES
+      # 9. CREATE GRADLE PROPERTIES
       # ==========================================================
 
       - name: Create gradle.properties
         run: |
-
           cat > gradle.properties <<'EOF'
-
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-
           android.useAndroidX=true
-
-          android.nonTransitiveRClass=true
-
+          android.enableJetifier=true
           EOF
 
 
       # ==========================================================
-      # 11. CREATE APP BUILD GRADLE
+      # 10. CREATE APP BUILD GRADLE
       # ==========================================================
 
       - name: Create app build.gradle
         run: |
-
           cat > app/build.gradle <<'EOF'
-
           plugins {
               id 'com.android.application'
           }
 
           android {
-
               namespace 'com.catatankas.app'
-
               compileSdk 35
 
               defaultConfig {
-
                   applicationId 'com.catatankas.app'
-
-                  minSdk 24
-
+                  minSdk 23
                   targetSdk 35
-
-                  versionCode 4
-
+                  versionCode 24
                   versionName '2.4'
               }
 
               buildTypes {
-
-                  debug {
-
-                      minifyEnabled false
-
-                      shrinkResources false
-                  }
-
                   release {
-
                       minifyEnabled false
-
                       shrinkResources false
+                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                   }
               }
 
               compileOptions {
-
                   sourceCompatibility JavaVersion.VERSION_17
-
                   targetCompatibility JavaVersion.VERSION_17
               }
           }
-
-          dependencies {
-
-              implementation 'androidx.appcompat:appcompat:1.7.0'
-
-              implementation 'androidx.webkit:webkit:1.12.1'
-          }
-
           EOF
 
 
       # ==========================================================
-      # 12. CREATE ANDROID MANIFEST
+      # 11. CREATE PROGUARD FILE
+      # ==========================================================
+
+      - name: Create proguard rules
+        run: |
+          cat > app/proguard-rules.pro <<'EOF'
+          # Catatan Kas / Keuangan
+          # No custom ProGuard rules required.
+          EOF
+
+
+      # ==========================================================
+      # 12. COPY WEBSITE FILES TO ANDROID ASSETS
+      # ==========================================================
+
+      - name: Copy application files
+        run: |
+          echo "Copying Catatan Kas web application..."
+
+          for file in index.html; do
+            if [ -f "$file" ]; then
+              cp "$file" app/src/main/assets/
+            fi
+          done
+
+          for file in *.html; do
+            if [ -f "$file" ]; then
+              cp "$file" app/src/main/assets/
+            fi
+          done
+
+          for file in *.js; do
+            if [ -f "$file" ]; then
+              cp "$file" app/src/main/assets/
+            fi
+          done
+
+          for file in *.css; do
+            if [ -f "$file" ]; then
+              cp "$file" app/src/main/assets/
+            fi
+          done
+
+          for file in *.json; do
+            if [ -f "$file" ]; then
+              cp "$file" app/src/main/assets/
+            fi
+          done
+
+          for file in *.png; do
+            if [ -f "$file" ]; then
+              cp "$file" app/src/main/assets/
+            fi
+          done
+
+          for file in *.jpg; do
+            if [ -f "$file" ]; then
+              cp "$file" app/src/main/assets/
+            fi
+          done
+
+          for file in *.jpeg; do
+            if [ -f "$file" ]; then
+              cp "$file" app/src/main/assets/
+            fi
+          done
+
+          echo "Files copied:"
+          find app/src/main/assets -maxdepth 1 -type f -print
+
+
+      # ==========================================================
+      # 13. COPY LOGO
+      # ==========================================================
+
+      - name: Copy Catatan Kas logo
+        run: |
+          if [ -f "logo-catatan-kas.jpg" ]; then
+            cp "logo-catatan-kas.jpg" \
+              "app/src/main/res/drawable/logo_catatan_kas.jpg"
+            echo "Logo Catatan Kas ditemukan."
+          elif [ -f "logo-catatan-kas.png" ]; then
+            cp "logo-catatan-kas.png" \
+              "app/src/main/res/drawable/logo_catatan_kas.png"
+            echo "Logo Catatan Kas PNG ditemukan."
+          else
+            echo "Logo tidak ditemukan, menggunakan icon bawaan."
+          fi
+
+
+      # ==========================================================
+      # 14. CREATE FALLBACK ICON
+      # ==========================================================
+
+      - name: Create fallback icon
+        run: |
+          cat > app/src/main/res/drawable/ic_launcher.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp"
+              android:height="108dp"
+              android:viewportWidth="108"
+              android:viewportHeight="108">
+              <path
+                  android:fillColor="#198754"
+                  android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
+              <path
+                  android:fillColor="#FFFFFF"
+                  android:pathData="M27,27 L81,27 L81,81 L27,81 Z" />
+          </vector>
+          EOF
+
+
+      # ==========================================================
+      # 15. CREATE ANDROID MANIFEST
       # ==========================================================
 
       - name: Create AndroidManifest.xml
         run: |
-
           cat > app/src/main/AndroidManifest.xml <<'EOF'
-
           <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-          <manifest
-              xmlns:android="http://schemas.android.com/apk/res/android">
-
-              <!-- INTERNET -->
-
-              <uses-permission
-                  android:name="android.permission.INTERNET" />
-
-
-              <!-- ALLOW INSTALL APK -->
-
-              <uses-permission
-                  android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
               <application
-
                   android:allowBackup="true"
-
                   android:usesCleartextTraffic="true"
-
+                  android:label="Keuangan"
                   android:theme="@style/AppTheme"
-
-                  android:label="Catatan Kas"
-
-                  android:resizeableActivity="true">
+                  android:icon="@drawable/ic_launcher"
+                  android:roundIcon="@drawable/ic_launcher">
 
                   <activity
-
                       android:name=".MainActivity"
-
                       android:exported="true">
 
                       <intent-filter>
-
-                          <action
-                              android:name="android.intent.action.MAIN" />
-
-                          <category
-                              android:name="android.intent.category.LAUNCHER" />
-
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
 
                   </activity>
@@ -331,1093 +323,185 @@ jobs:
               </application>
 
           </manifest>
-
           EOF
 
 
       # ==========================================================
-      # 13. CREATE ANDROID STYLE
+      # 16. CREATE APP STYLE
       # ==========================================================
-      - name: Create Android style
-        run: |
 
+      - name: Create Android styles
+        run: |
           cat > app/src/main/res/values/styles.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-              <resources>
-       <style
-        name="AppTheme"
-        parent="android:style/Theme.Material.Light.NoActionBar">
 
-        <item name="android:fontFamily">sans</item>
+          <resources>
 
-        <item name="android:windowActionModeOverlay">true</item>
+              <style
+                  name="AppTheme"
+                  parent="android:style/Theme.Material.Light.NoActionBar">
 
-        <item name="android:colorAccent">#198754</item>
+                  <item name="android:fontFamily">sans</item>
+                  <item name="android:windowActionModeOverlay">true</item>
+                  <item name="android:colorAccent">#198754</item>
+                  <item name="android:navigationBarColor">#121212</item>
+                  <item name="android:statusBarColor">#121212</item>
+                  <item name="android:windowLightStatusBar">false</item>
 
-        <item name="android:navigationBarColor">#121212</item>
+              </style>
 
-        <item name="android:statusBarColor">#121212</item>
+          </resources>
+          EOF
 
-        <item name="android:windowLightStatusBar">false</item>
-        </style>
-
-         </resources>
-             EOF
 
       # ==========================================================
-      # 14. CREATE MAIN ACTIVITY
+      # 17. CREATE MAIN ACTIVITY
       # ==========================================================
 
       - name: Create MainActivity.java
         run: |
-
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
-
           package com.catatankas.app;
 
           import android.annotation.SuppressLint;
           import android.app.Activity;
-          import android.app.DownloadManager;
-          import android.content.BroadcastReceiver;
-          import android.content.Context;
-          import android.content.Intent;
-          import android.content.IntentFilter;
-          import android.net.Uri;
-          import android.os.Build;
           import android.os.Bundle;
-          import android.os.Environment;
-          import android.provider.Settings;
-          import android.webkit.JavascriptInterface;
-          import android.webkit.WebResourceRequest;
-          import android.webkit.WebResourceResponse;
+          import android.webkit.WebChromeClient;
           import android.webkit.WebSettings;
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
-
-          import androidx.webkit.WebViewAssetLoader;
 
           public class MainActivity extends Activity {
 
               private WebView webView;
 
-              private DownloadManager downloadManager;
-
-              private long downloadId = -1;
-
-              private String downloadingVersion = "";
-
-              private boolean receiverRegistered = false;
-
-              private BroadcastReceiver downloadReceiver;
-
-              private static final String GITHUB_RELEASE_BASE =
-                      "https://github.com/alfattahfinance/Catatan-kas/releases/download/";
-
-
               @SuppressLint("SetJavaScriptEnabled")
               @Override
               protected void onCreate(Bundle savedInstanceState) {
-
                   super.onCreate(savedInstanceState);
 
-                  downloadManager =
-                          (DownloadManager)
-                                  getSystemService(
-                                          Context.DOWNLOAD_SERVICE
-                                  );
-
-
                   webView = new WebView(this);
-
                   setContentView(webView);
 
-
-                  WebSettings settings =
-                          webView.getSettings();
+                  WebSettings settings = webView.getSettings();
 
                   settings.setJavaScriptEnabled(true);
-
                   settings.setDomStorageEnabled(true);
-
                   settings.setDatabaseEnabled(true);
-
+                  settings.setAllowFileAccess(true);
                   settings.setAllowContentAccess(true);
-
-                  settings.setAllowFileAccess(false);
-
                   settings.setJavaScriptCanOpenWindowsAutomatically(true);
+                  settings.setSupportZoom(false);
+                  settings.setBuiltInZoomControls(false);
+                  settings.setDisplayZoomControls(false);
 
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebChromeClient(new WebChromeClient());
 
-                  webView.addJavascriptInterface(
-                          new AndroidDownload(),
-                          "AndroidDownload"
-                  );
-
-
-                  final WebViewAssetLoader assetLoader =
-                          new WebViewAssetLoader.Builder()
-                                  .addPathHandler(
-                                          "/assets/",
-                                          new WebViewAssetLoader
-                                                  .AssetsPathHandler(this)
-                                  )
-                                  .build();
-
-
-                  webView.setWebViewClient(
-                          new WebViewClient() {
-
-                              @Override
-                              public WebResourceResponse
-                              shouldInterceptRequest(
-                                      WebView view,
-                                      WebResourceRequest request
-                              ) {
-
-                                  return assetLoader
-                                          .shouldInterceptRequest(
-                                                  request.getUrl()
-                                          );
-                              }
-
-
-                              @Override
-                              public boolean shouldOverrideUrlLoading(
-                                      WebView view,
-                                      WebResourceRequest request
-                              ) {
-
-                                  Uri uri =
-                                          request.getUrl();
-
-                                  if (uri == null) {
-                                      return false;
-                                  }
-
-                                  String url =
-                                          uri.toString();
-
-                                  String lower =
-                                          url.toLowerCase();
-
-
-                                  if (
-                                          lower.contains("github.com")
-                                          ||
-                                          lower.contains("githubusercontent.com")
-                                          ||
-                                          lower.endsWith(".apk")
-                                  ) {
-
-                                      openExternalUrl(uri);
-
-                                      return true;
-                                  }
-
-
-                                  return false;
-                              }
-                          }
-                  );
-
-
-                  registerDownloadReceiver();
-
-
-                  webView.loadUrl(
-                          "https://appassets.androidplatform.net/assets/index.html"
-                  );
+                  webView.loadUrl("file:///android_asset/index.html");
               }
-
-
-              public class AndroidDownload {
-
-                  @JavascriptInterface
-                  public void downloadApk(
-                          String apkUrl,
-                          String version
-                  ) {
-
-                      runOnUiThread(
-                              () ->
-                                      startApkDownload(
-                                              apkUrl,
-                                              version
-                                      )
-                      );
-                  }
-              }
-
-
-              private void startApkDownload(
-                      String apkUrl,
-                      String version
-              ) {
-
-                  try {
-
-                      String cleanVersion =
-                              cleanVersion(version);
-
-
-                      if (cleanVersion.isEmpty()) {
-
-                          downloadFailed(
-                                  "Versi APK tidak valid."
-                          );
-
-                          return;
-                      }
-
-
-                      downloadingVersion =
-                              cleanVersion;
-
-
-                      String correctApkUrl;
-
-
-                      if (
-                              apkUrl != null
-                              &&
-                              !apkUrl.trim().isEmpty()
-                              &&
-                              apkUrl.toLowerCase()
-                                      .endsWith(".apk")
-                      ) {
-
-                          correctApkUrl =
-                                  apkUrl.trim();
-
-                      } else {
-
-                          correctApkUrl =
-                                  buildReleaseApkUrl(
-                                          cleanVersion
-                                  );
-                      }
-
-
-                      String fileName =
-                              "Keuangan-v"
-                                      +
-                                      cleanVersion
-                                      +
-                                      ".apk";
-
-
-                      removePreviousDownload();
-
-
-                      Uri downloadUri =
-                              Uri.parse(correctApkUrl);
-
-
-                      DownloadManager.Request request =
-                              new DownloadManager.Request(
-                                      downloadUri
-                              );
-
-
-                      request.addRequestHeader(
-                              "User-Agent",
-                              "Mozilla/5.0 Android CatatanKas"
-                      );
-
-
-                      request.setTitle(
-                              "Update Catatan Kas"
-                      );
-
-
-                      request.setDescription(
-                              "Mengunduh versi " +
-                              cleanVersion
-                      );
-
-
-                      request.setMimeType(
-                              "application/vnd.android.package-archive"
-                      );
-
-
-                      request.setNotificationVisibility(
-                              DownloadManager
-                                      .Request
-                                      .VISIBILITY_VISIBLE_NOTIFY_COMPLETED
-                      );
-
-
-                      request.setDestinationInExternalFilesDir(
-                              this,
-                              Environment.DIRECTORY_DOWNLOADS,
-                              fileName
-                      );
-
-
-                      downloadId =
-                              downloadManager.enqueue(
-                                      request
-                              );
-
-
-                      sendJavascript(
-                              "window.dispatchEvent(" +
-                              "new CustomEvent('apkDownloadStarted'," +
-                              "{detail:{version:'" +
-                              escapeJs(cleanVersion) +
-                              "'}})" +
-                              ")"
-                      );
-
-
-                      showMessage(
-                              "Download versi " +
-                              cleanVersion +
-                              " dimulai..."
-                      );
-
-
-                  } catch (Exception e) {
-
-                      e.printStackTrace();
-
-                      downloadFailed(
-                              "Gagal memulai download APK."
-                      );
-                  }
-              }
-
-
-              private String buildReleaseApkUrl(
-                      String version
-              ) {
-
-                  String clean =
-                          cleanVersion(version);
-
-                  return GITHUB_RELEASE_BASE
-                          +
-                          "v"
-                          +
-                          clean
-                          +
-                          "/Keuangan-v"
-                          +
-                          clean
-                          +
-                          ".apk";
-              }
-
-
-              private void registerDownloadReceiver() {
-
-                  if (receiverRegistered) {
-                      return;
-                  }
-
-
-                  downloadReceiver =
-                          new BroadcastReceiver() {
-
-                              @Override
-                              public void onReceive(
-                                      Context context,
-                                      Intent intent
-                              ) {
-
-                                  if (
-                                          !DownloadManager
-                                                  .ACTION_DOWNLOAD_COMPLETE
-                                                  .equals(
-                                                          intent.getAction()
-                                                  )
-                                  ) {
-
-                                      return;
-                                  }
-
-
-                                  long completedId =
-                                          intent.getLongExtra(
-                                                  DownloadManager
-                                                          .EXTRA_DOWNLOAD_ID,
-                                                  -1
-                                          );
-
-
-                                  if (
-                                          completedId !=
-                                          downloadId
-                                  ) {
-
-                                      return;
-                                  }
-
-
-                                  checkDownloadResult(
-                                          completedId
-                                  );
-                              }
-                          };
-
-
-                  IntentFilter filter =
-                          new IntentFilter(
-                                  DownloadManager
-                                          .ACTION_DOWNLOAD_COMPLETE
-                          );
-
-
-                  if (
-                          Build.VERSION.SDK_INT >=
-                          Build.VERSION_CODES.TIRAMISU
-                  ) {
-
-                      registerReceiver(
-                              downloadReceiver,
-                              filter,
-                              Context.RECEIVER_EXPORTED
-                      );
-
-                  } else {
-
-                      registerReceiver(
-                              downloadReceiver,
-                              filter
-                      );
-                  }
-
-
-                  receiverRegistered = true;
-              }
-
-
-              private void checkDownloadResult(
-                      long completedId
-              ) {
-
-                  DownloadManager.Query query =
-                          new DownloadManager.Query();
-
-                  query.setFilterById(
-                          completedId
-                  );
-
-
-                  android.database.Cursor cursor =
-                          null;
-
-
-                  try {
-
-                      cursor =
-                              downloadManager.query(
-                                      query
-                              );
-
-
-                      if (
-                              cursor == null
-                              ||
-                              !cursor.moveToFirst()
-                      ) {
-
-                          downloadFailed(
-                                  "Status download tidak ditemukan."
-                          );
-
-                          return;
-                      }
-
-
-                      int statusIndex =
-                              cursor.getColumnIndex(
-                                      DownloadManager
-                                              .COLUMN_STATUS
-                              );
-
-
-                      int reasonIndex =
-                              cursor.getColumnIndex(
-                                      DownloadManager
-                                              .COLUMN_REASON
-                              );
-
-
-                      int uriIndex =
-                              cursor.getColumnIndex(
-                                      DownloadManager
-                                              .COLUMN_LOCAL_URI
-                              );
-
-
-                      int status =
-                              cursor.getInt(
-                                      statusIndex
-                              );
-
-
-                      int reason =
-                              reasonIndex >= 0
-                                      ?
-                                      cursor.getInt(
-                                              reasonIndex
-                                      )
-                                      :
-                                      0;
-
-
-                      String localUri =
-                              uriIndex >= 0
-                                      ?
-                                      cursor.getString(
-                                              uriIndex
-                                      )
-                                      :
-                                      null;
-
-
-                      if (
-                              status ==
-                              DownloadManager
-                                      .STATUS_SUCCESSFUL
-                      ) {
-
-                          if (
-                                  localUri == null
-                                  ||
-                                  localUri.isEmpty()
-                          ) {
-
-                              downloadFailed(
-                                      "File APK tidak ditemukan."
-                              );
-
-                              return;
-                          }
-
-
-                          sendJavascript(
-                                  "window.dispatchEvent(" +
-                                  "new CustomEvent('apkDownloadComplete'," +
-                                  "{detail:{version:'" +
-                                  escapeJs(
-                                          downloadingVersion
-                                  ) +
-                                  "'}})" +
-                                  ")"
-                          );
-
-
-                          showMessage(
-                                  "Download selesai. Membuka installer..."
-                          );
-
-
-                          openApkInstaller(
-                                  Uri.parse(localUri)
-                          );
-
-
-                          return;
-                      }
-
-
-                      if (
-                              status ==
-                              DownloadManager
-                                      .STATUS_FAILED
-                      ) {
-
-                          downloadFailed(
-                                  getDownloadErrorMessage(
-                                          reason
-                                  )
-                          );
-
-                          return;
-                      }
-
-
-                      showMessage(
-                              "Download belum selesai."
-                      );
-
-
-                  } catch (Exception e) {
-
-                      e.printStackTrace();
-
-                      downloadFailed(
-                              "Terjadi kesalahan saat memeriksa download."
-                      );
-
-                  } finally {
-
-                      if (cursor != null) {
-                          cursor.close();
-                      }
-                  }
-              }
-
-
-              private String getDownloadErrorMessage(
-                      int reason
-              ) {
-
-                  switch (reason) {
-
-                      case DownloadManager
-                              .ERROR_CANNOT_RESUME:
-
-                          return "Download tidak dapat dilanjutkan.";
-
-
-                      case DownloadManager
-                              .ERROR_DEVICE_NOT_FOUND:
-
-                          return "Penyimpanan perangkat tidak ditemukan.";
-
-
-                      case DownloadManager
-                              .ERROR_FILE_ERROR:
-
-                          return "Terjadi kesalahan penyimpanan file.";
-
-
-                      case DownloadManager
-                              .ERROR_INSUFFICIENT_SPACE:
-
-                          return "Penyimpanan perangkat tidak cukup.";
-
-
-                      case DownloadManager
-                              .ERROR_HTTP_DATA_ERROR:
-
-                          return "Data APK dari server bermasalah.";
-
-
-                      case DownloadManager
-                              .ERROR_TOO_MANY_REDIRECTS:
-
-                          return "Terlalu banyak pengalihan server.";
-
-
-                      case DownloadManager
-                              .ERROR_UNHANDLED_HTTP_CODE:
-
-                          return "Server GitHub tidak memberikan APK.";
-
-
-                      case DownloadManager
-                              .ERROR_UNKNOWN:
-
-                          return "Download gagal karena kesalahan tidak diketahui.";
-
-
-                      default:
-
-                          return "Download APK gagal. Kode: " +
-                                  reason;
-                  }
-              }
-
-
-              private void downloadFailed(
-                      String message
-              ) {
-
-                  sendJavascript(
-                          "window.dispatchEvent(" +
-                          "new CustomEvent('apkDownloadFailed'," +
-                          "{detail:{message:'" +
-                          escapeJs(message) +
-                          "'}})" +
-                          ")"
-                  );
-
-
-                  showMessage(message);
-              }
-
-
-              private void removePreviousDownload() {
-
-                  try {
-
-                      if (downloadId != -1) {
-
-                          downloadManager.remove(
-                                  downloadId
-                          );
-
-                          downloadId = -1;
-                      }
-
-                  } catch (Exception e) {
-
-                      e.printStackTrace();
-                  }
-              }
-
-
-              private void openApkInstaller(
-                      Uri apkUri
-              ) {
-
-                  try {
-
-                      if (apkUri == null) {
-
-                          showMessage(
-                                  "URI APK tidak ditemukan."
-                          );
-
-                          return;
-                      }
-
-
-                      if (
-                              Build.VERSION.SDK_INT >=
-                              Build.VERSION_CODES.O
-                      ) {
-
-                          boolean allowed =
-                                  getPackageManager()
-                                          .canRequestPackageInstalls();
-
-
-                          if (!allowed) {
-
-                              showMessage(
-                                      "Izinkan pemasangan aplikasi dari sumber ini."
-                              );
-
-
-                              Intent settingsIntent =
-                                      new Intent(
-                                              Settings
-                                                      .ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                                              Uri.parse(
-                                                      "package:" +
-                                                      getPackageName()
-                                              )
-                                      );
-
-
-                              startActivity(
-                                      settingsIntent
-                              );
-
-                              return;
-                          }
-                      }
-
-
-                      Intent installIntent =
-                              new Intent(
-                                      Intent.ACTION_VIEW
-                              );
-
-
-                      installIntent.setDataAndType(
-                              apkUri,
-                              "application/vnd.android.package-archive"
-                      );
-
-
-                      installIntent.addFlags(
-                              Intent.FLAG_ACTIVITY_NEW_TASK
-                      );
-
-
-                      installIntent.addFlags(
-                              Intent.FLAG_GRANT_READ_URI_PERMISSION
-                      );
-
-
-                      installIntent.addFlags(
-                              Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                      );
-
-
-                      startActivity(
-                              installIntent
-                      );
-
-
-                  } catch (Exception e) {
-
-                      e.printStackTrace();
-
-                      showMessage(
-                              "Installer APK tidak dapat dibuka."
-                      );
-                  }
-              }
-
-
-              private void openExternalUrl(
-                      Uri uri
-              ) {
-
-                  try {
-
-                      Intent intent =
-                              new Intent(
-                                      Intent.ACTION_VIEW,
-                                      uri
-                              );
-
-
-                      startActivity(intent);
-
-                  } catch (Exception e) {
-
-                      e.printStackTrace();
-
-                      showMessage(
-                              "Tidak ada aplikasi untuk membuka link."
-                      );
-                  }
-              }
-
-
-              private void sendJavascript(
-                      String javascript
-              ) {
-
-                  if (webView == null) {
-                      return;
-                  }
-
-
-                  runOnUiThread(
-                          () ->
-                                  webView.evaluateJavascript(
-                                          javascript,
-                                          null
-                                  )
-                  );
-              }
-
-
-              private void showMessage(
-                      String message
-              ) {
-
-                  runOnUiThread(
-                          () ->
-                                  android.widget.Toast.makeText(
-                                          MainActivity.this,
-                                          message,
-                                          android.widget.Toast.LENGTH_LONG
-                                  ).show()
-                  );
-              }
-
-
-              private String cleanVersion(
-                      String version
-              ) {
-
-                  if (version == null) {
-                      return "";
-                  }
-
-
-                  return version
-                          .trim()
-                          .replaceFirst(
-                                  "(?i)^v",
-                                  ""
-                          );
-              }
-
-
-              private String escapeJs(
-                      String value
-              ) {
-
-                  if (value == null) {
-                      return "";
-                  }
-
-
-                  return value
-                          .replace(
-                                  "\\",
-                                  "\\\\"
-                          )
-                          .replace(
-                                  "'",
-                                  "\\'"
-                          )
-                          .replace(
-                                  "\"",
-                                  "\\\""
-                          )
-                          .replace(
-                                  "\n",
-                                  "\\n"
-                          )
-                          .replace(
-                                  "\r",
-                                  "\\r"
-                          );
-              }
-
 
               @Override
               public void onBackPressed() {
-
-                  if (
-                          webView != null
-                          &&
-                          webView.canGoBack()
-                  ) {
-
+                  if (webView != null && webView.canGoBack()) {
                       webView.goBack();
-
                   } else {
-
                       super.onBackPressed();
                   }
               }
 
-
               @Override
               protected void onDestroy() {
-
-                  if (
-                          receiverRegistered
-                          &&
-                          downloadReceiver != null
-                  ) {
-
-                      try {
-
-                          unregisterReceiver(
-                                  downloadReceiver
-                          );
-
-                      } catch (Exception e) {
-
-                          e.printStackTrace();
-                      }
-
-                      receiverRegistered = false;
-                  }
-
-
                   if (webView != null) {
-
-                      webView.stopLoading();
-
-                      webView.removeJavascriptInterface(
-                              "AndroidDownload"
-                      );
-
                       webView.destroy();
-
-                      webView = null;
                   }
-
-
                   super.onDestroy();
               }
           }
-
           EOF
 
 
       # ==========================================================
-      # 15. SETUP GRADLE
+      # 18. CHECK ANDROID PROJECT
       # ==========================================================
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
-
-
-      # ==========================================================
-      # 16. CHECK GRADLE
-      # ==========================================================
-
-      - name: Check Gradle
+      - name: Check Android project
         run: |
+          echo "=========================================="
+          echo "ANDROID PROJECT"
+          echo "=========================================="
+
+          find app -type f | sort
+
+          echo ""
+          echo "=========================================="
+          echo "JAVA VERSION"
+          echo "=========================================="
+
+          java -version
+
+          echo ""
+          echo "=========================================="
+          echo "GRADLE VERSION"
+          echo "=========================================="
 
           gradle --version
 
 
       # ==========================================================
-      # 17. CHECK ANDROID PROJECT
-      # ==========================================================
-
-      - name: Check Android project
-        run: |
-
-          echo "======================================"
-          echo "CEK PROJECT ANDROID"
-          echo "======================================"
-
-          test -f settings.gradle
-          test -f build.gradle
-          test -f app/build.gradle
-          test -f app/src/main/AndroidManifest.xml
-          test -f app/src/main/java/com/catatankas/app/MainActivity.java
-          test -f app/src/main/res/values/styles.xml
-
-          echo "Semua file Android ditemukan."
-
-
-      # ==========================================================
-      # 18. BUILD APK
+      # 19. BUILD DEBUG APK
       # ==========================================================
 
       - name: Build Debug APK
         run: |
-
-          gradle \
-            --no-daemon \
-            --stacktrace \
-            :app:assembleDebug
+          gradle assembleDebug --stacktrace --no-daemon
 
 
       # ==========================================================
-      # 19. RENAME APK
+      # 20. PREPARE APK
       # ==========================================================
 
-      - name: Rename APK
+      - name: Prepare APK
         run: |
+          mkdir -p output
 
-          mkdir -p release
+          cp app/build/outputs/apk/debug/app-debug.apk \
+             output/Keuangan-v2.4.apk
 
-          cp \
-            app/build/outputs/apk/debug/app-debug.apk \
-            release/Keuangan-v2.4.apk
-
-
-          echo ""
-          echo "======================================"
-          echo "APK BERHASIL DIBUAT"
-          echo "======================================"
-
-          ls -lh release/Keuangan-v2.4.apk
+          echo "APK berhasil dibuat:"
+          ls -lh output/Keuangan-v2.4.apk
 
 
       # ==========================================================
-      # 20. UPLOAD APK
+      # 21. UPLOAD APK
       # ==========================================================
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-
-          name: Keuangan-v2.4
-
-          path: release/Keuangan-v2.4.apk
-
+          name: Keuangan-v2.4-APK
+          path: output/Keuangan-v2.4.apk
           if-no-files-found: error
+
+
+      # ==========================================================
+      # 22. BUILD SUMMARY
+      # ==========================================================
+
+      - name: Build summary
+        run: |
+          echo "=========================================="
+          echo "      BUILD KEUANGAN SELESAI"
+          echo "=========================================="
+          echo ""
+          echo "Nama aplikasi : Keuangan"
+          echo "Version       : 2.4"
+          echo "Package       : com.catatankas.app"
+          echo "SDK           : Android 35"
+          echo "Java          : 17"
+          echo "Gradle        : 8.9"
+          echo ""
+          echo "APK:"
+          ls -lh output/Keuangan-v2.4.apk
+          echo ""
+          echo "=========================================="
