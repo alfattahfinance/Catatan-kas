@@ -127,33 +127,24 @@
 
     <style>
 
+        /* =================================================
+           GLOBAL
+        ================================================== */
+
         * {
             box-sizing: border-box;
         }
 
-
         html {
-
             scroll-behavior: smooth;
-
             min-height: 100%;
-
         }
 
-
         body {
-
             margin: 0;
-
             min-height: 100vh;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
+            font-family: Arial, Helvetica, sans-serif;
             color: #212529;
-
             padding-bottom: 110px;
 
             background:
@@ -163,38 +154,43 @@
                     #fefae0 100%
                 );
 
-            background-size:
-                200% 200%;
-
-            animation:
-                gradientShift 15s ease infinite;
-
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
         }
-
 
         @keyframes gradientShift {
 
             0% {
-
-                background-position:
-                    0% 50%;
-
+                background-position: 0% 50%;
             }
 
             50% {
-
-                background-position:
-                    100% 50%;
-
+                background-position: 100% 50%;
             }
 
             100% {
-
-                background-position:
-                    0% 50%;
-
+                background-position: 0% 50%;
             }
 
+        }
+
+
+        /* =================================================
+           DARK MODE
+        ================================================== */
+
+        html.dark-mode,
+        html.dark-mode body {
+
+            background: #121212 !important;
+            color: #f1f1f1 !important;
+
+            animation: none !important;
+
+        }
+
+        html.dark-mode .mobile-container {
+            background: transparent !important;
         }
 
 
@@ -205,19 +201,13 @@
         .mobile-container {
 
             width: 100% !important;
-
             max-width: 100% !important;
 
             margin: 0 auto;
 
-            padding-left:
-                20px !important;
-
-            padding-right:
-                20px !important;
-
-            padding-bottom:
-                120px !important;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+            padding-bottom: 120px !important;
 
         }
 
@@ -239,14 +229,30 @@
             background:
                 rgba(255, 255, 255, .92);
 
-            backdrop-filter:
-                blur(8px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
 
-            -webkit-backdrop-filter:
-                blur(8px);
+            margin-bottom: 20px;
 
-            margin-bottom:
-                20px;
+        }
+
+        html.dark-mode .custom-card {
+
+            background: #1e1e1e !important;
+            color: #f1f1f1 !important;
+
+            border-color: #333 !important;
+
+            box-shadow:
+                0 4px 18px
+                rgba(0, 0, 0, .35);
+
+        }
+
+        html.dark-mode .custom-card .card-body {
+
+            background: transparent !important;
+            color: #f1f1f1 !important;
 
         }
 
@@ -282,51 +288,81 @@
 
         }
 
+        html.dark-mode .ck-topbar {
+
+            background: #1e1e1e !important;
+            color: #f1f1f1 !important;
+
+            border-color: #333 !important;
+
+            box-shadow:
+                0 4px 18px
+                rgba(0, 0, 0, .35);
+
+        }
+
+
+        /* =================================================
+           LOGO
+        ================================================== */
 
         .ck-logo {
 
             width: 56px;
-
             height: 56px;
-
             min-width: 56px;
 
             object-fit: contain;
 
             border-radius: 14px;
 
-            background:
-                #fff;
+            background: #fff;
 
-            border:
-                1px solid #eee;
+            border: 1px solid #eee;
 
         }
 
+        html.dark-mode .ck-logo {
+
+            background: #fff !important;
+            border-color: #444 !important;
+
+        }
+
+
+        /* =================================================
+           JUDUL HEADER
+        ================================================== */
 
         .ck-title {
 
             margin: 0;
 
-            color:
-                #198754;
+            color: #198754;
 
-            font-weight:
-                800;
+            font-weight: 800;
 
-            font-size:
-                1.1rem;
+            font-size: 1.1rem;
 
         }
 
+        html.dark-mode .ck-title {
+
+            color: #5dd39e !important;
+
+        }
 
         .ck-subtitle {
 
-            color:
-                #6c757d;
+            color: #6c757d;
 
-            font-size:
-                .8rem;
+            font-size: .8rem;
+
+        }
+
+        html.dark-mode .ck-subtitle {
+
+            color: #aaa !important;
 
         }
 
@@ -337,34 +373,50 @@
 
         .ck-back {
 
-            display:
-                inline-flex;
+            display: inline-flex;
 
-            align-items:
-                center;
+            align-items: center;
 
-            gap:
-                6px;
+            gap: 6px;
 
-            color:
-                #198754;
+            color: #198754;
 
-            text-decoration:
-                none;
+            text-decoration: none;
 
-            font-weight:
-                700;
+            font-weight: 700;
 
-            margin-bottom:
-                15px;
+            margin-bottom: 15px;
 
         }
 
-
         .ck-back:hover {
+            color: #146c43;
+        }
 
-            color:
-                #146c43;
+        html.dark-mode .ck-back {
+            color: #5dd39e !important;
+        }
+
+        html.dark-mode .ck-back:hover {
+            color: #7ee2b2 !important;
+        }
+
+
+        /* =================================================
+           JUDUL HALAMAN
+        ================================================== */
+
+        html.dark-mode h4,
+        html.dark-mode h5 {
+
+            color: #f1f1f1 !important;
+
+        }
+
+        html.dark-mode h4 .text-success,
+        html.dark-mode h5 .text-success {
+
+            color: #5dd39e !important;
 
         }
 
@@ -375,30 +427,30 @@
 
         .form-label {
 
-            color:
-                #495057;
+            color: #495057;
 
-            font-weight:
-                600;
+            font-weight: 600;
 
         }
 
+        html.dark-mode .form-label {
+
+            color: #ddd !important;
+
+        }
 
         .form-control,
         .form-select {
 
-            min-height:
-                48px;
+            min-height: 48px;
 
-            border-radius:
-                12px;
+            border-radius: 12px;
 
             border:
                 1px solid
                 rgba(0, 0, 0, .10);
 
-            box-shadow:
-                none;
+            box-shadow: none;
 
             transition:
                 border-color .2s ease,
@@ -408,16 +460,49 @@
 
         }
 
+        html.dark-mode .form-control,
+        html.dark-mode .form-select {
+
+            background-color: #2a2a2a !important;
+
+            color: #fff !important;
+
+            border-color: #444 !important;
+
+        }
+
+        html.dark-mode .form-control::placeholder {
+
+            color: #999 !important;
+
+        }
+
+        html.dark-mode .form-select option {
+
+            background-color: #2a2a2a;
+            color: #fff;
+
+        }
 
         .form-control:focus,
         .form-select:focus {
 
-            border-color:
-                #198754;
+            border-color: #198754;
 
             box-shadow:
                 0 0 0 .2rem
                 rgba(25, 135, 84, .12);
+
+        }
+
+        html.dark-mode .form-control:focus,
+        html.dark-mode .form-select:focus {
+
+            border-color: #5dd39e !important;
+
+            box-shadow:
+                0 0 0 .2rem
+                rgba(93, 211, 158, .15) !important;
 
         }
 
@@ -428,11 +513,15 @@
 
         #nominalHint {
 
-            font-size:
-                .78rem;
+            font-size: .78rem;
 
-            color:
-                #6c757d;
+            color: #6c757d;
+
+        }
+
+        html.dark-mode #nominalHint {
+
+            color: #aaa !important;
 
         }
 
@@ -443,8 +532,7 @@
 
         #btnSimpanPembayaran {
 
-            min-height:
-                50px;
+            min-height: 50px;
 
             transition:
                 transform .2s ease,
@@ -452,11 +540,9 @@
 
         }
 
-
         #btnSimpanPembayaran:hover {
 
-            transform:
-                translateY(-1px);
+            transform: translateY(-1px);
 
             box-shadow:
                 0 6px 15px
@@ -464,11 +550,9 @@
 
         }
 
-
         #btnSimpanPembayaran:active {
 
-            transform:
-                translateY(0);
+            transform: translateY(0);
 
         }
 
@@ -479,25 +563,20 @@
 
         #riwayat {
 
-            border-radius:
-                12px;
+            border-radius: 12px;
 
-            overflow:
-                hidden;
+            overflow: hidden;
 
         }
 
-
         #riwayat .list-group-item {
 
-            background:
-                transparent;
+            background: transparent;
 
             transition:
                 background .2s ease;
 
         }
-
 
         #riwayat .list-group-item:hover {
 
@@ -506,28 +585,55 @@
 
         }
 
+        html.dark-mode #riwayat .list-group-item {
 
-        .riwayat-nama {
+            background: #1e1e1e !important;
 
-            color:
-                #212529;
+            color: #eee !important;
 
-            font-weight:
-                700;
+            border-color: #333 !important;
 
         }
 
+        html.dark-mode #riwayat .list-group-item:hover {
+
+            background: #2a2a2a !important;
+
+        }
+
+        .riwayat-nama {
+
+            color: #212529;
+
+            font-weight: 700;
+
+        }
+
+        html.dark-mode .riwayat-nama {
+
+            color: #eee !important;
+
+        }
 
         .riwayat-nominal {
 
-            color:
-                #198754;
+            color: #198754;
 
-            font-weight:
-                800;
+            font-weight: 800;
 
-            white-space:
-                nowrap;
+            white-space: nowrap;
+
+        }
+
+        html.dark-mode .riwayat-nominal {
+
+            color: #5dd39e !important;
+
+        }
+
+        html.dark-mode .text-muted {
+
+            color: #aaa !important;
 
         }
 
@@ -538,20 +644,13 @@
 
         .ck-bottom {
 
-            position:
-                fixed;
+            position: fixed;
 
-            left:
-                0;
+            left: 0;
+            right: 0;
+            bottom: 0;
 
-            right:
-                0;
-
-            bottom:
-                0;
-
-            z-index:
-                1050;
+            z-index: 1050;
 
             background:
                 rgba(255, 255, 255, .97);
@@ -563,105 +662,110 @@
                 0 -3px 15px
                 rgba(0, 0, 0, .08);
 
-            padding:
-                6px 8px;
+            padding: 6px 8px;
 
-            backdrop-filter:
-                blur(8px);
-
-            -webkit-backdrop-filter:
-                blur(8px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
 
         }
 
+        html.dark-mode .ck-bottom {
+
+            background:
+                rgba(30, 30, 30, .98) !important;
+
+            border-top-color:
+                #333 !important;
+
+            box-shadow:
+                0 -3px 15px
+                rgba(0, 0, 0, .35) !important;
+
+        }
 
         .ck-bottom-inner {
 
-            width:
-                100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
 
-            max-width:
-                100% !important;
+            margin: 0 auto;
 
-            margin:
-                0 auto;
-
-            display:
-                grid;
+            display: grid;
 
             grid-template-columns:
                 repeat(5, 1fr);
 
-            gap:
-                4px;
+            gap: 4px;
 
         }
-
 
         .ck-bottom a {
 
-            text-decoration:
-                none !important;
+            text-decoration: none !important;
 
-            color:
-                #6c757d;
+            color: #6c757d;
 
-            display:
-                flex;
+            display: flex;
 
-            flex-direction:
-                column;
+            flex-direction: column;
 
-            align-items:
-                center;
+            align-items: center;
 
-            justify-content:
-                center;
+            justify-content: center;
 
-            gap:
-                3px;
+            gap: 3px;
 
-            font-size:
-                .68rem;
+            font-size: .68rem;
 
-            padding:
-                5px 2px;
+            padding: 5px 2px;
 
-            border-radius:
-                10px;
+            border-radius: 10px;
 
-            transition:
-                .2s ease;
+            transition: .2s ease;
 
         }
 
+        html.dark-mode .ck-bottom a {
+
+            color: #aaa !important;
+
+        }
 
         .ck-bottom a i {
 
-            font-size:
-                1.15rem;
+            font-size: 1.15rem;
 
         }
 
-
         .ck-bottom a:hover {
 
-            color:
-                #198754;
+            color: #198754;
 
             background:
                 rgba(25, 135, 84, .08);
 
         }
 
+        html.dark-mode .ck-bottom a:hover {
+
+            color: #5dd39e !important;
+
+            background:
+                rgba(25, 135, 84, .12) !important;
+
+        }
 
         .ck-bottom a.active {
 
-            color:
-                #198754 !important;
+            color: #198754 !important;
 
-            font-weight:
-                700;
+            font-weight: 700;
+
+        }
+
+        html.dark-mode .ck-bottom a.active {
+
+            color: #5dd39e !important;
 
         }
 
@@ -674,137 +778,99 @@
 
             .mobile-container {
 
-                padding-left:
-                    35px !important;
-
-                padding-right:
-                    35px !important;
+                padding-left: 35px !important;
+                padding-right: 35px !important;
 
             }
-
 
             .ck-topbar {
 
-                padding:
-                    20px;
+                padding: 20px;
 
-                border-radius:
-                    20px;
+                border-radius: 20px;
 
             }
-
 
             .ck-logo {
 
-                width:
-                    72px;
+                width: 72px;
+                height: 72px;
+                min-width: 72px;
 
-                height:
-                    72px;
-
-                min-width:
-                    72px;
-
-                border-radius:
-                    16px;
+                border-radius: 16px;
 
             }
-
 
             .ck-title {
 
-                font-size:
-                    1.35rem;
+                font-size: 1.35rem;
 
             }
-
 
             .ck-subtitle {
 
-                font-size:
-                    1rem;
+                font-size: 1rem;
 
             }
-
 
             .ck-back {
 
-                font-size:
-                    1rem;
+                font-size: 1rem;
 
             }
-
 
             .custom-card {
 
-                border-radius:
-                    20px;
+                border-radius: 20px;
 
             }
-
 
             .custom-card .card-body {
 
-                padding:
-                    25px !important;
+                padding: 25px !important;
 
             }
-
 
             .form-label {
 
-                font-size:
-                    1rem !important;
+                font-size: 1rem !important;
 
             }
-
 
             .form-control,
             .form-select {
 
-                min-height:
-                    52px;
+                min-height: 52px;
 
-                font-size:
-                    1rem;
+                font-size: 1rem;
 
             }
-
 
             .btn {
 
-                min-height:
-                    52px;
+                min-height: 52px;
 
-                font-size:
-                    1rem;
+                font-size: 1rem;
 
             }
-
 
             .ck-bottom {
 
-                padding:
-                    8px 25px;
+                padding: 8px 25px;
 
             }
-
 
             .ck-bottom a {
 
-                font-size:
-                    .8rem;
+                font-size: .8rem;
 
-                padding:
-                    8px 4px;
+                padding: 8px 4px;
 
             }
 
-
             .ck-bottom a i {
 
-                font-size:
-                    1.35rem;
+                font-size: 1.35rem;
 
             }
 
@@ -819,57 +885,40 @@
 
             .mobile-container {
 
-                padding-left:
-                    50px !important;
-
-                padding-right:
-                    50px !important;
+                padding-left: 50px !important;
+                padding-right: 50px !important;
 
             }
-
 
             .ck-topbar {
 
-                padding:
-                    24px;
+                padding: 24px;
 
             }
-
 
             .ck-logo {
 
-                width:
-                    86px;
-
-                height:
-                    86px;
-
-                min-width:
-                    86px;
+                width: 86px;
+                height: 86px;
+                min-width: 86px;
 
             }
-
 
             .ck-title {
 
-                font-size:
-                    1.5rem;
+                font-size: 1.5rem;
 
             }
-
 
             .ck-subtitle {
 
-                font-size:
-                    1.05rem;
+                font-size: 1.05rem;
 
             }
 
-
             .custom-card .card-body {
 
-                padding:
-                    30px !important;
+                padding: 30px !important;
 
             }
 
@@ -884,68 +933,48 @@
 
             .mobile-container {
 
-                padding-left:
-                    10px !important;
-
-                padding-right:
-                    10px !important;
+                padding-left: 10px !important;
+                padding-right: 10px !important;
 
             }
-
 
             .ck-topbar {
 
-                padding:
-                    12px;
+                padding: 12px;
 
-                gap:
-                    10px;
+                gap: 10px;
 
             }
-
 
             .ck-logo {
 
-                width:
-                    50px;
-
-                height:
-                    50px;
-
-                min-width:
-                    50px;
+                width: 50px;
+                height: 50px;
+                min-width: 50px;
 
             }
-
 
             .ck-title {
 
-                font-size:
-                    1rem;
+                font-size: 1rem;
 
             }
-
 
             .ck-subtitle {
 
-                font-size:
-                    .75rem;
+                font-size: .75rem;
 
             }
-
 
             .ck-bottom a {
 
-                font-size:
-                    .62rem;
+                font-size: .62rem;
 
             }
 
-
             .ck-bottom a i {
 
-                font-size:
-                    1.05rem;
+                font-size: 1.05rem;
 
             }
 
@@ -1115,7 +1144,7 @@
             <div
                 id="berasPilihan"
                 class="mb-3"
-                style="display:none;"
+                style="display: none;"
             >
 
                 <label
@@ -1212,7 +1241,6 @@
                 Riwayat Pembayaran
 
             </h5>
-
 
             <ul
                 id="riwayat"
@@ -1689,7 +1717,6 @@ document.addEventListener(
 
 <!-- =====================================================
      THEME GLOBAL
-     Semua halaman menggunakan theme.js
 ====================================================== -->
 
 <script src="js/theme.js"></script>
