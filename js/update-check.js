@@ -105,7 +105,7 @@
 
 
     /* =================================================
-       CEK VERSI
+       CEK VERSI LEBIH BARU
     ================================================= */
 
     function isNewerVersion(
@@ -122,7 +122,7 @@
 
 
     /* =================================================
-       NOTIFIKASI UPDATE
+       TAMPILKAN NOTIFIKASI UPDATE
     ================================================= */
 
     function showUpdateNotification(data) {
@@ -137,8 +137,11 @@
         }
 
 
+        const apkVersion =
+            cleanVersion(data.version);
+
         const apkUrl =
-            getApkDownloadUrl(data.version);
+            getApkDownloadUrl(apkVersion);
 
 
         if (!apkUrl) {
@@ -196,10 +199,7 @@
                         font-size:22px;
                     ">
 
-                        <i class="
-                            bi
-                            bi-arrow-down-circle-fill
-                        "></i>
+                        <i class="bi bi-arrow-down-circle-fill"></i>
 
                     </div>
 
@@ -220,9 +220,7 @@
                             margin-top:2px;
                         ">
 
-                            Versi ${cleanVersion(
-                                data.version
-                            )} tersedia
+                            Versi ${apkVersion} tersedia
 
                         </div>
 
@@ -315,10 +313,6 @@
         );
 
 
-        /* =================================================
-           TOMBOL
-        ================================================= */
-
         const closeButton =
             document.getElementById(
                 "closeUpdateNotification"
@@ -336,7 +330,7 @@
 
 
         /* =================================================
-           TUTUP NOTIFIKASI
+           FUNGSI TUTUP
         ================================================= */
 
         function closeNotification() {
@@ -353,6 +347,10 @@
         }
 
 
+        /* =================================================
+           TOMBOL CLOSE
+        ================================================= */
+
         if (closeButton) {
 
             closeButton.addEventListener(
@@ -362,6 +360,10 @@
 
         }
 
+
+        /* =================================================
+           TOMBOL NANTI
+        ================================================= */
 
         if (laterButton) {
 
@@ -374,7 +376,7 @@
 
 
         /* =================================================
-           PERBARUI SEKARANG
+           TOMBOL PERBARUI SEKARANG
         ================================================= */
 
         if (nowButton) {
@@ -392,13 +394,22 @@
                     );
 
                     console.log(
-                        "Versi:",
-                        data.version
+                        "Versi sekarang:",
+                        CURRENT_VERSION
+                    );
+
+                    console.log(
+                        "Versi baru:",
+                        apkVersion
                     );
 
                     console.log(
                         "APK:",
                         apkUrl
+                    );
+
+                    console.log(
+                        "================================"
                     );
 
 
@@ -409,20 +420,14 @@
                         "0.7";
 
                     nowButton.innerHTML = `
-
-                        <i class="
-                            bi
-                            bi-hourglass-split
-                        "></i>
-
+                        <i class="bi bi-hourglass-split"></i>
                         Mengunduh...
-
                     `;
 
 
-                    /* =================================
-                       ANDROID NATIVE DOWNLOAD
-                    ================================= */
+                    /* =====================================
+                       ANDROID NATIVE DOWNLOADER
+                    ===================================== */
 
                     if (
                         window.AndroidDownload &&
@@ -434,9 +439,7 @@
 
                             window.AndroidDownload.downloadApk(
                                 apkUrl,
-                                cleanVersion(
-                                    data.version
-                                )
+                                apkVersion
                             );
 
                             return;
@@ -453,9 +456,9 @@
                     }
 
 
-                    /* =================================
-                       FALLBACK BROWSER
-                    ================================= */
+                    /* =====================================
+                       FALLBACK BROWSER / WEBVIEW
+                    ===================================== */
 
                     setTimeout(
                         function () {
@@ -476,7 +479,7 @@
 
 
     /* =================================================
-       SUDAH TERBARU
+       PESAN SUDAH TERBARU
     ================================================= */
 
     function showLatestMessage() {
@@ -537,7 +540,9 @@
 
 
             const latestVersion =
-                data.version;
+                cleanVersion(
+                    data.version
+                );
 
 
             if (!latestVersion) {
@@ -556,16 +561,16 @@
 
 
             console.log(
-                "APK:",
+                "APK terbaru:",
                 getApkDownloadUrl(
                     latestVersion
                 )
             );
 
 
-            /* =========================================
-               VERSI BARU
-            ========================================= */
+            /* ==========================================
+               VERSI BARU TERSEDIA
+            ========================================== */
 
             if (
                 isNewerVersion(
@@ -602,9 +607,9 @@
             }
 
 
-            /* =========================================
+            /* ==========================================
                SUDAH TERBARU
-            ========================================= */
+            ========================================== */
 
             console.log(
                 "Aplikasi sudah terbaru."
@@ -632,7 +637,7 @@
         } catch (error) {
 
             console.error(
-                "Update check error:",
+                "UPDATE CHECK ERROR:",
                 error
             );
 
@@ -698,11 +703,8 @@
 
 
                 button.innerHTML = `
-
                     <i class="bi bi-arrow-repeat"></i>
-
                     Memeriksa...
-
                 `;
 
 
@@ -726,7 +728,7 @@
 
 
     /* =================================================
-       JALANKAN OTOMATIS
+       JALANKAN SAAT APLIKASI DIBUKA
     ================================================= */
 
     document.addEventListener(
@@ -734,30 +736,33 @@
         function () {
 
             console.log(
-                "================================"
+                "UPDATE CHECK AKTIF"
             );
 
             console.log(
-                "CATATAN KAS UPDATE SYSTEM"
-            );
-
-            console.log(
-                "Versi aplikasi:",
+                "APP VERSION:",
                 CURRENT_VERSION
             );
 
             console.log(
-                "================================"
+                "VERSION URL:",
+                VERSION_URL
             );
 
 
             setupUpdateButton();
 
 
+            /* ==========================================
+               CEK OTOMATIS 2,5 DETIK
+            ========================================== */
+
             setTimeout(
                 function () {
 
-                    checkForUpdate(false);
+                    checkForUpdate(
+                        false
+                    );
 
                 },
                 2500
@@ -776,7 +781,9 @@
         check:
             function () {
 
-                return checkForUpdate(true);
+                return checkForUpdate(
+                    true
+                );
 
             },
 
