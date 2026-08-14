@@ -58,7 +58,7 @@ jobs:
 
 
       # ==========================================================
-      # 5. CREATE ANDROID PROJECT
+      # 5. CREATE ANDROID PROJECT STRUCTURE
       # ==========================================================
 
       - name: Create Android project structure
@@ -66,7 +66,9 @@ jobs:
 
           mkdir -p app/src/main/java/com/catatankas/app
           mkdir -p app/src/main/assets
+          mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/xml
+
           mkdir -p app/src/main/res/mipmap-hdpi
           mkdir -p app/src/main/res/mipmap-mdpi
           mkdir -p app/src/main/res/mipmap-xhdpi
@@ -81,44 +83,23 @@ jobs:
       - name: Copy web application to Android assets
         run: |
 
-          echo "Menyalin file aplikasi web..."
-
-          find . -maxdepth 2 -type f \
-            \( \
-              -name "*.html" \
-              -o -name "*.js" \
-              -o -name "*.css" \
-              -o -name "*.json" \
-              -o -name "*.png" \
-              -o -name "*.jpg" \
-              -o -name "*.jpeg" \
-              -o -name "*.svg" \
-              -o -name "*.webp" \
-              -o -name "*.ico" \
-            \) \
-            ! -path "./app/*" \
-            ! -path "./.git/*" \
-            ! -path "./.github/*" \
-            -print
-
-
-          # Copy root files
+          echo "======================================"
+          echo "MENYALIN FILE APLIKASI WEB"
+          echo "======================================"
 
           for file in *.html *.js *.json; do
+
             if [ -f "$file" ]; then
               cp "$file" app/src/main/assets/
             fi
+
           done
 
-
-          # Copy directories
 
           for dir in css js images assets img icon icons; do
 
             if [ -d "$dir" ]; then
-
               cp -R "$dir" app/src/main/assets/
-
             fi
 
           done
@@ -144,10 +125,14 @@ jobs:
           echo "======================================"
 
           if [ -f app/src/main/assets/index.html ]; then
+
             echo "index.html ditemukan."
+
           else
+
             echo "ERROR: index.html tidak ditemukan."
             exit 1
+
           fi
 
 
@@ -159,6 +144,7 @@ jobs:
         run: |
 
           cat > settings.gradle <<'EOF'
+
           pluginManagement {
               repositories {
                   google()
@@ -168,7 +154,9 @@ jobs:
           }
 
           dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositoriesMode.set(
+                  RepositoriesMode.FAIL_ON_PROJECT_REPOS
+              )
 
               repositories {
                   google()
@@ -179,6 +167,7 @@ jobs:
           rootProject.name = "CatatanKas"
 
           include(":app")
+
           EOF
 
 
@@ -190,9 +179,11 @@ jobs:
         run: |
 
           cat > build.gradle <<'EOF'
+
           plugins {
               id 'com.android.application' version '8.7.3' apply false
           }
+
           EOF
 
 
@@ -204,11 +195,13 @@ jobs:
         run: |
 
           cat > gradle.properties <<'EOF'
+
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
 
           android.useAndroidX=true
 
           android.nonTransitiveRClass=true
+
           EOF
 
 
@@ -220,6 +213,7 @@ jobs:
         run: |
 
           cat > app/build.gradle <<'EOF'
+
           plugins {
               id 'com.android.application'
           }
@@ -246,12 +240,16 @@ jobs:
               buildTypes {
 
                   debug {
+
                       minifyEnabled false
+
                       shrinkResources false
                   }
 
                   release {
+
                       minifyEnabled false
+
                       shrinkResources false
                   }
               }
@@ -269,24 +267,9 @@ jobs:
               implementation 'androidx.appcompat:appcompat:1.7.0'
 
               implementation 'androidx.webkit:webkit:1.12.1'
-
-              implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
           }
 
-          configurations.all {
-
-              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
-
-              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
-
-              resolutionStrategy {
-
-                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-              }
-          }
           EOF
-
-              
 
 
       # ==========================================================
@@ -297,6 +280,7 @@ jobs:
         run: |
 
           cat > app/src/main/AndroidManifest.xml <<'EOF'
+
           <?xml version="1.0" encoding="utf-8"?>
 
           <manifest
@@ -308,7 +292,7 @@ jobs:
                   android:name="android.permission.INTERNET" />
 
 
-              <!-- INSTALL APK -->
+              <!-- ALLOW INSTALL APK -->
 
               <uses-permission
                   android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -347,18 +331,19 @@ jobs:
               </application>
 
           </manifest>
-          
+
+          EOF
 
 
       # ==========================================================
-      # 13. CREATE STYLE
-      # ==========================================================  background: background:
+      # 13. CREATE ANDROID STYLE
+      # ==========================================================
+
       - name: Create Android style
         run: |
 
-          mkdir -p app/src/main/res/values
-
           cat > app/src/main/res/values/styles.xml <<'EOF'
+
           <?xml version="1.0" encoding="utf-8"?>
 
           <resources>
@@ -400,6 +385,7 @@ jobs:
               </style>
 
           </resources>
+
           EOF
 
 
@@ -411,6 +397,7 @@ jobs:
         run: |
 
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
+
           package com.catatankas.app;
 
           import android.annotation.SuppressLint;
@@ -465,8 +452,7 @@ jobs:
                                   );
 
 
-                  webView =
-                          new WebView(this);
+                  webView = new WebView(this);
 
                   setContentView(webView);
 
@@ -599,9 +585,7 @@ jobs:
                               cleanVersion(version);
 
 
-                      if (
-                              cleanVersion.isEmpty()
-                      ) {
+                      if (cleanVersion.isEmpty()) {
 
                           downloadFailed(
                                   "Versi APK tidak valid."
@@ -651,9 +635,7 @@ jobs:
 
 
                       Uri downloadUri =
-                              Uri.parse(
-                                      correctApkUrl
-                              );
+                              Uri.parse(correctApkUrl);
 
 
                       DownloadManager.Request request =
@@ -1081,9 +1063,7 @@ jobs:
                   );
 
 
-                  showMessage(
-                          message
-                  );
+                  showMessage(message);
               }
 
 
@@ -1091,9 +1071,7 @@ jobs:
 
                   try {
 
-                      if (
-                              downloadId != -1
-                      ) {
+                      if (downloadId != -1) {
 
                           downloadManager.remove(
                                   downloadId
@@ -1115,9 +1093,7 @@ jobs:
 
                   try {
 
-                      if (
-                              apkUri == null
-                      ) {
+                      if (apkUri == null) {
 
                           showMessage(
                                   "URI APK tidak ditemukan."
@@ -1158,7 +1134,6 @@ jobs:
                               startActivity(
                                       settingsIntent
                               );
-
 
                               return;
                           }
@@ -1221,9 +1196,7 @@ jobs:
                               );
 
 
-                      startActivity(
-                              intent
-                      );
+                      startActivity(intent);
 
                   } catch (Exception e) {
 
@@ -1240,10 +1213,7 @@ jobs:
                       String javascript
               ) {
 
-                  if (
-                          webView == null
-                  ) {
-
+                  if (webView == null) {
                       return;
                   }
 
@@ -1277,10 +1247,7 @@ jobs:
                       String version
               ) {
 
-                  if (
-                          version == null
-                  ) {
-
+                  if (version == null) {
                       return "";
                   }
 
@@ -1298,10 +1265,7 @@ jobs:
                       String value
               ) {
 
-                  if (
-                          value == null
-                  ) {
-
+                  if (value == null) {
                       return "";
                   }
 
@@ -1372,9 +1336,7 @@ jobs:
                   }
 
 
-                  if (
-                          webView != null
-                  ) {
+                  if (webView != null) {
 
                       webView.stopLoading();
 
@@ -1391,6 +1353,7 @@ jobs:
                   super.onDestroy();
               }
           }
+
           EOF
 
 
@@ -1405,7 +1368,7 @@ jobs:
 
 
       # ==========================================================
-      # 16. CEK GRADLE
+      # 16. CHECK GRADLE
       # ==========================================================
 
       - name: Check Gradle
@@ -1415,7 +1378,28 @@ jobs:
 
 
       # ==========================================================
-      # 17. BUILD APK
+      # 17. CHECK ANDROID PROJECT
+      # ==========================================================
+
+      - name: Check Android project
+        run: |
+
+          echo "======================================"
+          echo "CEK PROJECT ANDROID"
+          echo "======================================"
+
+          test -f settings.gradle
+          test -f build.gradle
+          test -f app/build.gradle
+          test -f app/src/main/AndroidManifest.xml
+          test -f app/src/main/java/com/catatankas/app/MainActivity.java
+          test -f app/src/main/res/values/styles.xml
+
+          echo "Semua file Android ditemukan."
+
+
+      # ==========================================================
+      # 18. BUILD APK
       # ==========================================================
 
       - name: Build Debug APK
@@ -1428,7 +1412,7 @@ jobs:
 
 
       # ==========================================================
-      # 18. RENAME APK
+      # 19. RENAME APK
       # ==========================================================
 
       - name: Rename APK
@@ -1450,7 +1434,7 @@ jobs:
 
 
       # ==========================================================
-      # 19. UPLOAD APK
+      # 20. UPLOAD APK
       # ==========================================================
 
       - name: Upload APK artifact
