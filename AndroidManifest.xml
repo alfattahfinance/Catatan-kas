@@ -3,72 +3,21 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- =====================================================
-         INTERNET
-         Firebase, version.json, GitHub, dan download APK
-    ====================================================== -->
-
+    <!-- Internet untuk Firebase dan update APK -->
     <uses-permission
         android:name="android.permission.INTERNET" />
 
-
-    <!-- =====================================================
-         NOTIFIKASI
-         Android 13+
-    ====================================================== -->
-
-    <uses-permission
-        android:name="android.permission.POST_NOTIFICATIONS" />
-
-
-    <!-- =====================================================
-         INSTALL APK
-         Diperlukan untuk membuka installer update
-    ====================================================== -->
-
+    <!-- Instalasi APK update -->
     <uses-permission
         android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
 
-    <!-- =====================================================
-         APLIKASI
-    ====================================================== -->
-
     <application
-
         android:allowBackup="true"
-
         android:usesCleartextTraffic="false"
-
         android:theme="@style/Theme.CatatanKas"
-
         android:label="Catatan Kas"
-
-        android:icon="@drawable/ic_launcher">
-
-
-        <!-- =================================================
-             FILE PROVIDER
-             Untuk membuka APK hasil download
-        ================================================== -->
-
-        <provider
-
-            android:name="androidx.core.content.FileProvider"
-
-            android:authorities="${applicationId}.fileprovider"
-
-            android:exported="false"
-
-            android:grantUriPermissions="true">
-
-            <meta-data
-
-                android:name="android.support.FILE_PROVIDER_PATHS"
-
-                android:resource="@xml/file_paths" />
-
-        </provider>
+        android:resizeableActivity="true">
 
 
         <!-- =================================================
@@ -76,10 +25,17 @@
         ================================================== -->
 
         <activity
-
             android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="unspecified"
+            android:configChanges="
+                orientation|
+                screenSize|
+                keyboardHidden|
+                screenLayout|
+                smallestScreenSize"
+            android:resizeableActivity="true">
 
-            android:exported="true">
 
             <intent-filter>
 
@@ -92,6 +48,23 @@
             </intent-filter>
 
         </activity>
+
+
+        <!-- =================================================
+             FILE PROVIDER
+        ================================================== -->
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+
+        </provider>
 
     </application>
 
