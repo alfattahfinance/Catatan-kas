@@ -420,7 +420,9 @@
                         Mengunduh...
 
                     `;
-
+                    console.log("UPDATE CHECK AKTIF");
+                    console.log("APP VERSION:", window.APP_VERSION);
+                    console.log("VERSION URL:", VERSION_URL);
 
                     /*
                      * =================================================
