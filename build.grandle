@@ -10,13 +10,13 @@ android {
         applicationId "com.catatankas.app"
         minSdk 24
         targetSdk 35
-        versionCode 1
-        versionName "1.0"
+        versionCode 24
+        versionName "2.4"
     }
 }
 
 dependencies {
     implementation "androidx.appcompat:appcompat:1.7.0"
-    implementation "androidx.webkit:webkit:1.12.1"
-    implementation "androidx.core:core:1.15.0"
+    implementation "androidx.webkit:webkit:1.13.0"
+    implementation "androidx.core:core:1.16.0"
 }
