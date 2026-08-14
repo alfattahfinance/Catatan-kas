@@ -3,75 +3,140 @@
 
 <head>
     <meta charset="UTF-8">
+
+    <!-- =====================================================
+         TEMA SEBELUM HALAMAN DITAMPILKAN
+         Mencegah layar berkedip putih saat dark mode
+    ====================================================== -->
     <script>
-    (function () {
-        try {
-            const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
-            const tema = data.tema || "light";
-            let dark = false;
+        (function () {
+            try {
+                const data =
+                    JSON.parse(
+                        localStorage.getItem("pengaturanAplikasi")
+                    ) || {};
 
-            if (tema === "dark") {
-                dark = true;
-            } else if (tema === "system") {
-                dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                const tema =
+                    data.tema || "light";
+
+                let dark = false;
+
+                if (tema === "dark") {
+                    dark = true;
+                } else if (tema === "system") {
+                    dark =
+                        window.matchMedia(
+                            "(prefers-color-scheme: dark)"
+                        ).matches;
+                }
+
+                if (dark) {
+                    document.documentElement.classList.add(
+                        "dark-mode"
+                    );
+
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "dark"
+                    );
+                } else {
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "light"
+                    );
+                }
+
+            } catch (error) {
+                console.warn(
+                    "Gagal memuat tema:",
+                    error
+                );
             }
+        })();
+    </script>
 
-            if (dark) {
-                document.documentElement.classList.add("dark-mode");
-                document.documentElement.setAttribute("data-theme", "dark");
-            }
-        } catch (error) {
-            console.warn("Gagal memuat tema:", error);
-        }
-    })();
-</script>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#198754">
-    <meta name="description" content="Data Santri - Catatan Kas Ribath Madrasah Al-Fattah">
+    <meta
+        name="theme-color"
+        content="#198754"
+    >
+
+    <meta
+        name="description"
+        content="Data Santri - Catatan Kas"
+    >
 
     <title>Data Santri | Catatan Kas</title>
+
 
     <!-- =====================================================
          BOOTSTRAP
     ====================================================== -->
+
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
+
     <!-- =====================================================
          BOOTSTRAP ICONS
     ====================================================== -->
+
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     >
 
+
     <!-- =====================================================
          CSS GLOBAL
     ====================================================== -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/theme.css">
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+
 
     <!-- =====================================================
          STYLE KHUSUS SANTRI
     ====================================================== -->
+
     <style>
+
         * {
             box-sizing: border-box;
         }
+
 
         html {
             scroll-behavior: smooth;
             min-height: 100%;
         }
 
+
         body {
             margin: 0;
+
             min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
             color: #212529;
+
             padding-bottom: 100px;
 
             background:
@@ -82,10 +147,18 @@
                 );
 
             background-size: 200% 200%;
-            animation: gradientShift 15s ease infinite;
+
+            animation:
+                gradientShift 15s ease infinite;
+
+            transition:
+                background .25s ease,
+                color .25s ease;
         }
 
+
         @keyframes gradientShift {
+
             0% {
                 background-position: 0% 50%;
             }
@@ -97,7 +170,9 @@
             100% {
                 background-position: 0% 50%;
             }
+
         }
+
 
         /* =================================================
            CONTAINER
@@ -105,22 +180,31 @@
 
         .mobile-container {
             width: 100% !important;
+
             max-width: 100% !important;
+
             margin: 0 auto;
+
             padding-left: 20px !important;
+
             padding-right: 20px !important;
         }
+
 
         /* =================================================
            TOPBAR
         ================================================== */
 
         .ck-topbar {
+
             display: flex;
+
             align-items: center;
+
             gap: 14px;
 
-            background: rgba(255, 255, 255, .92);
+            background:
+                rgba(255,255,255,.92);
 
             border-radius: 18px;
 
@@ -129,15 +213,28 @@
             margin-bottom: 20px;
 
             box-shadow:
-                0 4px 14px rgba(0, 0, 0, .05);
+                0 4px 14px
+                rgba(0,0,0,.05);
 
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter:
+                blur(8px);
+
+            -webkit-backdrop-filter:
+                blur(8px);
+
+            transition:
+                background .25s ease,
+                color .25s ease,
+                box-shadow .25s ease;
         }
 
+
         .ck-logo {
+
             width: 56px;
+
             height: 56px;
+
             min-width: 56px;
 
             object-fit: contain;
@@ -149,7 +246,9 @@
             border: 1px solid #eee;
         }
 
+
         .ck-title {
+
             margin: 0;
 
             color: #198754;
@@ -159,16 +258,24 @@
             font-size: 1.1rem;
         }
 
+
         .ck-subtitle {
+
             color: #6c757d;
+
             font-size: .8rem;
+
+            transition:
+                color .25s ease;
         }
+
 
         /* =================================================
            BACK BUTTON
         ================================================== */
 
         .back-btn {
+
             text-decoration: none;
 
             color: #198754;
@@ -184,9 +291,11 @@
             margin-bottom: 15px;
         }
 
+
         .back-btn:hover {
             color: #146c43;
         }
+
 
         /* =================================================
            TITLE
@@ -196,32 +305,45 @@
             color: #212529;
         }
 
+
         .page-title i {
             color: #198754;
         }
+
 
         /* =================================================
            CARD
         ================================================== */
 
         .custom-card {
+
             border: none;
 
             border-radius: 18px;
 
             box-shadow:
-                0 4px 14px rgba(0, 0, 0, .06);
+                0 4px 14px
+                rgba(0,0,0,.06);
 
             background:
-                rgba(255, 255, 255, .92);
+                rgba(255,255,255,.92);
 
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter:
+                blur(8px);
+
+            -webkit-backdrop-filter:
+                blur(8px);
 
             margin-bottom: 20px;
 
             overflow: hidden;
+
+            transition:
+                background .25s ease,
+                color .25s ease,
+                box-shadow .25s ease;
         }
+
 
         /* =================================================
            FORM
@@ -231,28 +353,39 @@
             color: #245d4b;
         }
 
+
         .form-control {
+
             border-radius: 12px;
 
             min-height: 46px;
 
             border-color:
-                rgba(0, 0, 0, .12);
+                rgba(0,0,0,.12);
 
             box-shadow: none;
+
+            transition:
+                background .25s ease,
+                color .25s ease,
+                border-color .25s ease;
         }
 
+
         .form-control:focus {
+
             border-color: #198754;
 
             box-shadow:
                 0 0 0 .2rem
-                rgba(25, 135, 84, .12);
+                rgba(25,135,84,.12);
         }
+
 
         .btn-success {
             border-radius: 12px;
         }
+
 
         /* =================================================
            TABEL
@@ -262,47 +395,61 @@
             margin-bottom: 0;
         }
 
+
         .table thead th {
             white-space: nowrap;
         }
+
 
         .table td,
         .table th {
             vertical-align: middle;
         }
 
+
         .nama-santri {
             font-weight: 700;
         }
 
+
         .kelas-santri {
             color: #6c757d;
         }
+
 
         /* =================================================
            EMPTY STATE
         ================================================== */
 
         .empty-santri {
-            padding: 35px 15px !important;
+
+            padding:
+                35px 15px !important;
         }
 
+
         .empty-santri i {
+
             font-size: 3rem;
+
             opacity: .45;
         }
+
 
         /* =================================================
            ACTION BUTTON
         ================================================== */
 
         .btn-action {
+
             width: 38px;
+
             height: 38px;
 
             display: inline-flex;
 
             align-items: center;
+
             justify-content: center;
 
             border-radius: 10px;
@@ -310,37 +457,52 @@
             border: none;
         }
 
+
         /* =================================================
            BOTTOM NAVIGATION
         ================================================== */
 
         .ck-bottom {
+
             position: fixed;
 
             left: 0;
+
             right: 0;
+
             bottom: 0;
 
             z-index: 1050;
 
             background:
-                rgba(255, 255, 255, .97);
+                rgba(255,255,255,.97);
 
             border-top:
                 1px solid #dee2e6;
 
             box-shadow:
                 0 -3px 15px
-                rgba(0, 0, 0, .08);
+                rgba(0,0,0,.08);
 
-            padding: 6px 8px;
+            padding:
+                6px 8px;
 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter:
+                blur(10px);
+
+            -webkit-backdrop-filter:
+                blur(10px);
+
+            transition:
+                background .25s ease,
+                border-color .25s ease;
         }
 
+
         .ck-bottom-inner {
+
             width: 100% !important;
+
             max-width: 100% !important;
 
             margin: 0 auto;
@@ -348,12 +510,14 @@
             display: grid;
 
             grid-template-columns:
-                repeat(5, 1fr);
+                repeat(5,1fr);
 
             gap: 4px;
         }
 
+
         .ck-bottom a {
+
             text-decoration: none !important;
 
             color: #6c757d;
@@ -370,271 +534,625 @@
 
             font-size: .68rem;
 
-            padding: 5px 2px;
+            padding:
+                5px 2px;
 
             border-radius: 10px;
 
-            transition: .2s ease;
+            transition:
+                color .2s ease,
+                background .2s ease;
         }
+
 
         .ck-bottom a i {
             font-size: 1.15rem;
         }
 
+
         .ck-bottom a:hover {
+
             color: #198754;
 
             background:
-                rgba(25, 135, 84, .08);
+                rgba(25,135,84,.08);
         }
 
+
         .ck-bottom a.active {
+
             color: #198754 !important;
 
             font-weight: 700;
         }
 
+
         /* =================================================
+           =================================================
            DARK MODE
-           Tema utama tetap dikontrol theme.js
+           =================================================
+           PENTING:
+           Menggunakan html.dark-mode
+           BUKAN body.dark-mode
         ================================================== */
 
-        body.dark-mode {
-            background: #121212 !important;
 
-            color: #f1f1f1 !important;
+        html.dark-mode body {
 
-            animation: none !important;
-        }
-
-        body.dark-mode .ck-topbar,
-        body.dark-mode .custom-card,
-        body.dark-mode .ck-bottom {
             background:
-                rgba(30, 30, 30, .97) !important;
+                #121212 !important;
 
-            color: #f1f1f1 !important;
+            color:
+                #f1f1f1 !important;
 
-            border-color: #333 !important;
+            animation:
+                none !important;
         }
 
-        body.dark-mode .ck-subtitle,
-        body.dark-mode .text-muted {
-            color: #aaa !important;
+
+        /* TOPBAR */
+
+        html.dark-mode .ck-topbar {
+
+            background:
+                rgba(30,30,30,.97) !important;
+
+            color:
+                #f1f1f1 !important;
+
+            box-shadow:
+                0 4px 18px
+                rgba(0,0,0,.35);
         }
 
-        body.dark-mode .page-title {
-            color: #f1f1f1 !important;
+
+        html.dark-mode .ck-logo {
+
+            background:
+                #222 !important;
+
+            border-color:
+                #444 !important;
         }
 
-        body.dark-mode .form-label {
-            color: #b9e6ca !important;
+
+        html.dark-mode .ck-subtitle {
+
+            color:
+                #a9a9a9 !important;
         }
 
-        body.dark-mode .form-control {
-            background: #292929 !important;
 
-            color: #fff !important;
+        /* BACK */
 
-            border-color: #444 !important;
+        html.dark-mode .back-btn {
+
+            color:
+                #51cf66 !important;
         }
 
-        body.dark-mode .form-control::placeholder {
-            color: #999 !important;
+
+        html.dark-mode .back-btn:hover {
+
+            color:
+                #69db7c !important;
         }
 
-        body.dark-mode .table {
-            color: #eee !important;
+
+        /* TITLE */
+
+        html.dark-mode .page-title {
+
+            color:
+                #f1f1f1 !important;
         }
 
-        body.dark-mode .table-light {
-            --bs-table-bg: #292929 !important;
-            --bs-table-color: #fff !important;
+
+        html.dark-mode .page-title i {
+
+            color:
+                #51cf66 !important;
         }
 
-        body.dark-mode .table-hover > tbody > tr:hover > * {
-            color: #fff !important;
+
+        /* CARD */
+
+        html.dark-mode .custom-card {
+
+            background:
+                rgba(30,30,30,.97) !important;
+
+            color:
+                #f1f1f1 !important;
+
+            box-shadow:
+                0 4px 18px
+                rgba(0,0,0,.35);
+        }
+
+
+        /* CARD TEXT */
+
+        html.dark-mode .custom-card h5 {
+
+            color:
+                #51cf66 !important;
+        }
+
+
+        html.dark-mode .form-label {
+
+            color:
+                #b9e6ca !important;
+        }
+
+
+        /* INPUT */
+
+        html.dark-mode .form-control {
+
+            background:
+                #292929 !important;
+
+            color:
+                #fff !important;
+
+            border-color:
+                #444 !important;
+        }
+
+
+        html.dark-mode .form-control::placeholder {
+
+            color:
+                #999 !important;
+        }
+
+
+        html.dark-mode .form-control:focus {
+
+            border-color:
+                #51cf66 !important;
+
+            box-shadow:
+                0 0 0 .2rem
+                rgba(81,207,102,.15);
+        }
+
+
+        /* TABLE */
+
+        html.dark-mode .table {
+
+            --bs-table-bg:
+                transparent;
+
+            --bs-table-color:
+                #eeeeee;
+
+            --bs-table-border-color:
+                #3b3b3b;
+
+            color:
+                #eeeeee !important;
+        }
+
+
+        html.dark-mode .table-light {
+
+            --bs-table-bg:
+                #292929 !important;
+
+            --bs-table-color:
+                #ffffff !important;
+
+            color:
+                #ffffff !important;
+        }
+
+
+        html.dark-mode .table > :not(caption) > * > * {
 
             background-color:
-                rgba(255,255,255,.05) !important;
+                transparent;
+
+            color:
+                #eeeeee;
         }
 
-        body.dark-mode .nama-santri {
-            color: #fff !important;
+
+        html.dark-mode .table-hover > tbody > tr:hover > * {
+
+            color:
+                #ffffff !important;
+
+            background-color:
+                rgba(255,255,255,.06) !important;
         }
 
-        body.dark-mode .kelas-santri {
-            color: #aaa !important;
+
+        html.dark-mode .nama-santri {
+
+            color:
+                #ffffff !important;
         }
 
-        body.dark-mode .ck-bottom a {
-            color: #aaa !important;
+
+        html.dark-mode .kelas-santri {
+
+            color:
+                #aaaaaa !important;
         }
 
-        body.dark-mode .ck-bottom a.active {
-            color: #51cf66 !important;
+
+        html.dark-mode .text-muted {
+
+            color:
+                #a8a8a8 !important;
         }
 
-        body.dark-mode .ck-bottom a:hover {
-            color: #51cf66 !important;
+
+        /* EMPTY */
+
+        html.dark-mode .empty-santri {
+
+            color:
+                #aaaaaa !important;
         }
+
+
+        html.dark-mode .empty-santri strong {
+
+            color:
+                #ffffff !important;
+        }
+
+
+        /* BUTTON EDIT */
+
+        html.dark-mode .btn-outline-primary {
+
+            color:
+                #74c0fc !important;
+
+            border-color:
+                #74c0fc !important;
+        }
+
+
+        html.dark-mode .btn-outline-primary:hover {
+
+            color:
+                #121212 !important;
+
+            background:
+                #74c0fc !important;
+        }
+
+
+        /* BUTTON DELETE */
+
+        html.dark-mode .btn-outline-danger {
+
+            color:
+                #ff8787 !important;
+
+            border-color:
+                #ff8787 !important;
+        }
+
+
+        html.dark-mode .btn-outline-danger:hover {
+
+            color:
+                #121212 !important;
+
+            background:
+                #ff8787 !important;
+        }
+
+
+        /* BOTTOM NAV */
+
+        html.dark-mode .ck-bottom {
+
+            background:
+                rgba(25,25,25,.98) !important;
+
+            border-top-color:
+                #333 !important;
+
+            box-shadow:
+                0 -4px 18px
+                rgba(0,0,0,.4);
+        }
+
+
+        html.dark-mode .ck-bottom a {
+
+            color:
+                #a8a8a8 !important;
+        }
+
+
+        html.dark-mode .ck-bottom a.active {
+
+            color:
+                #51cf66 !important;
+        }
+
+
+        html.dark-mode .ck-bottom a:hover {
+
+            color:
+                #69db7c !important;
+
+            background:
+                rgba(81,207,102,.08);
+        }
+
 
         /* =================================================
            TABLET
         ================================================== */
 
-        @media (min-width: 768px) {
+        @media (min-width:768px) {
 
             .mobile-container {
-                padding-left: 35px !important;
-                padding-right: 35px !important;
+
+                padding-left:
+                    35px !important;
+
+                padding-right:
+                    35px !important;
             }
+
 
             .ck-topbar {
-                padding: 20px;
 
-                border-radius: 20px;
+                padding:
+                    20px;
+
+                border-radius:
+                    20px;
             }
+
 
             .ck-logo {
-                width: 72px;
-                height: 72px;
-                min-width: 72px;
+
+                width:
+                    72px;
+
+                height:
+                    72px;
+
+                min-width:
+                    72px;
             }
+
 
             .ck-title {
-                font-size: 1.35rem;
+                font-size:
+                    1.35rem;
             }
+
 
             .ck-subtitle {
-                font-size: 1rem;
+                font-size:
+                    1rem;
             }
+
 
             .back-btn {
-                font-size: 1rem;
+                font-size:
+                    1rem;
             }
+
 
             .page-title {
-                font-size: 1.6rem;
+                font-size:
+                    1.6rem;
             }
+
 
             .custom-card {
-                border-radius: 20px;
+                border-radius:
+                    20px;
             }
+
 
             .custom-card .card-body {
-                padding: 25px !important;
+                padding:
+                    25px !important;
             }
+
 
             .form-control {
-                min-height: 52px;
 
-                font-size: 1rem;
+                min-height:
+                    52px;
+
+                font-size:
+                    1rem;
             }
+
 
             .btn {
-                min-height: 52px;
 
-                font-size: 1rem;
+                min-height:
+                    52px;
+
+                font-size:
+                    1rem;
             }
+
 
             .table {
-                font-size: 1rem;
+
+                font-size:
+                    1rem;
             }
+
 
             .ck-bottom {
-                padding: 8px 25px;
+
+                padding:
+                    8px 25px;
             }
+
 
             .ck-bottom a {
-                font-size: .8rem;
 
-                padding: 8px 4px;
+                font-size:
+                    .8rem;
+
+                padding:
+                    8px 4px;
             }
+
 
             .ck-bottom a i {
-                font-size: 1.35rem;
+
+                font-size:
+                    1.35rem;
             }
+
         }
+
 
         /* =================================================
            TABLET BESAR
         ================================================== */
 
-        @media (min-width: 992px) {
+        @media (min-width:992px) {
 
             .mobile-container {
-                padding-left: 50px !important;
-                padding-right: 50px !important;
+
+                padding-left:
+                    50px !important;
+
+                padding-right:
+                    50px !important;
             }
+
 
             .ck-topbar {
-                padding: 24px;
+                padding:
+                    24px;
             }
+
 
             .ck-logo {
-                width: 82px;
-                height: 82px;
-                min-width: 82px;
+
+                width:
+                    82px;
+
+                height:
+                    82px;
+
+                min-width:
+                    82px;
             }
+
 
             .ck-title {
-                font-size: 1.5rem;
+
+                font-size:
+                    1.5rem;
             }
 
+
             .ck-subtitle {
-                font-size: 1.05rem;
+
+                font-size:
+                    1.05rem;
             }
+
         }
+
 
         /* =================================================
            HP KECIL
         ================================================== */
 
-        @media (max-width: 380px) {
+        @media (max-width:380px) {
 
             .mobile-container {
-                padding-left: 10px !important;
-                padding-right: 10px !important;
+
+                padding-left:
+                    10px !important;
+
+                padding-right:
+                    10px !important;
             }
+
 
             .ck-topbar {
-                padding: 12px;
-                gap: 10px;
+
+                padding:
+                    12px;
+
+                gap:
+                    10px;
             }
+
 
             .ck-logo {
-                width: 52px;
-                height: 52px;
-                min-width: 52px;
+
+                width:
+                    52px;
+
+                height:
+                    52px;
+
+                min-width:
+                    52px;
             }
+
 
             .ck-title {
-                font-size: 1rem;
+
+                font-size:
+                    1rem;
             }
+
 
             .ck-subtitle {
-                font-size: .74rem;
+
+                font-size:
+                    .74rem;
             }
+
 
             .ck-bottom a {
-                font-size: .62rem;
+
+                font-size:
+                    .62rem;
             }
+
 
             .ck-bottom a i {
-                font-size: 1.05rem;
+
+                font-size:
+                    1.05rem;
             }
+
         }
+
     </style>
+
 </head>
 
+
 <body>
+
 
 <!-- =====================================================
      CONTAINER UTAMA
 ====================================================== -->
 
 <div class="container-fluid mobile-container py-3">
+
 
     <!-- =================================================
          HEADER
@@ -650,6 +1168,7 @@
         >
 
         <div>
+
             <p class="ck-title">
                 Catatan Kas
             </p>
@@ -660,9 +1179,11 @@
             >
                 Madrasah Al-Fattah
             </span>
+
         </div>
 
     </div>
+
 
     <!-- =================================================
          KEMBALI
@@ -672,9 +1193,13 @@
         href="index.html"
         class="back-btn"
     >
+
         <i class="bi bi-arrow-left"></i>
+
         Kembali ke Dashboard
+
     </a>
+
 
     <!-- =================================================
          JUDUL
@@ -696,6 +1221,7 @@
 
     </div>
 
+
     <!-- =================================================
          FORM TAMBAH SANTRI
     ================================================== -->
@@ -707,6 +1233,7 @@
             <h5 class="fw-bold mb-3 text-success">
                 Tambah Santri Baru
             </h5>
+
 
             <!-- NAMA -->
 
@@ -729,6 +1256,7 @@
 
             </div>
 
+
             <!-- KELAS -->
 
             <div class="mb-3">
@@ -748,6 +1276,7 @@
                 >
 
             </div>
+
 
             <!-- HP WALI -->
 
@@ -771,6 +1300,7 @@
 
             </div>
 
+
             <!-- TOMBOL SIMPAN -->
 
             <button
@@ -789,6 +1319,7 @@
 
     </div>
 
+
     <!-- =================================================
          DAFTAR SANTRI
     ================================================== -->
@@ -797,7 +1328,9 @@
 
         <div class="card-body">
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div
+                class="d-flex justify-content-between align-items-center mb-3"
+            >
 
                 <div>
 
@@ -814,11 +1347,13 @@
 
                 </div>
 
+
                 <i
                     class="bi bi-people-fill text-success fs-4"
                 ></i>
 
             </div>
+
 
             <div class="table-responsive">
 
@@ -851,6 +1386,7 @@
 
                     </thead>
 
+
                     <tbody id="tbodySantri">
 
                         <tr>
@@ -878,6 +1414,7 @@
 
 </div>
 
+
 <!-- =====================================================
      BOTTOM NAVIGATION
 ====================================================== -->
@@ -886,7 +1423,6 @@
 
     <div class="ck-bottom-inner">
 
-        <!-- BERANDA -->
 
         <a href="index.html">
 
@@ -898,7 +1434,6 @@
 
         </a>
 
-        <!-- SANTRI -->
 
         <a
             href="santri.html"
@@ -914,7 +1449,6 @@
 
         </a>
 
-        <!-- PEMBAYARAN -->
 
         <a href="pembayaran.html">
 
@@ -926,7 +1460,6 @@
 
         </a>
 
-        <!-- PENGELUARAN -->
 
         <a href="pengeluaran.html">
 
@@ -938,7 +1471,6 @@
 
         </a>
 
-        <!-- LAPORAN -->
 
         <a href="laporan.html">
 
@@ -954,6 +1486,7 @@
 
 </div>
 
+
 <!-- =====================================================
      SCRIPT DATA SANTRI
 ====================================================== -->
@@ -964,6 +1497,7 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
+
         /* =================================================
            NAMA PONDOK
         ================================================== */
@@ -973,6 +1507,7 @@ document.addEventListener(
                 "namaPondokHeader"
             );
 
+
         try {
 
             const pengaturan =
@@ -981,6 +1516,7 @@ document.addEventListener(
                         "pengaturanAplikasi"
                     )
                 ) || {};
+
 
             if (
                 namaHeader &&
@@ -1011,8 +1547,10 @@ document.addEventListener(
                 "logoPreviewV2"
             );
 
+
         const logoDefault =
             "assets/logo-catatan-kas.jpg";
+
 
         if (logo) {
 
@@ -1021,12 +1559,14 @@ document.addEventListener(
                     "logoDashboard"
                 );
 
+
             if (savedLogo) {
 
                 logo.src =
                     savedLogo;
 
             }
+
 
             logo.onerror =
                 function () {
@@ -1059,6 +1599,7 @@ document.addEventListener(
                 "btnSimpanSantri"
             );
 
+
         if (tombol) {
 
             tombol.addEventListener(
@@ -1087,7 +1628,10 @@ function ambilSantri() {
                 )
             );
 
-        if (Array.isArray(data)) {
+
+        if (
+            Array.isArray(data)
+        ) {
 
             return data;
 
@@ -1101,6 +1645,7 @@ function ambilSantri() {
         );
 
     }
+
 
     return [];
 
@@ -1121,6 +1666,7 @@ function simpanSantri() {
             .value
             .trim();
 
+
     const kelas =
         document
             .getElementById(
@@ -1128,6 +1674,7 @@ function simpanSantri() {
             )
             .value
             .trim();
+
 
     const hp =
         document
@@ -1137,8 +1684,6 @@ function simpanSantri() {
             .value
             .trim();
 
-
-    /* VALIDASI */
 
     if (!nama) {
 
@@ -1174,13 +1719,9 @@ function simpanSantri() {
     }
 
 
-    /* AMBIL DATA LAMA */
-
     const daftar =
         ambilSantri();
 
-
-    /* CEK NAMA DUPLIKAT */
 
     const sudahAda =
         daftar.some(
@@ -1211,8 +1752,6 @@ function simpanSantri() {
     }
 
 
-    /* DATA BARU */
-
     const santriBaru = {
 
         id:
@@ -1235,8 +1774,6 @@ function simpanSantri() {
     );
 
 
-    /* SIMPAN */
-
     localStorage.setItem(
         "daftarSantri",
         JSON.stringify(
@@ -1245,13 +1782,12 @@ function simpanSantri() {
     );
 
 
-    /* RESET FORM */
-
     document
         .getElementById(
             "namaSantri"
         )
         .value = "";
+
 
     document
         .getElementById(
@@ -1259,14 +1795,13 @@ function simpanSantri() {
         )
         .value = "";
 
+
     document
         .getElementById(
             "hpSantri"
         )
         .value = "";
 
-
-    /* UPDATE */
 
     tampilkanSantri();
 
@@ -1289,36 +1824,36 @@ function tampilkanSantri() {
             "tbodySantri"
         );
 
+
     const jumlah =
         document.getElementById(
             "jumlahSantri"
         );
 
-    if (!tbody) return;
+
+    if (!tbody) {
+
+        return;
+
+    }
 
 
     const daftar =
         ambilSantri();
 
 
-    /* JUMLAH */
-
     if (jumlah) {
 
         jumlah.textContent =
             daftar.length +
-            (
-                daftar.length === 1
-                    ? " santri"
-                    : " santri"
-            );
+            " santri";
 
     }
 
 
-    /* KOSONG */
-
-    if (daftar.length === 0) {
+    if (
+        daftar.length === 0
+    ) {
 
         tbody.innerHTML = `
 
@@ -1329,9 +1864,13 @@ function tampilkanSantri() {
                     class="text-center text-muted empty-santri"
                 >
 
-                    <i class="bi bi-people d-block mb-2"></i>
+                    <i
+                        class="bi bi-people d-block mb-2"
+                    ></i>
 
-                    <strong>Belum ada data santri</strong>
+                    <strong>
+                        Belum ada data santri
+                    </strong>
 
                     <br>
 
@@ -1350,23 +1889,23 @@ function tampilkanSantri() {
     }
 
 
-    /* ISI TABEL */
-
     tbody.innerHTML = "";
 
 
     daftar.forEach(
-        function (item, index) {
+        function (item,index) {
 
             const nama =
                 escapeHtml(
                     item.nama || "-"
                 );
 
+
             const kelas =
                 escapeHtml(
                     item.kelas || "-"
                 );
+
 
             const hp =
                 escapeHtml(
@@ -1394,13 +1933,18 @@ function tampilkanSantri() {
 
                     ${
                         hp
-                        ? `
-                            <small class="text-muted">
-                                <i class="bi bi-telephone"></i>
-                                ${hp}
-                            </small>
-                          `
-                        : ""
+                        ?
+                        `
+                        <small class="text-muted">
+
+                            <i class="bi bi-telephone"></i>
+
+                            ${hp}
+
+                        </small>
+                        `
+                        :
+                        ""
                     }
 
                 </td>
@@ -1425,6 +1969,7 @@ function tampilkanSantri() {
                         <i class="bi bi-pencil"></i>
 
                     </button>
+
 
                     <button
                         type="button"
@@ -1460,6 +2005,7 @@ function editSantri(index) {
 
     const daftar =
         ambilSantri();
+
 
     if (
         !daftar[index]
@@ -1555,8 +2101,10 @@ function editSantri(index) {
     data.nama =
         nama;
 
+
     data.kelas =
         kelas;
+
 
     data.hp =
         hpBaru.trim();
@@ -1654,22 +2202,27 @@ function hapusSantri(index) {
 function escapeHtml(value) {
 
     return String(value)
+
         .replace(
             /&/g,
             "&amp;"
         )
+
         .replace(
             /</g,
             "&lt;"
         )
+
         .replace(
             />/g,
             "&gt;"
         )
+
         .replace(
             /"/g,
             "&quot;"
         )
+
         .replace(
             /'/g,
             "&#039;"
@@ -1682,10 +2235,11 @@ function escapeHtml(value) {
 
 <!-- =====================================================
      THEME GLOBAL
-     Mode gelap dibaca dari Pengaturan
 ====================================================== -->
 
-<script src="js/theme.js"></script>
+<script
+    src="js/theme.js"
+></script>
 
 
 <!-- =====================================================
@@ -1697,4 +2251,5 @@ function escapeHtml(value) {
 ></script>
 
 </body>
+
 </html>
