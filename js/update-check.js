@@ -80,11 +80,6 @@
 
     /* =================================================
        URL APK
-       
-       Contoh:
-       
-       v2.3
-       Keuangan-v2.3.apk
     ================================================= */
 
     function getApkDownloadUrl(version) {
@@ -127,7 +122,7 @@
 
 
     /* =================================================
-       TAMPILKAN NOTIFIKASI
+       NOTIFIKASI UPDATE
     ================================================= */
 
     function showUpdateNotification(data) {
@@ -143,9 +138,7 @@
 
 
         const apkUrl =
-            getApkDownloadUrl(
-                data.version
-            );
+            getApkDownloadUrl(data.version);
 
 
         if (!apkUrl) {
@@ -322,17 +315,19 @@
         );
 
 
+        /* =================================================
+           TOMBOL
+        ================================================= */
+
         const closeButton =
             document.getElementById(
                 "closeUpdateNotification"
             );
 
-
         const laterButton =
             document.getElementById(
                 "updateLaterButton"
             );
-
 
         const nowButton =
             document.getElementById(
@@ -341,7 +336,7 @@
 
 
         /* =================================================
-           TUTUP
+           TUTUP NOTIFIKASI
         ================================================= */
 
         function closeNotification() {
@@ -389,7 +384,11 @@
                 function () {
 
                     console.log(
-                        "Update dimulai..."
+                        "================================"
+                    );
+
+                    console.log(
+                        "UPDATE DIMULAI"
                     );
 
                     console.log(
@@ -409,7 +408,6 @@
                     nowButton.style.opacity =
                         "0.7";
 
-
                     nowButton.innerHTML = `
 
                         <i class="
@@ -420,23 +418,16 @@
                         Mengunduh...
 
                     `;
-                    console.log("UPDATE CHECK AKTIF");
-                    console.log("APP VERSION:", window.APP_VERSION);
-                    console.log("VERSION URL:", VERSION_URL);
 
-                    /*
-                     * =================================================
-                     * APK ANDROID
-                     *
-                     * Jika MainActivity sudah menyediakan
-                     * AndroidDownload, gunakan native downloader.
-                     * =================================================
-                     */
+
+                    /* =================================
+                       ANDROID NATIVE DOWNLOAD
+                    ================================= */
 
                     if (
                         window.AndroidDownload &&
-                        typeof window.AndroidDownload
-                            .downloadApk === "function"
+                        typeof window.AndroidDownload.downloadApk ===
+                            "function"
                     ) {
 
                         try {
@@ -462,39 +453,27 @@
                     }
 
 
-                    /*
-                     * =================================================
-                     * FALLBACK WEBVIEW
-                     * =================================================
-                     */
+                    /* =================================
+                       FALLBACK BROWSER
+                    ================================= */
 
-                    setTimeout(function () {
+                    setTimeout(
+                        function () {
 
-    // ==========================================
-    // JIKA DI DALAM APK ANDROID
-    // ==========================================
+                            window.location.href =
+                                apkUrl;
 
-    if (
-        window.AndroidDownload &&
-        typeof window.AndroidDownload.downloadApk === "function"
-    ) {
+                        },
+                        300
+                    );
 
-        window.AndroidDownload.downloadApk(
-            apkUrl,
-            cleanVersion(data.version)
-        );
+                }
+            );
 
-        return;
+        }
+
     }
 
-
-    // ==========================================
-    // JIKA DIBUKA DI BROWSER
-    // ==========================================
-
-    window.location.href = apkUrl;
-
-}, 300);
 
     /* =================================================
        SUDAH TERBARU
@@ -526,6 +505,11 @@
                 "Memeriksa update..."
             );
 
+            console.log(
+                "Versi aplikasi:",
+                CURRENT_VERSION
+            );
+
 
             const response =
                 await fetch(
@@ -541,7 +525,8 @@
             if (!response.ok) {
 
                 throw new Error(
-                    "Gagal mengambil version.json"
+                    "Gagal mengambil version.json. HTTP " +
+                    response.status
                 );
 
             }
@@ -558,16 +543,10 @@
             if (!latestVersion) {
 
                 throw new Error(
-                    "Versi pada version.json tidak ditemukan"
+                    "Versi pada version.json tidak ditemukan."
                 );
 
             }
-
-
-            console.log(
-                "Versi aplikasi:",
-                CURRENT_VERSION
-            );
 
 
             console.log(
@@ -584,12 +563,21 @@
             );
 
 
+            /* =========================================
+               VERSI BARU
+            ========================================= */
+
             if (
                 isNewerVersion(
                     latestVersion,
                     CURRENT_VERSION
                 )
             ) {
+
+                console.log(
+                    "UPDATE TERSEDIA!"
+                );
+
 
                 showUpdateNotification(
                     data
@@ -612,6 +600,15 @@
                 };
 
             }
+
+
+            /* =========================================
+               SUDAH TERBARU
+            ========================================= */
+
+            console.log(
+                "Aplikasi sudah terbaru."
+            );
 
 
             if (showLatest) {
@@ -678,7 +675,13 @@
 
 
         if (!button) {
+
+            console.log(
+                "Tombol cek update tidak ditemukan."
+            );
+
             return;
+
         }
 
 
@@ -723,12 +726,30 @@
 
 
     /* =================================================
-       JALANKAN
+       JALANKAN OTOMATIS
     ================================================= */
 
     document.addEventListener(
         "DOMContentLoaded",
         function () {
+
+            console.log(
+                "================================"
+            );
+
+            console.log(
+                "CATATAN KAS UPDATE SYSTEM"
+            );
+
+            console.log(
+                "Versi aplikasi:",
+                CURRENT_VERSION
+            );
+
+            console.log(
+                "================================"
+            );
+
 
             setupUpdateButton();
 
@@ -770,5 +791,6 @@
             }
 
     };
+
 
 })();
