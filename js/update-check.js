@@ -466,23 +466,33 @@
                      * =================================================
                      */
 
-                    setTimeout(
-                        function () {
+                    setTimeout(function () {
 
-                            window.location.href =
-                                apkUrl;
+    // ==========================================
+    // JIKA DI DALAM APK ANDROID
+    // ==========================================
 
-                        },
-                        300
-                    );
+    if (
+        window.AndroidDownload &&
+        typeof window.AndroidDownload.downloadApk === "function"
+    ) {
 
-                }
-            );
+        window.AndroidDownload.downloadApk(
+            apkUrl,
+            cleanVersion(data.version)
+        );
 
-        }
-
+        return;
     }
 
+
+    // ==========================================
+    // JIKA DIBUKA DI BROWSER
+    // ==========================================
+
+    window.location.href = apkUrl;
+
+}, 300);
 
     /* =================================================
        SUDAH TERBARU
