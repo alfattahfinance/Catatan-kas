@@ -3,33 +3,72 @@
 
 <head>
     <meta charset="UTF-8">
+
+    <!-- =====================================================
+         THEME PRE-LOAD
+         Dibuat sama dengan sistem halaman lainnya
+    ====================================================== -->
     <script>
-    (function () {
-        try {
-            const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
-            const tema = data.tema || "light";
-            let dark = false;
+        (function () {
+            try {
+                const data =
+                    JSON.parse(
+                        localStorage.getItem("pengaturanAplikasi")
+                    ) || {};
 
-            if (tema === "dark") {
-                dark = true;
-            } else if (tema === "system") {
-                dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                const tema = data.tema || "light";
+
+                let dark = false;
+
+                if (tema === "dark") {
+                    dark = true;
+                }
+
+                if (tema === "system") {
+                    dark =
+                        window.matchMedia(
+                            "(prefers-color-scheme: dark)"
+                        ).matches;
+                }
+
+                if (dark) {
+                    document.documentElement.classList.add("dark-mode");
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "dark"
+                    );
+                } else {
+                    document.documentElement.classList.remove("dark-mode");
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "light"
+                    );
+                }
+
+            } catch (error) {
+                console.warn(
+                    "Gagal memuat tema:",
+                    error
+                );
             }
+        })();
+    </script>
 
-            if (dark) {
-                document.documentElement.classList.add("dark-mode");
-                document.documentElement.setAttribute("data-theme", "dark");
-            }
-        } catch (error) {
-            console.warn("Gagal memuat tema:", error);
-        }
-    })();
-</script>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#198754">
-    <meta name="description" content="Laporan Keuangan - Catatan Kas Ribath Madrasah Al-Fattah">
-    
+    <meta
+        name="theme-color"
+        content="#198754"
+    >
+
+    <meta
+        name="description"
+        content="Laporan Keuangan - Catatan Kas"
+    >
+
     <title>Laporan Keuangan | Catatan Kas</title>
 
     <!-- =====================================================
@@ -51,10 +90,22 @@
     <!-- =====================================================
          CSS APLIKASI
     ====================================================== -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/theme.css">
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
 
     <style>
+
+        /* =====================================================
+           GLOBAL
+        ====================================================== */
+
         * {
             box-sizing: border-box;
         }
@@ -66,8 +117,14 @@
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
             color: #212529;
+
             padding-bottom: 100px;
 
             background:
@@ -78,10 +135,17 @@
                 );
 
             background-size: 200% 200%;
-            animation: gradientShift 15s ease infinite;
+
+            animation:
+                gradientShift 15s ease infinite;
+
+            transition:
+                background .25s ease,
+                color .25s ease;
         }
 
         @keyframes gradientShift {
+
             0% {
                 background-position: 0% 50%;
             }
@@ -93,28 +157,37 @@
             100% {
                 background-position: 0% 50%;
             }
+
         }
+
 
         /* =====================================================
            CONTAINER
         ====================================================== */
 
         .mobile-container {
+
             width: 100% !important;
+
             max-width: 100% !important;
+
             margin: 0 auto;
 
             padding-left: 20px !important;
             padding-right: 20px !important;
+
             padding-bottom: 120px !important;
         }
+
 
         /* =====================================================
            CARD
         ====================================================== */
 
         .custom-card {
+
             border: none;
+
             border-radius: 18px;
 
             box-shadow:
@@ -124,16 +197,27 @@
                 rgba(255, 255, 255, .92);
 
             backdrop-filter: blur(8px);
+
             -webkit-backdrop-filter: blur(8px);
+
+            transition:
+                background .25s ease,
+                color .25s ease,
+                border-color .25s ease,
+                box-shadow .25s ease;
         }
+
 
         /* =====================================================
            HEADER
         ====================================================== */
 
         .ck-topbar {
+
             display: flex;
+
             align-items: center;
+
             gap: 14px;
 
             background:
@@ -142,15 +226,23 @@
             border-radius: 18px;
 
             padding: 14px;
+
             margin-bottom: 20px;
 
             box-shadow:
                 0 4px 14px rgba(0, 0, 0, .05);
+
+            transition:
+                background .25s ease,
+                color .25s ease;
         }
 
+
         .ck-logo {
+
             width: 56px;
             height: 56px;
+
             min-width: 56px;
 
             object-fit: contain;
@@ -160,9 +252,15 @@
             background: #fff;
 
             border: 1px solid #eee;
+
+            transition:
+                background .25s ease,
+                border-color .25s ease;
         }
 
+
         .ck-title {
+
             margin: 0;
 
             color: #198754;
@@ -172,16 +270,21 @@
             font-size: 1.1rem;
         }
 
+
         .ck-subtitle {
+
             color: #6c757d;
+
             font-size: .8rem;
         }
+
 
         /* =====================================================
            BACK BUTTON
         ====================================================== */
 
         .ck-back {
+
             display: inline-flex;
 
             align-items: center;
@@ -197,23 +300,31 @@
             margin-bottom: 12px;
         }
 
+
         .ck-back:hover {
+
             color: #146c43;
+
         }
+
 
         /* =====================================================
            JUDUL
         ====================================================== */
 
         .page-heading {
+
             color: #198754;
+
         }
+
 
         /* =====================================================
            SUMMARY CARD
         ====================================================== */
 
         .summary-card {
+
             height: 100%;
 
             transition:
@@ -221,14 +332,19 @@
                 box-shadow .2s ease;
         }
 
+
         .summary-card:hover {
-            transform: translateY(-2px);
+
+            transform:
+                translateY(-2px);
 
             box-shadow:
                 0 8px 20px rgba(0, 0, 0, .08);
         }
 
+
         .summary-icon {
+
             width: 48px;
             height: 48px;
 
@@ -249,24 +365,30 @@
             flex-shrink: 0;
         }
 
+
         .summary-icon.danger {
+
             background:
                 rgba(220, 53, 69, .10);
 
             color: #dc3545;
         }
 
+
         .summary-value {
+
             font-weight: 800;
 
             word-break: break-word;
         }
+
 
         /* =====================================================
            FILTER
         ====================================================== */
 
         .form-select {
+
             min-height: 48px;
 
             border-radius: 12px;
@@ -275,9 +397,16 @@
                 1px solid rgba(0, 0, 0, .10);
 
             box-shadow: none;
+
+            transition:
+                background .25s ease,
+                color .25s ease,
+                border-color .25s ease;
         }
 
+
         .form-select:focus {
+
             border-color: #198754;
 
             box-shadow:
@@ -285,44 +414,65 @@
                 rgba(25, 135, 84, .12);
         }
 
+
         /* =====================================================
            TABLE
         ====================================================== */
 
         .table-responsive {
+
             border-radius: 12px;
+
         }
 
+
         .table {
+
             margin-bottom: 0;
+
         }
+
 
         .table th,
         .table td {
+
             vertical-align: middle;
+
         }
+
 
         .table thead th {
+
             white-space: nowrap;
+
         }
 
+
         .badge-jenis {
+
             font-size: .72rem;
+
             border-radius: 20px;
+
             padding: 6px 9px;
         }
+
 
         /* =====================================================
            EMPTY STATE
         ====================================================== */
 
         .empty-state {
-            padding: 35px 15px !important;
+
+            padding:
+                35px 15px !important;
 
             color: #6c757d;
         }
 
+
         .empty-state i {
+
             font-size: 2.5rem;
 
             color: #198754;
@@ -334,11 +484,13 @@
             margin-bottom: 10px;
         }
 
+
         /* =====================================================
            BOTTOM NAVIGATION
         ====================================================== */
 
         .ck-bottom {
+
             position: fixed;
 
             left: 0;
@@ -359,11 +511,19 @@
             padding: 6px 8px;
 
             backdrop-filter: blur(8px);
+
             -webkit-backdrop-filter: blur(8px);
+
+            transition:
+                background .25s ease,
+                border-color .25s ease;
         }
 
+
         .ck-bottom-inner {
+
             width: 100% !important;
+
             max-width: 100% !important;
 
             margin: 0 auto;
@@ -376,7 +536,9 @@
             gap: 4px;
         }
 
+
         .ck-bottom a {
+
             text-decoration: none !important;
 
             color: #6c757d;
@@ -400,48 +562,70 @@
             transition: .2s ease;
         }
 
+
         .ck-bottom a i {
+
             font-size: 1.15rem;
+
         }
 
+
         .ck-bottom a:hover {
+
             color: #198754;
 
             background:
                 rgba(25, 135, 84, .08);
         }
 
+
         .ck-bottom a.active {
+
             color: #198754 !important;
 
             font-weight: 800;
         }
+
 
         /* =====================================================
            ANIMASI ANGKA
         ====================================================== */
 
         .animasi-angka {
+
             animation:
                 angkaTurun .55s ease-out;
         }
 
+
         @keyframes angkaTurun {
+
             0% {
+
                 opacity: 0;
-                transform: translateY(-20px);
+
+                transform:
+                    translateY(-20px);
             }
 
             60% {
+
                 opacity: 1;
-                transform: translateY(4px);
+
+                transform:
+                    translateY(4px);
             }
 
             100% {
+
                 opacity: 1;
-                transform: translateY(0);
+
+                transform:
+                    translateY(0);
             }
+
         }
+
 
         /* =====================================================
            TABLET
@@ -450,66 +634,108 @@
         @media (min-width: 768px) {
 
             .mobile-container {
-                padding-left: 35px !important;
-                padding-right: 35px !important;
+
+                padding-left:
+                    35px !important;
+
+                padding-right:
+                    35px !important;
             }
 
+
             .ck-topbar {
+
                 padding: 20px;
+
                 border-radius: 20px;
             }
 
+
             .ck-logo {
+
                 width: 72px;
                 height: 72px;
+
                 min-width: 72px;
+
                 border-radius: 16px;
             }
 
+
             .ck-title {
+
                 font-size: 1.35rem;
+
             }
+
 
             .ck-subtitle {
+
                 font-size: 1rem;
+
             }
+
 
             .custom-card {
+
                 border-radius: 20px;
+
             }
+
 
             .custom-card .card-body {
-                padding: 25px !important;
+
+                padding:
+                    25px !important;
             }
+
 
             .summary-value {
+
                 font-size: 1.35rem;
+
             }
+
 
             .form-select {
+
                 min-height: 52px;
+
                 font-size: 1rem;
             }
+
 
             .table {
+
                 font-size: 1rem;
+
             }
 
+
             .ck-bottom {
+
                 padding:
                     8px 25px;
             }
 
+
             .ck-bottom a {
+
                 font-size: .8rem;
+
                 padding:
                     8px 4px;
             }
 
+
             .ck-bottom a i {
+
                 font-size: 1.35rem;
+
             }
+
         }
+
 
         /* =====================================================
            LAYAR BESAR
@@ -518,32 +744,53 @@
         @media (min-width: 992px) {
 
             .mobile-container {
-                padding-left: 50px !important;
-                padding-right: 50px !important;
+
+                padding-left:
+                    50px !important;
+
+                padding-right:
+                    50px !important;
             }
+
 
             .ck-topbar {
+
                 padding: 24px;
+
             }
 
+
             .ck-logo {
+
                 width: 82px;
                 height: 82px;
+
                 min-width: 82px;
             }
 
+
             .ck-title {
+
                 font-size: 1.5rem;
+
             }
+
 
             .ck-subtitle {
+
                 font-size: 1.05rem;
+
             }
 
+
             .custom-card .card-body {
-                padding: 30px !important;
+
+                padding:
+                    30px !important;
             }
+
         }
+
 
         /* =====================================================
            MOBILE KECIL
@@ -552,111 +799,468 @@
         @media (max-width: 380px) {
 
             .mobile-container {
-                padding-left: 10px !important;
-                padding-right: 10px !important;
+
+                padding-left:
+                    10px !important;
+
+                padding-right:
+                    10px !important;
             }
 
+
             .ck-topbar {
+
                 padding: 12px;
+
                 gap: 10px;
             }
 
+
             .ck-logo {
+
                 width: 50px;
                 height: 50px;
+
                 min-width: 50px;
             }
 
+
             .ck-title {
+
                 font-size: 1rem;
+
             }
+
 
             .ck-subtitle {
+
                 font-size: .74rem;
+
             }
+
 
             .ck-bottom a {
+
                 font-size: .62rem;
+
             }
+
 
             .ck-bottom a i {
+
                 font-size: 1.05rem;
+
             }
 
+
             .summary-icon {
+
                 width: 40px;
                 height: 40px;
+
                 font-size: 1.1rem;
             }
 
+
             .summary-value {
+
                 font-size: 1.05rem;
+
             }
+
         }
+
 
         /* =====================================================
            DARK MODE
+           SAMA DENGAN SISTEM INDEX / HALAMAN LAIN
+           
+           Bisa membaca:
+           1. html.dark-mode
+           2. html[data-theme="dark"]
+           3. body.dark-mode
         ====================================================== */
 
+        html.dark-mode body,
+        html[data-theme="dark"] body,
         body.dark-mode {
-            background: #121212 !important;
 
-            animation: none !important;
+            background:
+                #121212 !important;
 
-            color: #ffffff !important;
+            animation:
+                none !important;
+
+            color:
+                #f1f1f1 !important;
         }
 
+
+        /* CARD */
+
+        html.dark-mode .custom-card,
+        html[data-theme="dark"] .custom-card,
         body.dark-mode .custom-card,
-        body.dark-mode .card,
-        body.dark-mode .ck-topbar,
-        body.dark-mode .ck-bottom {
-            background: #1e1e1e !important;
 
-            color: #eee !important;
+        html.dark-mode .card,
+        html[data-theme="dark"] .card,
+        body.dark-mode .card {
 
-            border-color: #333 !important;
+            background:
+                #1e1e1e !important;
+
+            color:
+                #f1f1f1 !important;
+
+            border-color:
+                #333 !important;
+
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, .35);
         }
 
+
+        /* HEADER */
+
+        html.dark-mode .ck-topbar,
+        html[data-theme="dark"] .ck-topbar,
+        body.dark-mode .ck-topbar {
+
+            background:
+                #1e1e1e !important;
+
+            color:
+                #f1f1f1 !important;
+
+            border-color:
+                #333 !important;
+
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, .35);
+        }
+
+
+        /* LOGO */
+
+        html.dark-mode .ck-logo,
+        html[data-theme="dark"] .ck-logo,
+        body.dark-mode .ck-logo {
+
+            background:
+                #242424 !important;
+
+            border-color:
+                #444 !important;
+        }
+
+
+        /* JUDUL */
+
+        html.dark-mode .ck-title,
+        html[data-theme="dark"] .ck-title,
         body.dark-mode .ck-title,
+
+        html.dark-mode .page-heading,
+        html[data-theme="dark"] .page-heading,
         body.dark-mode .page-heading {
-            color: #5dd39e !important;
+
+            color:
+                #5dd39e !important;
         }
 
+
+        /* SUBTITLE */
+
+        html.dark-mode .ck-subtitle,
+        html[data-theme="dark"] .ck-subtitle,
         body.dark-mode .ck-subtitle,
+
+        html.dark-mode .text-muted,
+        html[data-theme="dark"] .text-muted,
         body.dark-mode .text-muted {
-            color: #aaa !important;
+
+            color:
+                #adb5bd !important;
         }
 
+
+        /* BACK */
+
+        html.dark-mode .ck-back,
+        html[data-theme="dark"] .ck-back,
+        body.dark-mode .ck-back {
+
+            color:
+                #5dd39e !important;
+        }
+
+
+        html.dark-mode .ck-back:hover,
+        html[data-theme="dark"] .ck-back:hover,
+        body.dark-mode .ck-back:hover {
+
+            color:
+                #7ae0b0 !important;
+        }
+
+
+        /* FORM SELECT */
+
+        html.dark-mode .form-select,
+        html[data-theme="dark"] .form-select,
         body.dark-mode .form-select {
-            background: #2a2a2a !important;
 
-            color: #fff !important;
+            background-color:
+                #242424 !important;
 
-            border-color: #444 !important;
+            color:
+                #ffffff !important;
+
+            border-color:
+                #444 !important;
         }
 
+
+        html.dark-mode .form-select:focus,
+        html[data-theme="dark"] .form-select:focus,
+        body.dark-mode .form-select:focus {
+
+            border-color:
+                #5dd39e !important;
+
+            box-shadow:
+                0 0 0 .2rem
+                rgba(93, 211, 158, .15) !important;
+        }
+
+
+        /* OPTION */
+
+        html.dark-mode .form-select option,
+        html[data-theme="dark"] .form-select option,
+        body.dark-mode .form-select option {
+
+            background:
+                #242424 !important;
+
+            color:
+                #ffffff !important;
+        }
+
+
+        /* TABLE */
+
+        html.dark-mode .table,
+        html[data-theme="dark"] .table,
         body.dark-mode .table {
-            color: #eee !important;
+
+            color:
+                #eeeeee !important;
+
+            --bs-table-color:
+                #eeeeee;
+
+            --bs-table-bg:
+                transparent;
         }
 
+
+        html.dark-mode .table > :not(caption) > * > *,
+        html[data-theme="dark"] .table > :not(caption) > * > *,
+        body.dark-mode .table > :not(caption) > * > * {
+
+            background-color:
+                transparent !important;
+
+            color:
+                #eeeeee !important;
+
+            border-color:
+                #444 !important;
+        }
+
+
+        /* TABLE HEADER */
+
+        html.dark-mode .table-success,
+        html[data-theme="dark"] .table-success,
         body.dark-mode .table-success {
-            --bs-table-bg: #173c2b;
-            --bs-table-color: #fff;
+
+            --bs-table-bg:
+                #173c2b !important;
+
+            --bs-table-color:
+                #ffffff !important;
+
+            background-color:
+                #173c2b !important;
+
+            color:
+                #ffffff !important;
         }
 
+
+        /* TABLE STRIPED */
+
+        html.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > *,
+        html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > *,
         body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * {
-            --bs-table-bg-type: rgba(255, 255, 255, .03);
+
+            --bs-table-bg-type:
+                rgba(255, 255, 255, .035);
         }
 
-        body.dark-mode .riwayat-empty {
-            color: #aaa !important;
+
+        /* TABLE HOVER */
+
+        html.dark-mode .table-hover > tbody > tr:hover > *,
+        html[data-theme="dark"] .table-hover > tbody > tr:hover > *,
+        body.dark-mode .table-hover > tbody > tr:hover > * {
+
+            --bs-table-bg-state:
+                rgba(255, 255, 255, .06);
         }
+
+
+        /* EMPTY STATE */
+
+        html.dark-mode .empty-state,
+        html[data-theme="dark"] .empty-state,
+        body.dark-mode .empty-state {
+
+            color:
+                #adb5bd !important;
+        }
+
+
+        html.dark-mode .riwayat-empty,
+        html[data-theme="dark"] .riwayat-empty,
+        body.dark-mode .riwayat-empty {
+
+            color:
+                #adb5bd !important;
+        }
+
+
+        /* SUMMARY ICON */
+
+        html.dark-mode .summary-icon,
+        html[data-theme="dark"] .summary-icon,
+        body.dark-mode .summary-icon {
+
+            background:
+                rgba(93, 211, 158, .12) !important;
+
+            color:
+                #5dd39e !important;
+        }
+
+
+        /* BOTTOM NAV */
+
+        html.dark-mode .ck-bottom,
+        html[data-theme="dark"] .ck-bottom,
+        body.dark-mode .ck-bottom {
+
+            background:
+                rgba(30, 30, 30, .97) !important;
+
+            border-top:
+                1px solid #333 !important;
+
+            box-shadow:
+                0 -4px 15px rgba(0, 0, 0, .4);
+        }
+
+
+        html.dark-mode .ck-bottom a,
+        html[data-theme="dark"] .ck-bottom a,
+        body.dark-mode .ck-bottom a {
+
+            color:
+                #adb5bd !important;
+        }
+
+
+        html.dark-mode .ck-bottom a:hover,
+        html[data-theme="dark"] .ck-bottom a:hover,
+        body.dark-mode .ck-bottom a:hover {
+
+            color:
+                #5dd39e !important;
+
+            background:
+                rgba(93, 211, 158, .08) !important;
+        }
+
+
+        html.dark-mode .ck-bottom a.active,
+        html[data-theme="dark"] .ck-bottom a.active,
+        body.dark-mode .ck-bottom a.active {
+
+            color:
+                #5dd39e !important;
+        }
+
+
+        /* BOOTSTRAP TEXT SUCCESS */
+
+        html.dark-mode .text-success,
+        html[data-theme="dark"] .text-success,
+        body.dark-mode .text-success {
+
+            color:
+                #5dd39e !important;
+        }
+
+
+        /* BOOTSTRAP TEXT DANGER */
+
+        html.dark-mode .text-danger,
+        html[data-theme="dark"] .text-danger,
+        body.dark-mode .text-danger {
+
+            color:
+                #ff7180 !important;
+        }
+
+
+        /* FILTER HEADING ICON */
+
+        html.dark-mode .text-success.bi,
+        html[data-theme="dark"] .text-success.bi,
+        body.dark-mode .text-success.bi {
+
+            color:
+                #5dd39e !important;
+        }
+
+
+        /* =====================================================
+           TRANSISI MODE
+        ====================================================== */
+
+        html.dark-mode body,
+        html[data-theme="dark"] body,
+        body.dark-mode {
+
+            transition:
+                background .25s ease,
+                color .25s ease;
+        }
+
     </style>
+
 </head>
 
 <body>
 
+<!-- =====================================================
+     CONTAINER UTAMA
+====================================================== -->
+
 <div class="container-fluid mobile-container py-4">
+
 
     <!-- =====================================================
          HEADER
@@ -672,6 +1276,7 @@
         >
 
         <div>
+
             <p class="ck-title">
                 Catatan Kas
             </p>
@@ -682,6 +1287,7 @@
             >
                 Madrasah Al-Fattah
             </span>
+
         </div>
 
     </div>
@@ -693,7 +1299,10 @@
 
     <div class="py-2">
 
-        <!-- JUDUL -->
+
+        <!-- =================================================
+             JUDUL
+        ================================================== -->
 
         <div class="mb-4">
 
@@ -701,9 +1310,13 @@
                 href="index.html"
                 class="ck-back"
             >
+
                 <i class="bi bi-arrow-left"></i>
+
                 Kembali ke Dashboard
+
             </a>
+
 
             <h2 class="page-heading fw-bold mb-1">
 
@@ -713,11 +1326,14 @@
 
             </h2>
 
+
             <p
                 class="text-muted mb-0"
                 id="subJudulHeader"
             >
-                Rekap keuangan Ribath Madrasah Al-Fattah
+
+                Rekap keuangan Madrasah Al-Fattah
+
             </p>
 
         </div>
@@ -729,6 +1345,7 @@
 
         <div class="row g-3 mb-4">
 
+
             <!-- TOTAL SALDO -->
 
             <div class="col-12">
@@ -737,25 +1354,39 @@
 
                     <div class="card-body">
 
-                        <div class="d-flex align-items-center">
+                        <div
+                            class="d-flex align-items-center"
+                        >
 
-                            <div class="summary-icon me-3">
+                            <div
+                                class="summary-icon me-3"
+                            >
 
-                                <i class="bi bi-wallet2"></i>
+                                <i
+                                    class="bi bi-wallet2"
+                                ></i>
 
                             </div>
 
-                            <div class="flex-grow-1">
+
+                            <div
+                                class="flex-grow-1"
+                            >
 
                                 <div class="text-muted">
+
                                     Total Saldo
+
                                 </div>
+
 
                                 <h2
                                     class="text-success summary-value mb-0"
                                     id="totalSaldo"
                                 >
+
                                     Rp 0
+
                                 </h2>
 
                             </div>
@@ -777,19 +1408,26 @@
 
                     <div class="card-body">
 
-                        <div class="text-muted mb-2 small">
+                        <div
+                            class="text-muted mb-2 small"
+                        >
 
-                            <i class="bi bi-calendar-day"></i>
+                            <i
+                                class="bi bi-calendar-day"
+                            ></i>
 
                             Pemasukan Hari Ini
 
                         </div>
 
+
                         <h4
                             class="text-success summary-value mb-0"
                             id="hariIni"
                         >
+
                             Rp 0
+
                         </h4>
 
                     </div>
@@ -805,19 +1443,26 @@
 
                     <div class="card-body">
 
-                        <div class="text-muted mb-2 small">
+                        <div
+                            class="text-muted mb-2 small"
+                        >
 
-                            <i class="bi bi-arrow-down-circle"></i>
+                            <i
+                                class="bi bi-arrow-down-circle"
+                            ></i>
 
                             Pengeluaran Hari Ini
 
                         </div>
 
+
                         <h4
                             class="text-danger summary-value mb-0"
                             id="pengeluaranHariIni"
                         >
+
                             Rp 0
+
                         </h4>
 
                     </div>
@@ -835,19 +1480,26 @@
 
                     <div class="card-body">
 
-                        <div class="text-muted mb-2 small">
+                        <div
+                            class="text-muted mb-2 small"
+                        >
 
-                            <i class="bi bi-calendar-month"></i>
+                            <i
+                                class="bi bi-calendar-month"
+                            ></i>
 
                             Pemasukan Bulan Ini
 
                         </div>
 
+
                         <h4
                             class="text-success summary-value mb-0"
                             id="bulanIni"
                         >
+
                             Rp 0
+
                         </h4>
 
                     </div>
@@ -863,19 +1515,26 @@
 
                     <div class="card-body">
 
-                        <div class="text-muted mb-2 small">
+                        <div
+                            class="text-muted mb-2 small"
+                        >
 
-                            <i class="bi bi-calendar-minus"></i>
+                            <i
+                                class="bi bi-calendar-minus"
+                            ></i>
 
                             Pengeluaran Bulan Ini
 
                         </div>
 
+
                         <h4
                             class="text-danger summary-value mb-0"
                             id="pengeluaranBulanIni"
                         >
+
                             Rp 0
+
                         </h4>
 
                     </div>
@@ -893,19 +1552,26 @@
 
                     <div class="card-body">
 
-                        <div class="text-muted mb-2 small">
+                        <div
+                            class="text-muted mb-2 small"
+                        >
 
-                            <i class="bi bi-calendar3"></i>
+                            <i
+                                class="bi bi-calendar3"
+                            ></i>
 
                             Pemasukan Tahun Ini
 
                         </div>
 
+
                         <h4
                             class="text-success summary-value mb-0"
                             id="tahunIni"
                         >
+
                             Rp 0
+
                         </h4>
 
                     </div>
@@ -921,19 +1587,26 @@
 
                     <div class="card-body">
 
-                        <div class="text-muted mb-2 small">
+                        <div
+                            class="text-muted mb-2 small"
+                        >
 
-                            <i class="bi bi-calendar-x"></i>
+                            <i
+                                class="bi bi-calendar-x"
+                            ></i>
 
                             Pengeluaran Tahun Ini
 
                         </div>
 
+
                         <h4
                             class="text-danger summary-value mb-0"
                             id="pengeluaranTahunIni"
                         >
+
                             Rp 0
+
                         </h4>
 
                     </div>
@@ -955,13 +1628,17 @@
 
                 <h5 class="fw-bold mb-3">
 
-                    <i class="bi bi-funnel text-success"></i>
+                    <i
+                        class="bi bi-funnel text-success"
+                    ></i>
 
                     Filter Laporan
 
                 </h5>
 
+
                 <div class="row g-3">
+
 
                     <!-- BULAN -->
 
@@ -971,8 +1648,11 @@
                             for="bulan"
                             class="form-label small fw-semibold"
                         >
+
                             Bulan
+
                         </label>
+
 
                         <select
                             id="bulan"
@@ -983,18 +1663,53 @@
                                 Semua Bulan
                             </option>
 
-                            <option value="0">Januari</option>
-                            <option value="1">Februari</option>
-                            <option value="2">Maret</option>
-                            <option value="3">April</option>
-                            <option value="4">Mei</option>
-                            <option value="5">Juni</option>
-                            <option value="6">Juli</option>
-                            <option value="7">Agustus</option>
-                            <option value="8">September</option>
-                            <option value="9">Oktober</option>
-                            <option value="10">November</option>
-                            <option value="11">Desember</option>
+                            <option value="0">
+                                Januari
+                            </option>
+
+                            <option value="1">
+                                Februari
+                            </option>
+
+                            <option value="2">
+                                Maret
+                            </option>
+
+                            <option value="3">
+                                April
+                            </option>
+
+                            <option value="4">
+                                Mei
+                            </option>
+
+                            <option value="5">
+                                Juni
+                            </option>
+
+                            <option value="6">
+                                Juli
+                            </option>
+
+                            <option value="7">
+                                Agustus
+                            </option>
+
+                            <option value="8">
+                                September
+                            </option>
+
+                            <option value="9">
+                                Oktober
+                            </option>
+
+                            <option value="10">
+                                November
+                            </option>
+
+                            <option value="11">
+                                Desember
+                            </option>
 
                         </select>
 
@@ -1009,8 +1724,11 @@
                             for="tahun"
                             class="form-label small fw-semibold"
                         >
+
                             Tahun
+
                         </label>
+
 
                         <select
                             id="tahun"
@@ -1034,8 +1752,11 @@
                             for="filterJenis"
                             class="form-label small fw-semibold"
                         >
+
                             Jenis Transaksi
+
                         </label>
+
 
                         <select
                             id="filterJenis"
@@ -1089,23 +1810,29 @@
 
             <div class="card-body">
 
+
                 <div
                     class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"
                 >
 
                     <h5 class="fw-bold mb-0">
 
-                        <i class="bi bi-receipt text-success"></i>
+                        <i
+                            class="bi bi-receipt text-success"
+                        ></i>
 
                         Riwayat Transaksi
 
                     </h5>
 
+
                     <span
                         id="jumlahTransaksi"
                         class="badge text-bg-success"
                     >
+
                         0 transaksi
+
                     </span>
 
                 </div>
@@ -1141,6 +1868,7 @@
 
                         </thead>
 
+
                         <tbody id="dataPembayaran">
 
                             <tr>
@@ -1149,6 +1877,7 @@
                                     colspan="4"
                                     class="text-center text-muted py-4"
                                 >
+
                                     Memuat data...
 
                                 </td>
@@ -1177,6 +1906,7 @@
 <div class="ck-bottom">
 
     <div class="ck-bottom-inner">
+
 
         <a href="index.html">
 
@@ -1236,15 +1966,18 @@
 ====================================================== -->
 
 <script>
+
 (function () {
 
     "use strict";
+
 
     /* =====================================================
        KONFIGURASI
     ====================================================== */
 
     const BULAN = [
+
         "Januari",
         "Februari",
         "Maret",
@@ -1257,6 +1990,7 @@
         "Oktober",
         "November",
         "Desember"
+
     ];
 
 
@@ -1362,7 +2096,7 @@
 
 
     /* =====================================================
-       AMBIL LOCAL STORAGE DENGAN AMAN
+       LOCAL STORAGE AMAN
     ====================================================== */
 
     function getArray(key) {
@@ -1436,6 +2170,7 @@
             item.total ??
             0;
 
+
         if (typeof nilai === "string") {
 
             nilai =
@@ -1447,8 +2182,10 @@
 
         }
 
+
         const angka =
             Number(nilai);
+
 
         return Number.isFinite(angka)
             ? angka
@@ -1459,13 +2196,6 @@
 
     /* =====================================================
        PARSE TANGGAL
-       
-       Mendukung:
-       - tanggal ISO
-       - YYYY-MM-DD
-       - DD/MM/YYYY
-       - DD-MM-YYYY
-       - toLocaleDateString Indonesia
     ====================================================== */
 
     function parseTanggal(item) {
@@ -1474,6 +2204,7 @@
             return null;
         }
 
+
         const nilai =
             item.tanggal ??
             item.date ??
@@ -1481,19 +2212,22 @@
             item.waktu ??
             null;
 
+
         if (!nilai) {
             return null;
         }
 
-        if (
-            nilai instanceof Date
-        ) {
 
-            return isNaN(nilai.getTime())
+        if (nilai instanceof Date) {
+
+            return isNaN(
+                nilai.getTime()
+            )
                 ? null
                 : nilai;
 
         }
+
 
         const teks =
             String(nilai).trim();
@@ -1506,6 +2240,7 @@
                 /^(\d{4})-(\d{1,2})-(\d{1,2})/
             );
 
+
         if (cocok) {
 
             const tanggal =
@@ -1514,6 +2249,7 @@
                     Number(cocok[2]) - 1,
                     Number(cocok[3])
                 );
+
 
             return isNaN(
                 tanggal.getTime()
@@ -1531,6 +2267,7 @@
                 /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/
             );
 
+
         if (cocok) {
 
             const tanggal =
@@ -1539,6 +2276,7 @@
                     Number(cocok[2]) - 1,
                     Number(cocok[1])
                 );
+
 
             return isNaN(
                 tanggal.getTime()
@@ -1549,16 +2287,15 @@
         }
 
 
-        /* Tanggal biasa JavaScript */
+        /* Date JavaScript */
 
         const hasil =
             new Date(teks);
 
-        if (
-            !isNaN(
-                hasil.getTime()
-            )
-        ) {
+
+        if (!isNaN(
+            hasil.getTime()
+        )) {
 
             return hasil;
 
@@ -1579,6 +2316,7 @@
         const tanggal =
             parseTanggal(item);
 
+
         if (!tanggal) {
 
             return item?.tanggal ||
@@ -1586,6 +2324,7 @@
                 "-";
 
         }
+
 
         return tanggal.toLocaleDateString(
             "id-ID",
@@ -1640,7 +2379,9 @@
         const sekarang =
             new Date();
 
+
         return {
+
             hari:
                 sekarang.getDate(),
 
@@ -1649,30 +2390,33 @@
 
             tahun:
                 sekarang.getFullYear()
+
         };
 
     }
 
 
     /* =====================================================
-       CEK PERIODE
+       CEK HARI
     ====================================================== */
 
-    function tanggalSamaHariIni(
-        item
-    ) {
+    function tanggalSamaHariIni(item) {
 
         const tanggal =
             parseTanggal(item);
+
 
         if (!tanggal) {
             return false;
         }
 
+
         const hariIni =
             tanggalHariIni();
 
+
         return (
+
             tanggal.getDate() ===
                 hariIni.hari &&
 
@@ -1681,53 +2425,68 @@
 
             tanggal.getFullYear() ===
                 hariIni.tahun
+
         );
 
     }
 
 
-    function tanggalBulanIni(
-        item
-    ) {
+    /* =====================================================
+       CEK BULAN
+    ====================================================== */
+
+    function tanggalBulanIni(item) {
 
         const tanggal =
             parseTanggal(item);
+
 
         if (!tanggal) {
             return false;
         }
 
+
         const sekarang =
             new Date();
 
+
         return (
+
             tanggal.getMonth() ===
                 sekarang.getMonth() &&
 
             tanggal.getFullYear() ===
                 sekarang.getFullYear()
+
         );
 
     }
 
 
-    function tanggalTahunIni(
-        item
-    ) {
+    /* =====================================================
+       CEK TAHUN
+    ====================================================== */
+
+    function tanggalTahunIni(item) {
 
         const tanggal =
             parseTanggal(item);
+
 
         if (!tanggal) {
             return false;
         }
 
+
         const sekarang =
             new Date();
 
+
         return (
+
             tanggal.getFullYear() ===
             sekarang.getFullYear()
+
         );
 
     }
@@ -1737,19 +2496,20 @@
        ANIMASI ANGKA
     ====================================================== */
 
-    function animasiAngka(
-        element
-    ) {
+    function animasiAngka(element) {
 
         if (!element) {
             return;
         }
 
+
         element.classList.remove(
             "animasi-angka"
         );
 
+
         void element.offsetWidth;
+
 
         element.classList.add(
             "animasi-angka"
@@ -1759,7 +2519,7 @@
 
 
     /* =====================================================
-       TAMPILKAN RINGKASAN
+       RINGKASAN
     ====================================================== */
 
     function tampilkanRingkasan() {
@@ -1767,13 +2527,10 @@
         const pembayaran =
             getPembayaran();
 
+
         const pengeluaran =
             getPengeluaran();
 
-
-        /* ---------------------------------------------
-           TOTAL PEMASUKAN
-        --------------------------------------------- */
 
         const totalPemasukan =
             pembayaran.reduce(
@@ -1787,10 +2544,6 @@
             );
 
 
-        /* ---------------------------------------------
-           TOTAL PENGELUARAN
-        --------------------------------------------- */
-
         const totalPengeluaran =
             pengeluaran.reduce(
                 function (total, item) {
@@ -1803,18 +2556,10 @@
             );
 
 
-        /* ---------------------------------------------
-           SALDO
-        --------------------------------------------- */
-
         const saldo =
             totalPemasukan -
             totalPengeluaran;
 
-
-        /* ---------------------------------------------
-           HARI INI
-        --------------------------------------------- */
 
         const pemasukanHariIni =
             pembayaran
@@ -1842,10 +2587,6 @@
                 );
 
 
-        /* ---------------------------------------------
-           BULAN INI
-        --------------------------------------------- */
-
         const pemasukanBulanIni =
             pembayaran
                 .filter(
@@ -1872,10 +2613,6 @@
                 );
 
 
-        /* ---------------------------------------------
-           TAHUN INI
-        --------------------------------------------- */
-
         const pemasukanTahunIni =
             pembayaran
                 .filter(
@@ -1901,10 +2638,6 @@
                     0
                 );
 
-
-        /* ---------------------------------------------
-           MASUKKAN KE UI
-        --------------------------------------------- */
 
         if (el.totalSaldo) {
 
@@ -2014,14 +2747,18 @@
             return;
         }
 
+
         const pembayaran =
             getPembayaran();
+
 
         const pengeluaran =
             getPengeluaran();
 
+
         const tahunSet =
             new Set();
+
 
         pembayaran
             .concat(pengeluaran)
@@ -2030,6 +2767,7 @@
 
                     const tanggal =
                         parseTanggal(item);
+
 
                     if (tanggal) {
 
@@ -2046,6 +2784,7 @@
         const tahunSekarang =
             new Date().getFullYear();
 
+
         tahunSet.add(
             tahunSekarang
         );
@@ -2060,18 +2799,23 @@
             );
 
 
-        el.tahun.innerHTML = "";
+        el.tahun.innerHTML =
+            "";
+
 
         const optionSemua =
             document.createElement(
                 "option"
             );
 
+
         optionSemua.value =
             "semua";
 
+
         optionSemua.textContent =
             "Semua Tahun";
+
 
         el.tahun.appendChild(
             optionSemua
@@ -2086,11 +2830,14 @@
                         "option"
                     );
 
+
                 option.value =
                     String(tahun);
 
+
                 option.textContent =
                     String(tahun);
+
 
                 el.tahun.appendChild(
                     option
@@ -2100,8 +2847,6 @@
         );
 
 
-        /* Tahun berjalan sebagai default */
-
         el.tahun.value =
             String(tahunSekarang);
 
@@ -2109,7 +2854,7 @@
 
 
     /* =====================================================
-       GABUNG DATA TRANSAKSI
+       GABUNG TRANSAKSI
     ====================================================== */
 
     function semuaTransaksi() {
@@ -2117,15 +2862,13 @@
         const pembayaran =
             getPembayaran();
 
+
         const pengeluaran =
             getPengeluaran();
 
 
-        const data =
-            [];
+        const data = [];
 
-
-        /* PEMASUKAN */
 
         pembayaran.forEach(
             function (item) {
@@ -2145,8 +2888,6 @@
             }
         );
 
-
-        /* PENGELUARAN */
 
         pengeluaran.forEach(
             function (item) {
@@ -2182,9 +2923,11 @@
             el.bulan?.value ??
             "semua";
 
+
         const tahun =
             el.tahun?.value ??
             "semua";
+
 
         const jenis =
             el.filterJenis?.value ??
@@ -2192,6 +2935,7 @@
 
 
         return semuaTransaksi()
+
             .filter(
                 function (item) {
 
@@ -2199,16 +2943,14 @@
                         parseTanggal(item);
 
 
-                    /* FILTER BULAN */
-
                     if (
-                        bulan !==
-                        "semua"
+                        bulan !== "semua"
                     ) {
 
                         if (!tanggal) {
                             return false;
                         }
+
 
                         if (
                             tanggal.getMonth()
@@ -2223,16 +2965,14 @@
                     }
 
 
-                    /* FILTER TAHUN */
-
                     if (
-                        tahun !==
-                        "semua"
+                        tahun !== "semua"
                     ) {
 
                         if (!tanggal) {
                             return false;
                         }
+
 
                         if (
                             tanggal.getFullYear()
@@ -2247,11 +2987,8 @@
                     }
 
 
-                    /* FILTER JENIS */
-
                     if (
-                        jenis !==
-                        "semua"
+                        jenis !== "semua"
                     ) {
 
                         if (
@@ -2271,11 +3008,13 @@
 
                 }
             )
+
             .sort(
                 function (a, b) {
 
                     const tanggalA =
                         parseTanggal(a);
+
 
                     const tanggalB =
                         parseTanggal(b);
@@ -2285,7 +3024,9 @@
                         !tanggalA &&
                         !tanggalB
                     ) {
+
                         return 0;
+
                     }
 
 
@@ -2311,7 +3052,7 @@
 
 
     /* =====================================================
-       BUAT BADGE JENIS
+       BADGE
     ====================================================== */
 
     function buatBadge(
@@ -2330,7 +3071,9 @@
             (
                 tipe ===
                 "Pengeluaran"
+
                     ? "text-bg-danger"
+
                     : "text-bg-success"
             );
 
@@ -2345,7 +3088,7 @@
 
 
     /* =====================================================
-       TAMPILKAN RIWAYAT
+       TAMPILKAN TRANSAKSI
     ====================================================== */
 
     function tampilkanTransaksi() {
@@ -2363,17 +3106,11 @@
             "";
 
 
-        if (
-            el.jumlahTransaksi
-        ) {
+        if (el.jumlahTransaksi) {
 
             el.jumlahTransaksi.textContent =
                 data.length +
-                (
-                    data.length === 1
-                        ? " transaksi"
-                        : " transaksi"
-                );
+                " transaksi";
 
         }
 
@@ -2387,33 +3124,47 @@
                     "tr"
                 );
 
+
             const td =
                 document.createElement(
                     "td"
                 );
 
+
             td.colSpan = 4;
+
 
             td.className =
                 "text-center py-4 empty-state";
 
 
             td.innerHTML = `
+
                 <i class="bi bi-receipt"></i>
+
                 <div class="fw-semibold">
+
                     Belum ada transaksi
+
                 </div>
+
                 <small class="riwayat-empty">
-                    Tidak ada data yang sesuai dengan filter.
+
+                    Tidak ada data yang sesuai
+                    dengan filter.
+
                 </small>
+
             `;
 
 
             tr.appendChild(td);
 
+
             el.dataPembayaran.appendChild(
                 tr
             );
+
 
             return;
 
@@ -2429,34 +3180,31 @@
                     );
 
 
-                /* TANGGAL */
-
                 const tdTanggal =
                     document.createElement(
                         "td"
                     );
 
+
                 tdTanggal.textContent =
                     formatTanggal(item);
 
-
-                /* NAMA */
 
                 const tdNama =
                     document.createElement(
                         "td"
                     );
 
+
                 tdNama.textContent =
                     namaItem(item);
 
-
-                /* JENIS */
 
                 const tdJenis =
                     document.createElement(
                         "td"
                     );
+
 
                 tdJenis.appendChild(
                     buatBadge(
@@ -2466,19 +3214,20 @@
                 );
 
 
-                /* NOMINAL */
-
                 const tdNominal =
                     document.createElement(
                         "td"
                     );
+
 
                 tdNominal.className =
                     "text-end fw-bold " +
                     (
                         item._tipe ===
                         "Pengeluaran"
+
                             ? "text-danger"
+
                             : "text-success"
                     );
 
@@ -2486,7 +3235,9 @@
                 const prefix =
                     item._tipe ===
                     "Pengeluaran"
+
                         ? "- "
+
                         : "+ ";
 
 
@@ -2501,13 +3252,16 @@
                     tdTanggal
                 );
 
+
                 tr.appendChild(
                     tdNama
                 );
 
+
                 tr.appendChild(
                     tdJenis
                 );
+
 
                 tr.appendChild(
                     tdNominal
@@ -2530,8 +3284,8 @@
 
     function muatPengaturan() {
 
-        let pengaturan =
-            {};
+        let pengaturan = {};
+
 
         try {
 
@@ -2595,6 +3349,7 @@
         let logoTersimpan =
             null;
 
+
         try {
 
             logoTersimpan =
@@ -2610,9 +3365,7 @@
         }
 
 
-        if (
-            logoTersimpan
-        ) {
+        if (logoTersimpan) {
 
             el.logo.src =
                 logoTersimpan;
@@ -2631,6 +3384,7 @@
 
                 } catch (error) {}
 
+
                 el.logo.src =
                     logoDefault;
 
@@ -2646,16 +3400,18 @@
     function pasangEventFilter() {
 
         [
+
             el.bulan,
             el.tahun,
             el.filterJenis
-        ]
-        .forEach(
+
+        ].forEach(
             function (element) {
 
                 if (!element) {
                     return;
                 }
+
 
                 element.addEventListener(
                     "change",
@@ -2669,7 +3425,7 @@
 
 
     /* =====================================================
-       UPDATE OTOMATIS JIKA LOCAL STORAGE BERUBAH
+       UPDATE LOCAL STORAGE
     ====================================================== */
 
     window.addEventListener(
@@ -2677,6 +3433,7 @@
         function (event) {
 
             if (
+
                 event.key ===
                     "pembayaran" ||
 
@@ -2688,6 +3445,7 @@
 
                 event.key ===
                     "logoDashboard"
+
             ) {
 
                 isiTahun();
@@ -2707,9 +3465,7 @@
 
 
     /* =====================================================
-       EVENT CUSTOM
-       Berguna jika halaman pembayaran/pengeluaran
-       mengirim event setelah menyimpan data.
+       EVENT DATA BERUBAH
     ====================================================== */
 
     window.addEventListener(
@@ -2727,10 +3483,143 @@
 
 
     /* =====================================================
+       EVENT TEMA BERUBAH
+       Membantu sinkronisasi halaman tanpa reload
+    ====================================================== */
+
+    window.addEventListener(
+        "temaBerubah",
+        function () {
+
+            sinkronisasiTema();
+
+        }
+    );
+
+
+    /* =====================================================
+       SINKRONISASI TEMA
+    ====================================================== */
+
+    function sinkronisasiTema() {
+
+        try {
+
+            const data =
+                JSON.parse(
+                    localStorage.getItem(
+                        "pengaturanAplikasi"
+                    )
+                ) || {};
+
+
+            const tema =
+                data.tema || "light";
+
+
+            let dark = false;
+
+
+            if (
+                tema === "dark"
+            ) {
+
+                dark = true;
+
+            } else if (
+                tema === "system"
+            ) {
+
+                dark =
+                    window.matchMedia(
+                        "(prefers-color-scheme: dark)"
+                    ).matches;
+
+            }
+
+
+            document.documentElement.classList.toggle(
+                "dark-mode",
+                dark
+            );
+
+
+            document.documentElement.setAttribute(
+                "data-theme",
+                dark
+                    ? "dark"
+                    : "light"
+            );
+
+
+            document.body.classList.toggle(
+                "dark-mode",
+                dark
+            );
+
+
+        } catch (error) {
+
+            console.warn(
+                "Gagal sinkronisasi tema:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       SYSTEM THEME CHANGE
+    ====================================================== */
+
+    try {
+
+        const media =
+            window.matchMedia(
+                "(prefers-color-scheme: dark)"
+            );
+
+
+        media.addEventListener(
+            "change",
+            function () {
+
+                try {
+
+                    const data =
+                        JSON.parse(
+                            localStorage.getItem(
+                                "pengaturanAplikasi"
+                            )
+                        ) || {};
+
+
+                    if (
+                        data.tema ===
+                        "system"
+                    ) {
+
+                        sinkronisasiTema();
+
+                    }
+
+                } catch (error) {}
+
+            }
+        );
+
+    } catch (error) {}
+
+
+    /* =====================================================
        INIT
     ====================================================== */
 
     function init() {
+
+        sinkronisasiTema();
 
         muatPengaturan();
 
@@ -2764,6 +3653,7 @@
     }
 
 })();
+
 </script>
 
 
@@ -2792,5 +3682,7 @@
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
 ></script>
 
+
 </body>
+
 </html>
