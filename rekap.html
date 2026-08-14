@@ -2,425 +2,3215 @@
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
+
+    <!-- =====================================================
+         TEMA
+    ====================================================== -->
     <script>
-    (function () {
-        try {
-            const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
-            const tema = data.tema || "light";
-            let dark = false;
+        (function () {
+            try {
 
-            if (tema === "dark") {
-                dark = true;
-            } else if (tema === "system") {
-                dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                const data =
+                    JSON.parse(
+                        localStorage.getItem("pengaturanAplikasi")
+                    ) || {};
+
+                const tema =
+                    data.tema || "light";
+
+                let dark = false;
+
+                if (tema === "dark") {
+
+                    dark = true;
+
+                } else if (tema === "system") {
+
+                    dark =
+                        window.matchMedia(
+                            "(prefers-color-scheme: dark)"
+                        ).matches;
+
+                }
+
+                if (dark) {
+
+                    document.documentElement.classList.add(
+                        "dark-mode"
+                    );
+
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "dark"
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "Gagal memuat tema:",
+                    error
+                );
+
             }
+        })();
+    </script>
 
-            if (dark) {
-                document.documentElement.classList.add("dark-mode");
-                document.documentElement.setAttribute("data-theme", "dark");
-            }
-        } catch (error) {
-            console.warn("Gagal memuat tema:", error);
-        }
-    })();
-</script>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#198754"
+    >
+
+    <meta
+        name="description"
+        content="Rekap Keuangan - Catatan Kas"
+    >
+
     <title>Rekap Keuangan | Catatan Kas</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
 
-    <link rel="stylesheet" href="css/theme.css">
-    
+
+    <!-- =====================================================
+         BOOTSTRAP
+    ====================================================== -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- =====================================================
+         BOOTSTRAP ICONS
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    >
+
+
+    <!-- =====================================================
+         CSS APLIKASI
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+
+
+    <!-- =====================================================
+         CSS KHUSUS REKAP
+    ====================================================== -->
+
     <style>
-        body {
-            background-color: #f8f9fa; /* Warna latar sedikit abu-abu */
-            font-family: Arial, sans-serif;
+
+        * {
+            box-sizing: border-box;
         }
-                /* =================================================
-           CONTAINER UTAMA (Agar Full di Tablet/Layar Lebar)
-        ================================================= */
-        .mobile-container {
-            width: 100%;
-            max-width: 100%;
-            padding-left: 20px;
-            padding-right: 20px;
-            margin-left: auto;
-            margin-right: auto;
+
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            padding-bottom: 110px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #d8e2dc 0%,
+                    #fefae0 100%
+                );
+
+            background-size: 200% 200%;
+
+            animation:
+                gradientShift 15s ease infinite;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            color: #212529;
+
+        }
+
+
+        @keyframes gradientShift {
+
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+
         }
 
 
         /* =================================================
-           BOTTOM NAVIGATION (Agar Tombol Navigasi Ikut Full)
-        ================================================= */
-        .ck-bottom {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1050;
-            background: rgba(255, 255, 255, .97);
-            border-top: 1px solid #dee2e6;
-            box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
-            padding: 6px 15px;
-            backdrop-filter: blur(8px);
+           CONTAINER
+        ================================================== */
+
+        .mobile-container {
+
+            width: 100% !important;
+
+            max-width: 100% !important;
+
+            padding-left: 20px !important;
+
+            padding-right: 20px !important;
+
+            margin-left: auto;
+
+            margin-right: auto;
+
         }
+
+
+        /* =================================================
+           TOPBAR
+        ================================================== */
+
+        .ck-page {
+
+            width: 100%;
+
+            max-width: 100%;
+
+            padding-left: 20px;
+
+            padding-right: 20px;
+
+        }
+
+
+        .ck-topbar {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            background:
+                rgba(255,255,255,.94);
+
+            border-radius: 18px;
+
+            padding: 14px;
+
+            margin-top: 20px;
+
+            box-shadow:
+                0 4px 14px rgba(0,0,0,.06);
+
+            backdrop-filter: blur(8px);
+
+            -webkit-backdrop-filter:
+                blur(8px);
+
+        }
+
+
+        .ck-logo {
+
+            width: 56px;
+
+            height: 56px;
+
+            min-width: 56px;
+
+            object-fit: contain;
+
+            border-radius: 14px;
+
+            background: #fff;
+
+            border: 1px solid #eee;
+
+        }
+
+
+        .ck-title {
+
+            margin: 0;
+
+            color: #198754;
+
+            font-weight: 800;
+
+            font-size: 1.1rem;
+
+        }
+
+
+        .ck-subtitle {
+
+            color: #6c757d;
+
+            font-size: .8rem;
+
+        }
+
+
+        /* =================================================
+           FILTER
+        ================================================== */
+
+        .filter-card {
+
+            border: none;
+
+            border-radius: 18px;
+
+            background:
+                rgba(255,255,255,.94);
+
+            box-shadow:
+                0 4px 14px rgba(0,0,0,.06);
+
+        }
+
+
+        .custom-select {
+
+            min-height: 48px;
+
+            border:
+                1px solid #dee2e6;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 2px 5px rgba(0,0,0,.02);
+
+        }
+
+
+        .custom-select:focus {
+
+            border-color: #198754;
+
+            box-shadow:
+                0 0 0 .2rem
+                rgba(25,135,84,.12);
+
+        }
+
+
+        /* =================================================
+           REKAP WRAPPER
+        ================================================== */
+
+        .rekap-wrapper {
+
+            border-radius: 16px;
+
+            border:
+                1px solid #e0e0e0;
+
+            background: white;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 4px 14px rgba(0,0,0,.06);
+
+        }
+
+
+        .rekap-header {
+
+            background-color: #198754;
+
+            color: white;
+
+            padding: 14px 16px;
+
+            font-weight: 700;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+        }
+
+
+        .rekap-header small {
+
+            opacity: .9;
+
+            font-weight: 400;
+
+        }
+
+
+        .table {
+
+            margin-bottom: 0;
+
+        }
+
+
+        .table th {
+
+            font-weight: 600;
+
+            border-bottom:
+                1px solid #dee2e6;
+
+            font-size: .88rem;
+
+            padding: 12px 15px;
+
+            white-space: nowrap;
+
+        }
+
+
+        .table td {
+
+            font-size: .9rem;
+
+            vertical-align: middle;
+
+            padding: 14px 15px;
+
+            border-bottom:
+                1px solid #f1f3f5;
+
+        }
+
+
+        /* =================================================
+           WARNA NILAI
+        ================================================== */
+
+        .nilai-masuk {
+
+            color: #198754;
+
+            font-weight: 700;
+
+        }
+
+
+        .nilai-keluar {
+
+            color: #dc3545;
+
+            font-weight: 700;
+
+        }
+
+
+        .nilai-saldo {
+
+            color: #198754;
+
+            font-weight: 800;
+
+        }
+
+
+        .saldo-minus {
+
+            color: #dc3545 !important;
+
+        }
+
+
+        /* =================================================
+           INFO
+        ================================================== */
+
+        .info-card {
+
+            border: none;
+
+            border-radius: 16px;
+
+            background:
+                rgba(255,255,255,.94);
+
+            box-shadow:
+                0 4px 14px rgba(0,0,0,.05);
+
+        }
+
+
+        .info-icon {
+
+            width: 44px;
+
+            height: 44px;
+
+            min-width: 44px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background:
+                rgba(25,135,84,.10);
+
+            color: #198754;
+
+            font-size: 1.25rem;
+
+        }
+
+
+        /* =================================================
+           MENU BUTTON
+        ================================================== */
+
+        .menu-btn {
+
+            background-color: white;
+
+            border:
+                1px solid #dee2e6;
+
+            border-radius: 14px;
+
+            padding: 15px 10px;
+
+            width: 100%;
+
+            min-height: 110px;
+
+            text-align: center;
+
+            color: #333;
+
+            transition:
+                all .2s ease;
+
+            text-decoration: none;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 8px;
+
+            box-shadow:
+                0 2px 6px rgba(0,0,0,.03);
+
+        }
+
+
+        .menu-btn:hover {
+
+            background-color:
+                #f1f8f5;
+
+            border-color:
+                #198754;
+
+            transform:
+                translateY(-2px);
+
+        }
+
+
+        .menu-btn i {
+
+            font-size: 1.8rem;
+
+            color: #198754;
+
+        }
+
+
+        .menu-btn.red-icon i {
+
+            color: #dc3545;
+
+        }
+
+
+        .menu-btn h6 {
+
+            margin: 0;
+
+            font-size: .85rem;
+
+            font-weight: 600;
+
+        }
+
+
+        /* =================================================
+           EMPTY STATE
+        ================================================== */
+
+        .empty-state {
+
+            padding: 30px 15px !important;
+
+            color: #6c757d;
+
+        }
+
+
+        .empty-state i {
+
+            display: block;
+
+            font-size: 2.5rem;
+
+            color: #198754;
+
+            opacity: .6;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        /* =================================================
+           BOTTOM NAVIGATION
+        ================================================== */
+
+        .ck-bottom {
+
+            position: fixed;
+
+            left: 0;
+
+            right: 0;
+
+            bottom: 0;
+
+            z-index: 1050;
+
+            background:
+                rgba(255,255,255,.97);
+
+            border-top:
+                1px solid #dee2e6;
+
+            box-shadow:
+                0 -3px 15px
+                rgba(0,0,0,.08);
+
+            padding:
+                6px 8px;
+
+            backdrop-filter:
+                blur(8px);
+
+            -webkit-backdrop-filter:
+                blur(8px);
+
+        }
+
 
         .ck-bottom-inner {
-            width: 100%;
-            max-width: 100%;
+
+            width: 100% !important;
+
+            max-width: 100% !important;
+
             margin: 0 auto;
+
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+
+            grid-template-columns:
+                repeat(5,1fr);
+
             gap: 4px;
+
         }
+
 
         .ck-bottom a {
+
             text-decoration: none !important;
+
             color: #6c757d;
+
             display: flex;
+
             flex-direction: column;
+
             align-items: center;
+
             justify-content: center;
+
             gap: 3px;
+
             font-size: .68rem;
+
             padding: 5px 2px;
+
             border-radius: 10px;
+
             transition: .2s ease;
+
         }
+
 
         .ck-bottom a i {
+
             font-size: 1.15rem;
+
         }
+
 
         .ck-bottom a:hover {
+
             color: #198754;
-            background: rgba(25, 135, 84, .08);
+
+            background:
+                rgba(25,135,84,.08);
+
         }
+
 
         .ck-bottom a.active {
+
             color: #198754 !important;
-            font-weight: 700;
+
+            font-weight: 800;
+
         }
+
+
+        /* =================================================
+           TABLET
+        ================================================== */
+
+        @media (min-width:768px) {
+
+            .ck-page {
+
+                padding-left: 35px;
+
+                padding-right: 35px;
+
+            }
+
+
+            .mobile-container {
+
+                padding-left: 35px !important;
+
+                padding-right: 35px !important;
+
+            }
+
+
+            .ck-topbar {
+
+                padding: 20px;
+
+                border-radius: 20px;
+
+            }
+
+
+            .ck-logo {
+
+                width: 72px;
+
+                height: 72px;
+
+                min-width: 72px;
+
+            }
+
+
+            .ck-title {
+
+                font-size: 1.35rem;
+
+            }
+
+
+            .ck-subtitle {
+
+                font-size: 1rem;
+
+            }
+
+
+            .rekap-wrapper {
+
+                border-radius: 20px;
+
+            }
+
+
+            .table th,
+            .table td {
+
+                font-size: 1rem;
+
+            }
+
+
+            .menu-btn {
+
+                min-height: 130px;
+
+            }
+
+
+            .ck-bottom {
+
+                padding:
+                    8px 25px;
+
+            }
+
+
+            .ck-bottom a {
+
+                font-size: .8rem;
+
+                padding:
+                    8px 4px;
+
+            }
+
+
+            .ck-bottom a i {
+
+                font-size: 1.35rem;
+
+            }
+
+        }
+
+
+        /* =================================================
+           DESKTOP / LAYAR BESAR
+        ================================================== */
+
+        @media (min-width:992px) {
+
+            .ck-page {
+
+                padding-left: 50px;
+
+                padding-right: 50px;
+
+            }
+
+
+            .mobile-container {
+
+                padding-left: 50px !important;
+
+                padding-right: 50px !important;
+
+            }
+
+
+            .ck-topbar {
+
+                padding: 24px;
+
+            }
+
+
+            .ck-logo {
+
+                width: 82px;
+
+                height: 82px;
+
+                min-width: 82px;
+
+            }
+
+
+            .ck-title {
+
+                font-size: 1.5rem;
+
+            }
+
+
+            .ck-subtitle {
+
+                font-size: 1.05rem;
+
+            }
+
+        }
+
+
+        /* =================================================
+           HP KECIL
+        ================================================== */
+
+        @media (max-width:380px) {
+
+            .ck-page {
+
+                padding-left: 10px;
+
+                padding-right: 10px;
+
+            }
+
+
+            .mobile-container {
+
+                padding-left: 10px !important;
+
+                padding-right: 10px !important;
+
+            }
+
+
+            .ck-topbar {
+
+                padding: 12px;
+
+                gap: 10px;
+
+            }
+
+
+            .ck-logo {
+
+                width: 50px;
+
+                height: 50px;
+
+                min-width: 50px;
+
+            }
+
+
+            .ck-title {
+
+                font-size: 1rem;
+
+            }
+
+
+            .ck-subtitle {
+
+                font-size: .74rem;
+
+            }
+
+
+            .table th,
+            .table td {
+
+                padding:
+                    10px 8px;
+
+                font-size: .78rem;
+
+            }
+
+
+            .menu-btn {
+
+                min-height: 100px;
+
+            }
+
+
+            .menu-btn i {
+
+                font-size: 1.5rem;
+
+            }
+
+
+            .ck-bottom a {
+
+                font-size: .62rem;
+
+            }
+
+
+            .ck-bottom a i {
+
+                font-size: 1.05rem;
+
+            }
+
+        }
+
+
+        /* =================================================
+           DARK MODE
+        ================================================== */
+
+        body.dark-mode {
+
+            background:
+                #121212 !important;
+
+            color:
+                #eeeeee !important;
+
+            animation:
+                none !important;
+
+        }
+
+
+        body.dark-mode .ck-topbar,
+        body.dark-mode .filter-card,
+        body.dark-mode .rekap-wrapper,
+        body.dark-mode .info-card,
+        body.dark-mode .menu-btn,
+        body.dark-mode .ck-bottom {
+
+            background:
+                #1e1e1e !important;
+
+            color:
+                #eeeeee !important;
+
+            border-color:
+                #333 !important;
+
+        }
+
+
+        body.dark-mode .ck-title {
+
+            color:
+                #5dd39e !important;
+
+        }
+
+
+        body.dark-mode .ck-subtitle {
+
+            color:
+                #aaa !important;
+
+        }
+
+
+        body.dark-mode .form-label,
+        body.dark-mode .text-muted {
+
+            color:
+                #aaa !important;
+
+        }
+
+
+        body.dark-mode .custom-select,
+        body.dark-mode .form-select {
+
+            background:
+                #2a2a2a !important;
+
+            color:
+                #fff !important;
+
+            border-color:
+                #444 !important;
+
+        }
+
+
+        body.dark-mode .table {
+
+            --bs-table-bg:
+                #1e1e1e;
+
+            --bs-table-color:
+                #eee;
+
+            --bs-table-border-color:
+                #333;
+
+        }
+
+
+        body.dark-mode .table-light {
+
+            --bs-table-bg:
+                #292929;
+
+            --bs-table-color:
+                #fff;
+
+        }
+
+
+        body.dark-mode .table td,
+        body.dark-mode .table th {
+
+            border-color:
+                #333 !important;
+
+        }
+
+
+        body.dark-mode .info-icon {
+
+            background:
+                rgba(93,211,158,.12);
+
+            color:
+                #5dd39e;
+
+        }
+
+
+        body.dark-mode .menu-btn {
+
+            color:
+                #eee;
+
+        }
+
+
+        body.dark-mode .menu-btn:hover {
+
+            background:
+                #252525;
+
+        }
+
 
         body.dark-mode .ck-bottom a {
-            color: #adb5bd;
-        }
 
-        body.dark-mode .ck-bottom a:hover,
-        body.dark-mode .ck-bottom a.active {
-            color: #51cf66 !important;
+            color:
+                #adb5bd;
+
         }
 
 
+        body.dark-mode .ck-bottom a.active,
+        body.dark-mode .ck-bottom a:hover {
 
-        /* Styling Form Filter */
-        .custom-select {
-            border: 1px solid #dee2e6;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-    
-        
-        /* Styling Tabel Rekap */
-        .rekap-wrapper {
-            border-radius: 12px;
-            border: 1px solid #e0e0e0;
-            background: white;
-            overflow: hidden;
-        }
-        .rekap-header {
-            background-color: #198754; /* Hijau sesuai gambar */
-            color: white;
-            padding: 12px 15px;
-            font-weight: 500;
-        }
-        .table {
-            margin-bottom: 0;
-        }
-        .table th {
-            font-weight: 600;
-            border-bottom: 1px solid #dee2e6;
-            font-size: 0.9rem;
-            padding: 12px 15px;
-        }
-        .table td {
-            font-size: 0.9rem;
-            vertical-align: middle;
-            padding: 12px 15px;
-            border-bottom: 1px solid #f8f9fa;
+            color:
+                #5dd39e !important;
+
         }
 
-        /* Styling Tombol Menu Navigasi */
-        .menu-btn {
-            background-color: white;
-            border: 1px solid #dee2e6;
-            border-radius: 12px;
-            padding: 15px 10px;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            color: #333;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+
+        body.dark-mode .empty-state {
+
+            color:
+                #aaa;
+
         }
-        .menu-btn:active, .menu-btn:hover {
-            background-color: #f1f8f5;
-            border-color: #198754;
-        }
-        .menu-btn i {
-            font-size: 1.8rem;
-            color: #198754; /* Warna ikon hijau */
-        }
-        .menu-btn.red-icon i {
-            color: #dc3545; /* Ikon merah untuk pengeluaran */
-        }
-        .menu-btn h6 {
-            margin: 0;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
+
     </style>
+
 </head>
 
+
 <body>
-<div class="container ck-page">
-<div class="ck-topbar">
-    <img src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
-    <div>
-        <p class="ck-title">Catatan Kas</p>
-        <span class="ck-subtitle">Madrasah Al-Fattah</span>
-    </div>
-</div>
 
-<div class="container mobile-container py-4 mb-5">
 
-    <!-- Filter Bulan & Tahun -->
-    <div class="row g-2 mb-4">
-        <div class="col-6">
-            <select id="bulan" class="form-select custom-select px-3 py-2">
-                <!-- Data ini biasanya akan otomatis terisi oleh script JS Anda -->
-                <option value="8" selected>Agustus</option>
-            </select>
+<div class="ck-page">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="ck-topbar">
+
+        <img
+            id="logoPreviewV2"
+            src="assets/logo-catatan-kas.jpg"
+            class="ck-logo"
+            alt="Logo Catatan Kas"
+        >
+
+        <div>
+
+            <p class="ck-title">
+                Catatan Kas
+            </p>
+
+            <span
+                class="ck-subtitle"
+                id="namaPondokHeader"
+            >
+                Madrasah Al-Fattah
+            </span>
+
         </div>
-        <div class="col-6">
-            <select id="tahun" class="form-select custom-select px-3 py-2">
-                <!-- Data ini biasanya akan otomatis terisi oleh script JS Anda -->
-                <option value="2026" selected>2026</option>
-            </select>
-        </div>
-    </div>
 
-<div class="row align-items-end mb-4">
-
-    <div class="col-6">
-        <label class="form-label fw-semibold">
-            <i class="bi bi-funnel"></i> Jenis
-        </label>
-
-        <select class="form-select" id="jenisDashboard">
-            <option value="syahriyyah">Syahriyyah</option>
-            <option value="kas">Kas</option>
-            <option value="beras">Beras</option>
-        </select>
     </div>
 
-    <div class="col-6" id="modeBerasDiv" style="display:none;">
-        <label class="form-label fw-semibold">
-            <i class="bi bi-box-seam"></i> Mode Beras
-        </label>
 
-        <select class="form-select" id="modeBeras">
-            <option value="liter">Liter</option>
-            <option value="uang">Uang (Rp)</option>
-        </select>
+    <!-- =====================================================
+         KONTEN
+    ====================================================== -->
+
+    <div class="container mobile-container py-4 mb-5">
+
+
+        <!-- =================================================
+             JUDUL
+        ================================================== -->
+
+        <div class="mb-4">
+
+            <h4 class="fw-bold mb-1">
+
+                <i class="bi bi-clipboard-data text-success"></i>
+
+                Rekap Keuangan
+
+            </h4>
+
+            <p
+                class="text-muted mb-0"
+                id="subJudul"
+            >
+                Rekap pemasukan dan pengeluaran
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             FILTER
+        ================================================== -->
+
+        <div class="card filter-card mb-4">
+
+            <div class="card-body">
+
+                <h6 class="fw-bold mb-3">
+
+                    <i class="bi bi-funnel text-success"></i>
+
+                    Filter Rekap
+
+                </h6>
+
+
+                <div class="row g-3">
+
+
+                    <!-- BULAN -->
+
+                    <div class="col-6">
+
+                        <label
+                            for="bulan"
+                            class="form-label fw-semibold"
+                        >
+                            Bulan
+                        </label>
+
+                        <select
+                            id="bulan"
+                            class="form-select custom-select"
+                        >
+
+                            <option value="semua">
+                                Semua Bulan
+                            </option>
+
+                            <option value="0">
+                                Januari
+                            </option>
+
+                            <option value="1">
+                                Februari
+                            </option>
+
+                            <option value="2">
+                                Maret
+                            </option>
+
+                            <option value="3">
+                                April
+                            </option>
+
+                            <option value="4">
+                                Mei
+                            </option>
+
+                            <option value="5">
+                                Juni
+                            </option>
+
+                            <option value="6">
+                                Juli
+                            </option>
+
+                            <option value="7">
+                                Agustus
+                            </option>
+
+                            <option value="8">
+                                September
+                            </option>
+
+                            <option value="9">
+                                Oktober
+                            </option>
+
+                            <option value="10">
+                                November
+                            </option>
+
+                            <option value="11">
+                                Desember
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- TAHUN -->
+
+                    <div class="col-6">
+
+                        <label
+                            for="tahun"
+                            class="form-label fw-semibold"
+                        >
+                            Tahun
+                        </label>
+
+                        <select
+                            id="tahun"
+                            class="form-select custom-select"
+                        >
+
+                            <option value="semua">
+                                Semua Tahun
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- JENIS -->
+
+                    <div class="col-12">
+
+                        <label
+                            for="jenisDashboard"
+                            class="form-label fw-semibold"
+                        >
+
+                            <i class="bi bi-funnel"></i>
+
+                            Jenis
+
+                        </label>
+
+                        <select
+                            class="form-select custom-select"
+                            id="jenisDashboard"
+                        >
+
+                            <option value="syahriyyah">
+                                Syahriyyah
+                            </option>
+
+                            <option value="kas">
+                                Kas
+                            </option>
+
+                            <option value="beras">
+                                Beras
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- MODE BERAS -->
+
+                    <div
+                        class="col-12"
+                        id="modeBerasDiv"
+                        style="display:none;"
+                    >
+
+                        <label
+                            class="form-label fw-semibold"
+                            for="modeBeras"
+                        >
+
+                            <i class="bi bi-box-seam"></i>
+
+                            Mode Beras
+
+                        </label>
+
+                        <select
+                            class="form-select custom-select"
+                            id="modeBeras"
+                        >
+
+                            <option value="liter">
+                                Liter
+                            </option>
+
+                            <option value="uang">
+                                Uang (Rp)
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             REKAP
+        ================================================== -->
+
+        <div class="rekap-wrapper mb-4">
+
+
+            <div class="rekap-header">
+
+                <div>
+
+                    <i class="bi bi-bar-chart-fill me-1"></i>
+
+                    Rekap Keuangan
+
+                </div>
+
+                <small id="periodeLabel">
+                    Semua data
+                </small>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>
+                                Jenis
+                            </th>
+
+                            <th>
+                                Masuk
+                            </th>
+
+                            <th>
+                                Keluar
+                            </th>
+
+                            <th>
+                                Saldo
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="rekap">
+
+                        <tr>
+
+                            <td id="judulJenis">
+                                Syahriyyah
+                            </td>
+
+                            <td
+                                id="masuk"
+                                class="nilai-masuk"
+                            >
+                                Rp 0
+                            </td>
+
+                            <td
+                                id="keluar"
+                                class="nilai-keluar"
+                            >
+                                Rp 0
+                            </td>
+
+                            <td
+                                id="saldo"
+                                class="nilai-saldo"
+                            >
+                                Rp 0
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             INFORMASI
+        ================================================== -->
+
+        <div class="card info-card mb-4">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="info-icon">
+
+                        <i class="bi bi-info-circle-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="fw-semibold">
+                            Rekap otomatis
+                        </div>
+
+                        <small
+                            class="text-muted"
+                            id="infoRekap"
+                        >
+                            Data diambil dari transaksi
+                            yang tersimpan di aplikasi.
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             MENU
+        ================================================== -->
+
+        <div class="row g-3">
+
+
+            <div class="col-6">
+
+                <a
+                    href="santri.html"
+                    class="menu-btn"
+                >
+
+                    <i class="bi bi-people-fill"></i>
+
+                    <h6>
+                        Data Santri
+                    </h6>
+
+                </a>
+
+            </div>
+
+
+            <div class="col-6">
+
+                <a
+                    href="pengeluaran.html"
+                    class="menu-btn red-icon"
+                >
+
+                    <i class="bi bi-wallet2"></i>
+
+                    <h6>
+                        Pengeluaran
+                    </h6>
+
+                </a>
+
+            </div>
+
+
+            <div class="col-6">
+
+                <a
+                    href="pembayaran.html"
+                    class="menu-btn"
+                >
+
+                    <i class="bi bi-cash-stack"></i>
+
+                    <h6>
+                        Pembayaran Santri
+                    </h6>
+
+                </a>
+
+            </div>
+
+
+            <div class="col-6">
+
+                <a
+                    href="laporan.html"
+                    class="menu-btn"
+                >
+
+                    <i class="bi bi-bar-chart-fill"></i>
+
+                    <h6>
+                        Laporan Keuangan
+                    </h6>
+
+                </a>
+
+            </div>
+
+
+            <div class="col-6">
+
+                <a
+                    href="pengaturan.html"
+                    class="menu-btn"
+                >
+
+                    <i class="bi bi-gear-fill"></i>
+
+                    <h6>
+                        Pengaturan
+                    </h6>
+
+                </a>
+
+            </div>
+
+        </div>
+
     </div>
 
 </div>
-    
-    <!-- Tabel Rekap Keuangan -->
-    <div class="rekap-wrapper shadow-sm mb-4">
-        <div class="rekap-header">
-            Rekap Keuangan
-        </div>
-        <div class="table-responsive">
-            <table class="table">
-                <thead class="table-light">
-                    <tr>
-                        <th>Jenis</th>
-                        <th>Masuk</th>
-                        <th>Keluar</th>
-                        <th>Saldo</th>
-                    </tr>
-                </thead>
 
-                <tbody id="rekap">
-    <tr>
-        <td id="judulJenis">Syahriyyah</td>
-        <td id="masuk">Rp 0</td>
-        <td id="keluar">Rp 0</td>
-        <td id="saldo">Rp 0</td>
-    </tr>
-   </tbody>
-</table>
-</div>
-</div>
 
-    <!-- Menu Navigasi Bawah -->
-    <div class="row g-3">
-        <div class="col-6">
-            <a href="santri.html" class="menu-btn">
-                <i class="bi bi-people-fill"></i>
-                <h6>Data Santri</h6>
-            </a>
-        </div>
-        <div class="col-6">
-            <a href="pengeluaran.html" class="menu-btn red-icon">
-                <i class="bi bi-wallet2"></i>
-                <h6>Pengeluaran</h6>
-            </a>
-        </div>
-        <div class="col-6">
-            <a href="pembayaran.html" class="menu-btn">
-                <i class="bi bi-cash-stack"></i>
-                <h6>Pembayaran Santri</h6>
-            </a>
-        </div>
-        <div class="col-6">
-            <a href="laporan.html" class="menu-btn">
-                <i class="bi bi-bar-chart-fill"></i>
-                <h6>Laporan Keuangan</h6>
-            </a>
-        </div>
-        <div class="col-6">
-            <a href="pengaturan.html" class="menu-btn">
-                <i class="bi bi-gear-fill"></i>
-                <h6>Pengaturan</h6>
-            </a>
-        </div>
+<!-- =====================================================
+     BOTTOM NAVIGATION
+====================================================== -->
+
+<div class="ck-bottom">
+
+    <div class="ck-bottom-inner">
+
+
+        <a href="index.html">
+
+            <i class="bi bi-house-fill"></i>
+
+            <span>
+                Beranda
+            </span>
+
+        </a>
+
+
+        <a href="santri.html">
+
+            <i class="bi bi-people-fill"></i>
+
+            <span>
+                Santri
+            </span>
+
+        </a>
+
+
+        <a href="pembayaran.html">
+
+            <i class="bi bi-cash-stack"></i>
+
+            <span>
+                Bayar
+            </span>
+
+        </a>
+
+
+        <a href="pengeluaran.html">
+
+            <i class="bi bi-wallet2"></i>
+
+            <span>
+                Keluar
+            </span>
+
+        </a>
+
+
+        <a
+            href="laporan.html"
+            class="active"
+        >
+
+            <i class="bi bi-bar-chart-fill"></i>
+
+            <span>
+                Laporan
+            </span>
+
+        </a>
+
     </div>
 
 </div>
 
-<!-- Script Logika UI / Firebase Anda (Tetap aman dan tidak diubah) -->
-<script type="module" src="js/app.js"></script>
+
+<!-- =====================================================
+     JAVASCRIPT REKAP
+====================================================== -->
 
 <script>
-const jenisDashboard = document.getElementById("jenisDashboard");
-const modeBerasDiv = document.getElementById("modeBerasDiv");
 
-function updateJenis() {
-    if (jenisDashboard.value === "beras") {
-        modeBerasDiv.style.display = "block";
-    } else {
-        modeBerasDiv.style.display = "none";
+(function () {
+
+    "use strict";
+
+
+    /* =====================================================
+       ELEMENT
+    ====================================================== */
+
+    const el = {
+
+        bulan:
+            document.getElementById(
+                "bulan"
+            ),
+
+        tahun:
+            document.getElementById(
+                "tahun"
+            ),
+
+        jenis:
+            document.getElementById(
+                "jenisDashboard"
+            ),
+
+        modeBeras:
+            document.getElementById(
+                "modeBeras"
+            ),
+
+        modeBerasDiv:
+            document.getElementById(
+                "modeBerasDiv"
+            ),
+
+        judulJenis:
+            document.getElementById(
+                "judulJenis"
+            ),
+
+        masuk:
+            document.getElementById(
+                "masuk"
+            ),
+
+        keluar:
+            document.getElementById(
+                "keluar"
+            ),
+
+        saldo:
+            document.getElementById(
+                "saldo"
+            ),
+
+        periode:
+            document.getElementById(
+                "periodeLabel"
+            ),
+
+        subJudul:
+            document.getElementById(
+                "subJudul"
+            ),
+
+        namaPondok:
+            document.getElementById(
+                "namaPondokHeader"
+            ),
+
+        info:
+            document.getElementById(
+                "infoRekap"
+            ),
+
+        logo:
+            document.getElementById(
+                "logoPreviewV2"
+            )
+
+    };
+
+
+    /* =====================================================
+       BULAN
+    ====================================================== */
+
+    const namaBulan = [
+
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember"
+
+    ];
+
+
+    /* =====================================================
+       LOCAL STORAGE
+    ====================================================== */
+
+    function getArray(key) {
+
+        try {
+
+            const data =
+                JSON.parse(
+                    localStorage.getItem(key)
+                );
+
+            return Array.isArray(data)
+                ? data
+                : [];
+
+        } catch (error) {
+
+            console.warn(
+                "Gagal membaca " + key,
+                error
+            );
+
+            return [];
+
+        }
+
     }
 
-    // Nanti di sini akan menghitung ulang saldo
-    updateDashboard();
-}
 
-jenisDashboard.addEventListener("change", updateJenis);
+    /* =====================================================
+       DATA PEMBAYARAN
+    ====================================================== */
 
-document.getElementById("modeBeras")
-    .addEventListener("change", updateDashboard);
-    
-// Jalankan saat halaman pertama dibuka
-updateJenis();
+    function getPembayaran() {
 
-function updateDashboard() {
-
-    const jenis = jenisDashboard.value;
-    const mode = document.getElementById("modeBeras").value;
-
-    document.getElementById("judulJenis").innerText =
-        jenis.charAt(0).toUpperCase() + jenis.slice(1);
-
-    let masuk = 0;
-    let keluar = 0;
-    let saldo = 0;
-
-    if (jenis === "syahriyyah") {
-
-        masuk = 240000;
-        keluar = 30000;
-        saldo = masuk - keluar;
-
-        document.getElementById("masuk").innerHTML = "Rp " + masuk.toLocaleString("id-ID");
-        document.getElementById("keluar").innerHTML = "Rp " + keluar.toLocaleString("id-ID");
-        document.getElementById("saldo").innerHTML = "Rp " + saldo.toLocaleString("id-ID");
+        return getArray(
+            "pembayaran"
+        );
 
     }
 
-    else if (jenis === "kas") {
 
-        masuk = 50000;
-        keluar = 10000;
-        saldo = masuk - keluar;
+    /* =====================================================
+       DATA PENGELUARAN
+    ====================================================== */
 
-        document.getElementById("masuk").innerHTML = "Rp " + masuk.toLocaleString("id-ID");
-        document.getElementById("keluar").innerHTML = "Rp " + keluar.toLocaleString("id-ID");
-        document.getElementById("saldo").innerHTML = "Rp " + saldo.toLocaleString("id-ID");
+    function getPengeluaran() {
+
+        return getArray(
+            "pengeluaran"
+        );
 
     }
 
-    else if (jenis === "beras") {
 
-        if (mode === "liter") {
+    /* =====================================================
+       NOMINAL UANG
+    ====================================================== */
 
-            document.getElementById("judulJenis").innerText = "Beras (Liter)";
+    function angkaNominal(item) {
 
-            masuk = 80;
-            keluar = 12;
-            saldo = masuk - keluar;
+        if (!item) {
+            return 0;
+        }
 
-            document.getElementById("masuk").innerHTML = masuk + " Liter";
-            document.getElementById("keluar").innerHTML = keluar + " Liter";
-            document.getElementById("saldo").innerHTML = saldo + " Liter";
+
+        let nilai =
+            item.nominal ??
+            item.jumlah ??
+            item.amount ??
+            item.total ??
+            item.harga ??
+            0;
+
+
+        if (
+            typeof nilai ===
+            "string"
+        ) {
+
+            nilai =
+                nilai
+                    .replace(
+                        /Rp/gi,
+                        ""
+                    )
+                    .replace(
+                        /\s/g,
+                        ""
+                    )
+                    .replace(
+                        /\./g,
+                        ""
+                    )
+                    .replace(
+                        /,/g,
+                        "."
+                    );
+
+        }
+
+
+        const angka =
+            Number(nilai);
+
+
+        return Number.isFinite(angka)
+            ? angka
+            : 0;
+
+    }
+
+
+    /* =====================================================
+       JUMLAH BERAS / LITER
+    ====================================================== */
+
+    function angkaLiter(item) {
+
+        if (!item) {
+            return 0;
+        }
+
+
+        let nilai =
+            item.liter ??
+            item.jumlahLiter ??
+            item.qtyLiter ??
+            item.jumlahBeras ??
+            item.berat ??
+            item.qty ??
+            item.quantity ??
+            0;
+
+
+        if (
+            typeof nilai ===
+            "string"
+        ) {
+
+            nilai =
+                nilai
+                    .replace(
+                        /liter/gi,
+                        ""
+                    )
+                    .replace(
+                        /l/gi,
+                        ""
+                    )
+                    .replace(
+                        /\s/g,
+                        ""
+                    )
+                    .replace(
+                        /,/g,
+                        "."
+                    );
+
+        }
+
+
+        const angka =
+            Number(nilai);
+
+
+        return Number.isFinite(angka)
+            ? angka
+            : 0;
+
+    }
+
+
+    /* =====================================================
+       JENIS
+    ====================================================== */
+
+    function normalisasiJenis(item) {
+
+        const nilai =
+            String(
+                item?.jenis ??
+                item?.kategori ??
+                item?.type ??
+                item?.tipe ??
+                ""
+            )
+            .trim()
+            .toLowerCase();
+
+
+        if (
+            nilai.includes("syahri")
+        ) {
+
+            return "syahriyyah";
+
+        }
+
+
+        if (
+            nilai === "kas" ||
+            nilai.includes("kas")
+        ) {
+
+            return "kas";
+
+        }
+
+
+        if (
+            nilai.includes("beras")
+        ) {
+
+            return "beras";
+
+        }
+
+
+        if (
+            nilai.includes("spp")
+        ) {
+
+            return "syahriyyah";
+
+        }
+
+
+        return nilai;
+
+    }
+
+
+    /* =====================================================
+       TIPE TRANSAKSI
+    ====================================================== */
+
+    function tipeItem(item) {
+
+        const tipe =
+            String(
+                item?._tipe ??
+                item?.tipeTransaksi ??
+                item?.arah ??
+                item?.status ??
+                ""
+            )
+            .trim()
+            .toLowerCase();
+
+
+        if (
+            tipe.includes("keluar") ||
+            tipe.includes("pengeluaran") ||
+            tipe.includes("out")
+        ) {
+
+            return "keluar";
+
+        }
+
+
+        return "masuk";
+
+    }
+
+
+    /* =====================================================
+       PARSE TANGGAL
+    ====================================================== */
+
+    function parseTanggal(item) {
+
+        if (!item) {
+            return null;
+        }
+
+
+        const nilai =
+            item.tanggal ??
+            item.date ??
+            item.createdAt ??
+            item.waktu ??
+            item.timestamp ??
+            null;
+
+
+        if (!nilai) {
+            return null;
+        }
+
+
+        if (
+            nilai instanceof Date
+        ) {
+
+            return isNaN(
+                nilai.getTime()
+            )
+                ? null
+                : nilai;
+
+        }
+
+
+        /* Firebase Timestamp */
+
+        if (
+            typeof nilai ===
+                "object" &&
+            typeof nilai.toDate ===
+                "function"
+        ) {
+
+            try {
+
+                const tanggal =
+                    nilai.toDate();
+
+                return isNaN(
+                    tanggal.getTime()
+                )
+                    ? null
+                    : tanggal;
+
+            } catch (error) {}
+
+        }
+
+
+        /* Timestamp object */
+
+        if (
+            typeof nilai ===
+                "object" &&
+            nilai.seconds
+        ) {
+
+            const tanggal =
+                new Date(
+                    Number(
+                        nilai.seconds
+                    ) * 1000
+                );
+
+            return isNaN(
+                tanggal.getTime()
+            )
+                ? null
+                : tanggal;
+
+        }
+
+
+        const teks =
+            String(nilai).trim();
+
+
+        /* YYYY-MM-DD */
+
+        let cocok =
+            teks.match(
+                /^(\d{4})-(\d{1,2})-(\d{1,2})/
+            );
+
+
+        if (cocok) {
+
+            const tanggal =
+                new Date(
+                    Number(cocok[1]),
+                    Number(cocok[2]) - 1,
+                    Number(cocok[3])
+                );
+
+            return isNaN(
+                tanggal.getTime()
+            )
+                ? null
+                : tanggal;
+
+        }
+
+
+        /* DD/MM/YYYY atau DD-MM-YYYY */
+
+        cocok =
+            teks.match(
+                /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/
+            );
+
+
+        if (cocok) {
+
+            const tanggal =
+                new Date(
+                    Number(cocok[3]),
+                    Number(cocok[2]) - 1,
+                    Number(cocok[1])
+                );
+
+            return isNaN(
+                tanggal.getTime()
+            )
+                ? null
+                : tanggal;
+
+        }
+
+
+        /* Date JavaScript */
+
+        const hasil =
+            new Date(teks);
+
+
+        if (
+            !isNaN(
+                hasil.getTime()
+            )
+        ) {
+
+            return hasil;
+
+        }
+
+
+        return null;
+
+    }
+
+
+    /* =====================================================
+       GABUNG SEMUA TRANSAKSI
+    ====================================================== */
+
+    function semuaTransaksi() {
+
+        const pembayaran =
+            getPembayaran();
+
+        const pengeluaran =
+            getPengeluaran();
+
+
+        const data = [];
+
+
+        /* ---------------------------------------------
+           PEMBAYARAN
+        --------------------------------------------- */
+
+        pembayaran.forEach(
+            function (item) {
+
+                data.push({
+
+                    ...item,
+
+                    _tipe:
+                        "masuk",
+
+                    _sumber:
+                        "pembayaran"
+
+                });
+
+            }
+        );
+
+
+        /* ---------------------------------------------
+           PENGELUARAN
+        --------------------------------------------- */
+
+        pengeluaran.forEach(
+            function (item) {
+
+                data.push({
+
+                    ...item,
+
+                    _tipe:
+                        "keluar",
+
+                    _sumber:
+                        "pengeluaran"
+
+                });
+
+            }
+        );
+
+
+        return data;
+
+    }
+
+
+    /* =====================================================
+       FILTER TANGGAL
+    ====================================================== */
+
+    function sesuaiPeriode(item) {
+
+        const bulan =
+            el.bulan.value;
+
+        const tahun =
+            el.tahun.value;
+
+
+        const tanggal =
+            parseTanggal(item);
+
+
+        if (
+            bulan === "semua" &&
+            tahun === "semua"
+        ) {
+
+            return true;
+
+        }
+
+
+        if (!tanggal) {
+
+            return false;
+
+        }
+
+
+        if (
+            bulan !== "semua" &&
+            tanggal.getMonth()
+                !== Number(bulan)
+        ) {
+
+            return false;
+
+        }
+
+
+        if (
+            tahun !== "semua" &&
+            tanggal.getFullYear()
+                !== Number(tahun)
+        ) {
+
+            return false;
+
+        }
+
+
+        return true;
+
+    }
+
+
+    /* =====================================================
+       FILTER JENIS
+    ====================================================== */
+
+    function sesuaiJenis(item) {
+
+        const jenis =
+            el.jenis.value;
+
+
+        const jenisData =
+            normalisasiJenis(item);
+
+
+        return (
+            jenisData === jenis
+        );
+
+    }
+
+
+    /* =====================================================
+       TRANSAKSI YANG SESUAI
+    ====================================================== */
+
+    function transaksiTerfilter() {
+
+        return semuaTransaksi()
+            .filter(
+                sesuaiPeriode
+            )
+            .filter(
+                sesuaiJenis
+            );
+
+    }
+
+
+    /* =====================================================
+       HITUNG REKAP
+    ====================================================== */
+
+    function hitungRekap() {
+
+        const jenis =
+            el.jenis.value;
+
+        const mode =
+            el.modeBeras.value;
+
+
+        const data =
+            transaksiTerfilter();
+
+
+        let masuk = 0;
+
+        let keluar = 0;
+
+
+        data.forEach(
+            function (item) {
+
+                /*
+                 * BERAS MODE LITER
+                 */
+
+                if (
+                    jenis === "beras" &&
+                    mode === "liter"
+                ) {
+
+                    const liter =
+                        angkaLiter(item);
+
+
+                    if (
+                        item._tipe ===
+                        "keluar"
+                    ) {
+
+                        keluar +=
+                            liter;
+
+                    } else {
+
+                        masuk +=
+                            liter;
+
+                    }
+
+
+                    return;
+
+                }
+
+
+                /*
+                 * MODE UANG
+                 */
+
+                const nominal =
+                    angkaNominal(item);
+
+
+                if (
+                    item._tipe ===
+                    "keluar"
+                ) {
+
+                    keluar +=
+                        nominal;
+
+                } else {
+
+                    masuk +=
+                        nominal;
+
+                }
+
+            }
+        );
+
+
+        const saldo =
+            masuk -
+            keluar;
+
+
+        return {
+
+            masuk,
+            keluar,
+            saldo
+
+        };
+
+    }
+
+
+    /* =====================================================
+       FORMAT RUPIAH
+    ====================================================== */
+
+    function rupiah(nilai) {
+
+        return (
+            "Rp " +
+            Number(
+                nilai || 0
+            ).toLocaleString(
+                "id-ID"
+            )
+        );
+
+    }
+
+
+    /* =====================================================
+       FORMAT LITER
+    ====================================================== */
+
+    function liter(nilai) {
+
+        const angka =
+            Number(
+                nilai || 0
+            );
+
+
+        return (
+            angka.toLocaleString(
+                "id-ID",
+                {
+                    maximumFractionDigits:
+                        2
+                }
+            ) +
+            " Liter"
+        );
+
+    }
+
+
+    /* =====================================================
+       FORMAT NILAI
+    ====================================================== */
+
+    function formatNilai(nilai) {
+
+        if (
+            el.jenis.value ===
+                "beras" &&
+            el.modeBeras.value ===
+                "liter"
+        ) {
+
+            return liter(nilai);
+
+        }
+
+
+        return rupiah(nilai);
+
+    }
+
+
+    /* =====================================================
+       TAMPILKAN PERIODE
+    ====================================================== */
+
+    function tampilkanPeriode() {
+
+        const bulan =
+            el.bulan.value;
+
+        const tahun =
+            el.tahun.value;
+
+
+        let teks = "";
+
+
+        if (
+            bulan !== "semua"
+        ) {
+
+            teks =
+                namaBulan[
+                    Number(bulan)
+                ];
 
         } else {
 
-            document.getElementById("judulJenis").innerText = "Beras (Uang)";
+            teks =
+                "Semua Bulan";
 
-            masuk = 1200000;
-            keluar = 180000;
-            saldo = masuk - keluar;
+        }
 
-            document.getElementById("masuk").innerHTML = "Rp " + masuk.toLocaleString("id-ID");
-            document.getElementById("keluar").innerHTML = "Rp " + keluar.toLocaleString("id-ID");
-            document.getElementById("saldo").innerHTML = "Rp " + saldo.toLocaleString("id-ID");
+
+        if (
+            tahun !== "semua"
+        ) {
+
+            teks +=
+                " " + tahun;
+
+        } else {
+
+            if (
+                bulan !== "semua"
+            ) {
+
+                teks +=
+                    " • Semua Tahun";
+
+            } else {
+
+                teks =
+                    "Semua data";
+
+            }
+
+        }
+
+
+        el.periode.textContent =
+            teks;
+
+    }
+
+
+    /* =====================================================
+       TAMPILKAN REKAP
+    ====================================================== */
+
+    function updateDashboard() {
+
+        const jenis =
+            el.jenis.value;
+
+
+        /* MODE BERAS */
+
+        if (
+            jenis === "beras"
+        ) {
+
+            el.modeBerasDiv.style.display =
+                "block";
+
+        } else {
+
+            el.modeBerasDiv.style.display =
+                "none";
+
+        }
+
+
+        /* JUDUL */
+
+        if (
+            jenis === "syahriyyah"
+        ) {
+
+            el.judulJenis.textContent =
+                "Syahriyyah";
+
+        } else if (
+            jenis === "kas"
+        ) {
+
+            el.judulJenis.textContent =
+                "Kas";
+
+        } else if (
+            jenis === "beras"
+        ) {
+
+            if (
+                el.modeBeras.value ===
+                    "liter"
+            ) {
+
+                el.judulJenis.textContent =
+                    "Beras (Liter)";
+
+            } else {
+
+                el.judulJenis.textContent =
+                    "Beras (Uang)";
+
+            }
+
+        }
+
+
+        const hasil =
+            hitungRekap();
+
+
+        el.masuk.textContent =
+            formatNilai(
+                hasil.masuk
+            );
+
+
+        el.keluar.textContent =
+            formatNilai(
+                hasil.keluar
+            );
+
+
+        el.saldo.textContent =
+            formatNilai(
+                hasil.saldo
+            );
+
+
+        /* WARNA SALDO */
+
+        el.saldo.classList.remove(
+            "saldo-minus"
+        );
+
+
+        if (
+            hasil.saldo < 0
+        ) {
+
+            el.saldo.classList.add(
+                "saldo-minus"
+            );
+
+        }
+
+
+        tampilkanPeriode();
+
+
+        /* INFO */
+
+        const data =
+            transaksiTerfilter();
+
+
+        if (
+            data.length === 0
+        ) {
+
+            el.info.textContent =
+                "Belum ada transaksi " +
+                "yang sesuai dengan filter.";
+
+        } else {
+
+            el.info.textContent =
+                data.length +
+                " transaksi digunakan " +
+                "untuk menghitung rekap.";
 
         }
 
     }
 
-}
-    
+
+    /* =====================================================
+       ISI TAHUN OTOMATIS
+    ====================================================== */
+
+    function isiTahun() {
+
+        const semua =
+            semuaTransaksi();
+
+
+        const tahunSet =
+            new Set();
+
+
+        semua.forEach(
+            function (item) {
+
+                const tanggal =
+                    parseTanggal(item);
+
+
+                if (tanggal) {
+
+                    tahunSet.add(
+                        tanggal.getFullYear()
+                    );
+
+                }
+
+            }
+        );
+
+
+        const tahunSekarang =
+            new Date()
+                .getFullYear();
+
+
+        tahunSet.add(
+            tahunSekarang
+        );
+
+
+        const daftar =
+            Array.from(
+                tahunSet
+            ).sort(
+                (a,b) => b-a
+            );
+
+
+        const nilaiLama =
+            el.tahun.value;
+
+
+        el.tahun.innerHTML = "";
+
+
+        const semuaOption =
+            document.createElement(
+                "option"
+            );
+
+        semuaOption.value =
+            "semua";
+
+        semuaOption.textContent =
+            "Semua Tahun";
+
+
+        el.tahun.appendChild(
+            semuaOption
+        );
+
+
+        daftar.forEach(
+            function (tahun) {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    String(tahun);
+
+
+                option.textContent =
+                    String(tahun);
+
+
+                el.tahun.appendChild(
+                    option
+                );
+
+            }
+        );
+
+
+        if (
+            nilaiLama &&
+            (
+                nilaiLama ===
+                    "semua" ||
+                daftar.includes(
+                    Number(nilaiLama)
+                )
+            )
+        ) {
+
+            el.tahun.value =
+                nilaiLama;
+
+        } else {
+
+            el.tahun.value =
+                String(
+                    tahunSekarang
+                );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       DEFAULT BULAN
+    ====================================================== */
+
+    function setDefaultBulan() {
+
+        /*
+         * Mengikuti bulan sekarang.
+         */
+
+        const bulanSekarang =
+            new Date()
+                .getMonth();
+
+
+        /*
+         * Jika sebelumnya sudah
+         * mempunyai pilihan valid,
+         * jangan diubah.
+         */
+
+        if (
+            el.bulan.value ===
+                "semua"
+        ) {
+
+            return;
+
+        }
+
+
+        el.bulan.value =
+            String(
+                bulanSekarang
+            );
+
+    }
+
+
+    /* =====================================================
+       PENGATURAN APLIKASI
+    ====================================================== */
+
+    function muatPengaturan() {
+
+        let data = {};
+
+
+        try {
+
+            data =
+                JSON.parse(
+                    localStorage.getItem(
+                        "pengaturanAplikasi"
+                    )
+                ) || {};
+
+        } catch (error) {
+
+            console.warn(
+                "Pengaturan tidak valid.",
+                error
+            );
+
+        }
+
+
+        if (
+            data.namaPondok
+        ) {
+
+            el.namaPondok.textContent =
+                data.namaPondok;
+
+
+            el.subJudul.textContent =
+                "Rekap keuangan " +
+                data.namaPondok;
+
+        }
+
+
+        /* Logo */
+
+        let logo =
+            null;
+
+
+        try {
+
+            logo =
+                localStorage.getItem(
+                    "logoDashboard"
+                );
+
+        } catch (error) {
+
+            logo =
+                null;
+
+        }
+
+
+        if (
+            logo &&
+            el.logo
+        ) {
+
+            el.logo.src =
+                logo;
+
+        }
+
+
+        if (el.logo) {
+
+            el.logo.onerror =
+                function () {
+
+                    try {
+
+                        localStorage.removeItem(
+                            "logoDashboard"
+                        );
+
+                    } catch (error) {}
+
+                    el.logo.src =
+                        "assets/logo-catatan-kas.jpg";
+
+                };
+
+        }
+
+    }
+
+
+    /* =====================================================
+       EVENT FILTER
+    ====================================================== */
+
+    el.bulan.addEventListener(
+        "change",
+        updateDashboard
+    );
+
+
+    el.tahun.addEventListener(
+        "change",
+        updateDashboard
+    );
+
+
+    el.jenis.addEventListener(
+        "change",
+        updateDashboard
+    );
+
+
+    el.modeBeras.addEventListener(
+        "change",
+        updateDashboard
+    );
+
+
+    /* =====================================================
+       UPDATE JIKA STORAGE BERUBAH
+    ====================================================== */
+
+    window.addEventListener(
+        "storage",
+        function (event) {
+
+            if (
+
+                event.key ===
+                    "pembayaran" ||
+
+                event.key ===
+                    "pengeluaran" ||
+
+                event.key ===
+                    "pengaturanAplikasi" ||
+
+                event.key ===
+                    "logoDashboard"
+
+            ) {
+
+                isiTahun();
+
+                muatPengaturan();
+
+                updateDashboard();
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       EVENT CUSTOM APLIKASI
+    ====================================================== */
+
+    window.addEventListener(
+        "dataKeuanganBerubah",
+        function () {
+
+            isiTahun();
+
+            updateDashboard();
+
+        }
+    );
+
+
+    /* =====================================================
+       INIT
+    ====================================================== */
+
+    function init() {
+
+        muatPengaturan();
+
+        isiTahun();
+
+        setDefaultBulan();
+
+        updateDashboard();
+
+    }
+
+
+    if (
+        document.readyState ===
+            "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            init
+        );
+
+    } else {
+
+        init();
+
+    }
+
+})();
+
 </script>
 
+
+<!-- =====================================================
+     THEME
+====================================================== -->
+
 <script src="js/theme.js"></script>
-    
-<div class="ck-bottom">
-  <div class="ck-bottom-inner">
-    <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
-    <a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
-    <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
-    <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
-    <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
-  </div>
-</div>
-</div>
+
+
+<!-- =====================================================
+     AUTH GUARD
+====================================================== -->
+
+<script
+    type="module"
+    src="js/auth-guard.js"
+></script>
+
+
+<!-- =====================================================
+     BOOTSTRAP JS
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+></script>
+
+
 </body>
+
 </html>
