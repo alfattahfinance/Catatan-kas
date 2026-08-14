@@ -2,561 +2,1847 @@
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
+
+    <!-- =====================================================
+         TEMA AWAL
+         Harus dijalankan sedini mungkin agar tidak berkedip
+    ====================================================== -->
     <script>
-    (function () {
-        try {
-            const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
-            const tema = data.tema || "light";
-            let dark = false;
+        (function () {
+            try {
 
-            if (tema === "dark") {
-                dark = true;
-            } else if (tema === "system") {
-                dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                const data =
+                    JSON.parse(
+                        localStorage.getItem("pengaturanAplikasi")
+                    ) || {};
+
+                const tema =
+                    data.tema || "light";
+
+                let dark = false;
+
+                if (tema === "dark") {
+
+                    dark = true;
+
+                } else if (tema === "system") {
+
+                    dark =
+                        window.matchMedia(
+                            "(prefers-color-scheme: dark)"
+                        ).matches;
+
+                }
+
+                document.documentElement.setAttribute(
+                    "data-theme",
+                    dark ? "dark" : "light"
+                );
+
+                if (dark) {
+
+                    document.documentElement.classList.add(
+                        "dark-mode"
+                    );
+
+                } else {
+
+                    document.documentElement.classList.remove(
+                        "dark-mode"
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "Gagal memuat tema:",
+                    error
+                );
+
             }
+        })();
+    </script>
 
-            if (dark) {
-                document.documentElement.classList.add("dark-mode");
-                document.documentElement.setAttribute("data-theme", "dark");
-            }
-        } catch (error) {
-            console.warn("Gagal memuat tema:", error);
-        }
-    })();
-</script>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#dc3545">
-    <meta name="description" content="Catatan Kas - Pengeluaran">
-    <title>Pengeluaran | Catatan Kas</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#dc3545"
+    >
+
+    <meta
+        name="description"
+        content="Catatan Kas - Pengeluaran"
+    >
+
+    <title>
+        Pengeluaran | Catatan Kas
+    </title>
+
 
     <!-- =====================================================
          BOOTSTRAP
     ====================================================== -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
 
     <!-- =====================================================
          BOOTSTRAP ICONS
     ====================================================== -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    >
+
 
     <!-- =====================================================
-         CUSTOM CSS
+         CSS GLOBAL APLIKASI
     ====================================================== -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/theme.css">
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+
 
     <!-- =====================================================
-         STYLE HALAMAN
+         STYLE KHUSUS HALAMAN PENGELUARAN
     ====================================================== -->
+
     <style>
+
+        /* =================================================
+           GLOBAL
+        ================================================== */
+
         * {
             box-sizing: border-box;
         }
 
         html {
+
             scroll-behavior: smooth;
+
+            min-height: 100%;
+
         }
 
         body {
+
             margin: 0;
+
             min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            padding-bottom: 90px;
-            /* Background Gradasi Konsisten */
-            background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 15s ease infinite;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
             color: #212529;
+
+            padding-bottom: 110px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #d8e2dc 0%,
+                    #fefae0 100%
+                );
+
+            background-size: 200% 200%;
+
+            animation:
+                gradientShift 15s ease infinite;
+
         }
+
 
         @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+
         }
+
 
         /* =================================================
-           TOPBAR HEADER
-        ================================================= */
-        .ck-topbar {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: rgba(255, 255, 255, .92);
-            border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
+           DARK MODE GLOBAL
+           SAMA SEPERTI PEMBAYARAN.HTML
+        ================================================== */
+
+        html.dark-mode,
+        html.dark-mode body {
+
+            background:
+                #121212 !important;
+
+            color:
+                #f1f1f1 !important;
+
+            animation:
+                none !important;
+
         }
 
-        .ck-logo {
-            width: 56px;
-            height: 56px;
-            object-fit: cover;
-            border-radius: 14px;
-            background: white;
-            border: 1px solid #eee;
-        }
-
-        .ck-title-top {
-            margin: 0;
-            color: #dc3545;
-            font-weight: 800;
-            font-size: 1.1rem;
-        }
-
-        .ck-subtitle-top {
-            color: #6c757d;
-            font-size: .8rem;
-        }
 
         /* =================================================
            CONTAINER
-        ================================================= */
+        ================================================== */
+
         .page-container {
-            width: 100%;
-            max-width: 100%;
+
+            width: 100% !important;
+
+            max-width: 100% !important;
+
             margin: 0 auto;
-            padding-left: 20px;
-            padding-right: 20px;
+
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+
+            padding-bottom: 120px !important;
+
         }
+
+
+        /* =================================================
+           TOPBAR HEADER
+        ================================================== */
+
+        .ck-topbar {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            background:
+                rgba(255, 255, 255, .94);
+
+            border-radius: 18px;
+
+            padding: 14px;
+
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 4px 14px
+                rgba(0, 0, 0, .05);
+
+            transition:
+                background .2s ease,
+                color .2s ease;
+
+        }
+
+
+        html.dark-mode .ck-topbar {
+
+            background:
+                #1e1e1e !important;
+
+            color:
+                #f1f1f1 !important;
+
+            border-color:
+                #333 !important;
+
+            box-shadow:
+                0 4px 18px
+                rgba(0, 0, 0, .35);
+
+        }
+
+
+        /* =================================================
+           LOGO
+        ================================================== */
+
+        .ck-logo {
+
+            width: 56px;
+
+            height: 56px;
+
+            min-width: 56px;
+
+            object-fit: contain;
+
+            border-radius: 14px;
+
+            background:
+                #fff;
+
+            border:
+                1px solid #eee;
+
+        }
+
+
+        html.dark-mode .ck-logo {
+
+            background:
+                #fff !important;
+
+            border-color:
+                #444 !important;
+
+        }
+
+
+        /* =================================================
+           JUDUL HEADER
+        ================================================== */
+
+        .ck-title-top {
+
+            margin: 0;
+
+            color:
+                #dc3545;
+
+            font-weight:
+                800;
+
+            font-size:
+                1.1rem;
+
+        }
+
+
+        html.dark-mode .ck-title-top {
+
+            color:
+                #ff6b7a !important;
+
+        }
+
+
+        .ck-subtitle-top {
+
+            color:
+                #6c757d;
+
+            font-size:
+                .8rem;
+
+        }
+
+
+        html.dark-mode .ck-subtitle-top {
+
+            color:
+                #aaa !important;
+
+        }
+
 
         /* =================================================
            CARD
-        ================================================= */
+        ================================================== */
+
         .pengeluaran-card {
-            border: none;
-            border-radius: 18px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, .07);
-            background: rgba(255, 255, 255, .90);
-            backdrop-filter: blur(6px);
+
+            border:
+                none;
+
+            border-radius:
+                18px;
+
+            box-shadow:
+                0 4px 15px
+                rgba(0, 0, 0, .07);
+
+            background:
+                rgba(255, 255, 255, .92);
+
+            backdrop-filter:
+                blur(8px);
+
+            -webkit-backdrop-filter:
+                blur(8px);
+
+            margin-bottom:
+                20px;
+
+            transition:
+                background .2s ease,
+                color .2s ease;
+
         }
+
+
+        html.dark-mode .pengeluaran-card {
+
+            background:
+                #1e1e1e !important;
+
+            color:
+                #f1f1f1 !important;
+
+            border-color:
+                #333 !important;
+
+            box-shadow:
+                0 4px 18px
+                rgba(0, 0, 0, .35);
+
+        }
+
+
+        html.dark-mode .pengeluaran-card .card-body {
+
+            background:
+                transparent !important;
+
+            color:
+                #f1f1f1 !important;
+
+        }
+
 
         /* =================================================
            TOMBOL KEMBALI
-        ================================================= */
+        ================================================== */
+
         .ck-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            color: #dc3545;
-            font-size: .9rem;
-            font-weight: 700;
-            margin-bottom: 12px;
+
+            display:
+                inline-flex;
+
+            align-items:
+                center;
+
+            gap:
+                6px;
+
+            color:
+                #dc3545;
+
+            text-decoration:
+                none;
+
+            font-weight:
+                700;
+
+            font-size:
+                .9rem;
+
+            margin-bottom:
+                15px;
+
         }
+
 
         .ck-back:hover {
-            color: #b02a37;
+
+            color:
+                #b02a37;
+
         }
+
+
+        html.dark-mode .ck-back {
+
+            color:
+                #ff6b7a !important;
+
+        }
+
+
+        html.dark-mode .ck-back:hover {
+
+            color:
+                #ff8594 !important;
+
+        }
+
 
         /* =================================================
-           FORM
-        ================================================= */
-        .form-label {
-            font-weight: 600;
+           JUDUL HALAMAN
+        ================================================== */
+
+        html.dark-mode h4,
+        html.dark-mode h5 {
+
+            color:
+                #f1f1f1 !important;
+
         }
 
-        .form-select,
-        .form-control {
-            min-height: 46px;
-            border-radius: 12px;
+
+        html.dark-mode .text-danger {
+
+            color:
+                #ff6b7a !important;
+
         }
+
+
+        /* =================================================
+           FORM LABEL
+        ================================================== */
+
+        .form-label {
+
+            color:
+                #495057;
+
+            font-weight:
+                600;
+
+        }
+
+
+        html.dark-mode .form-label {
+
+            color:
+                #ddd !important;
+
+        }
+
+
+        /* =================================================
+           FORM CONTROL
+        ================================================== */
+
+        .form-control,
+        .form-select {
+
+            min-height:
+                48px;
+
+            border-radius:
+                12px;
+
+            border:
+                1px solid
+                rgba(0, 0, 0, .10);
+
+            box-shadow:
+                none;
+
+            transition:
+                border-color .2s ease,
+                box-shadow .2s ease,
+                background .2s ease,
+                color .2s ease;
+
+        }
+
+
+        /* Hilangkan background Bootstrap bg-light
+           saat dark mode */
+
+        html.dark-mode .form-control,
+        html.dark-mode .form-select {
+
+            background-color:
+                #2a2a2a !important;
+
+            color:
+                #fff !important;
+
+            border-color:
+                #444 !important;
+
+        }
+
+
+        html.dark-mode .form-control::placeholder {
+
+            color:
+                #999 !important;
+
+        }
+
+
+        html.dark-mode .form-select option {
+
+            background-color:
+                #2a2a2a;
+
+            color:
+                #fff;
+
+        }
+
+
+        /* =================================================
+           FOCUS FORM
+        ================================================== */
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .12);
+
+            border-color:
+                #dc3545;
+
+            box-shadow:
+                0 0 0 .2rem
+                rgba(220, 53, 69, .12);
+
         }
+
+
+        html.dark-mode .form-control:focus,
+        html.dark-mode .form-select:focus {
+
+            border-color:
+                #ff6b7a !important;
+
+            box-shadow:
+                0 0 0 .2rem
+                rgba(255, 107, 122, .15) !important;
+
+        }
+
 
         /* =================================================
            TOMBOL SIMPAN
-        ================================================= */
+        ================================================== */
+
         .btn-simpan {
-            min-height: 48px;
-            border-radius: 12px;
-            font-weight: 700;
+
+            min-height:
+                50px;
+
+            border-radius:
+                12px;
+
+            font-weight:
+                700;
+
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease;
+
         }
+
+
+        .btn-simpan:hover {
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 6px 15px
+                rgba(220, 53, 69, .20);
+
+        }
+
+
+        .btn-simpan:active {
+
+            transform:
+                translateY(0);
+
+        }
+
 
         /* =================================================
            RIWAYAT
-        ================================================= */
+        ================================================== */
+
         .riwayat-title {
-            font-weight: 700;
+
+            font-weight:
+                700;
+
         }
+
 
         #daftarPengeluaran {
-            border-radius: 12px;
-            overflow: hidden;
+
+            border-radius:
+                12px;
+
+            overflow:
+                hidden;
+
         }
+
 
         #daftarPengeluaran .list-group-item {
-            padding: 15px 12px;
-            background: transparent;
+
+            padding:
+                15px 12px;
+
+            background:
+                transparent;
+
+            transition:
+                background .2s ease;
+
         }
 
-        /* =================================================
-   RESPONSIVE TABLET & LAYAR BESAR
-================================================= */
 
-@media (min-width: 768px) {
+        #daftarPengeluaran
+        .list-group-item:hover {
 
-    .page-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding-left: 30px !important;
-        padding-right: 30px !important;
-    }
+            background:
+                rgba(220, 53, 69, .05);
 
-    .ck-topbar {
-        padding: 20px;
-    }
-
-    .ck-logo {
-        width: 72px;
-        height: 72px;
-    }
-
-    .ck-title-top {
-        font-size: 1.35rem;
-    }
-
-    .ck-subtitle-top {
-        font-size: 1rem;
-    }
-
-    .pengeluaran-card {
-        border-radius: 22px;
-    }
-
-    .form-control,
-    .form-select {
-        min-height: 52px;
-        font-size: 1rem;
-    }
-
-    .btn-simpan {
-        min-height: 54px;
-        font-size: 1rem;
-    }
-
-    .riwayat-title {
-        font-size: 1.2rem;
-    }
-
-}
-
-        /* =================================================
-           DARK MODE
-        ================================================= */
-        body.dark-mode {
-            background: #121212 !important;
-            animation: none !important;
-            color: #f1f1f1;
         }
 
-        body.dark-mode .pengeluaran-card,
-        body.dark-mode .ck-topbar,
-        body.dark-mode .ck-bottom {
-            background: #1e1e1e !important;
-            color: #f1f1f1;
-            border-color: #333 !important;
+
+        html.dark-mode
+        #daftarPengeluaran
+        .list-group-item {
+
+            background:
+                #1e1e1e !important;
+
+            color:
+                #eee !important;
+
+            border-color:
+                #333 !important;
+
         }
 
-        body.dark-mode .form-control,
-        body.dark-mode .form-select {
-            background: #242424 !important;
-            color: #fff !important;
-            border-color: #555 !important;
+
+        html.dark-mode
+        #daftarPengeluaran
+        .list-group-item:hover {
+
+            background:
+                #2a2a2a !important;
+
         }
 
-        body.dark-mode .form-control::placeholder {
-            color: #aaa;
+
+        html.dark-mode .text-muted {
+
+            color:
+                #aaa !important;
+
         }
 
-        body.dark-mode .text-muted {
-            color: #adb5bd !important;
-        }
-
-        body.dark-mode #daftarPengeluaran .list-group-item {
-            background: #1e1e1e;
-            color: #f1f1f1;
-            border-color: #444;
-        }
-
-        body.dark-mode .ck-back {
-            color: #ff6b7a;
-        }
-
-        body.dark-mode .ck-back:hover {
-            color: #ff8594;
-        }
 
         /* =================================================
            BOTTOM NAVIGATION
-        ================================================= */
-      .ck-bottom {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1050;
-    background: rgba(255, 255, 255, .97);
-    border-top: 1px solid #dee2e6;
-    box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
-    padding: 6px 15px;
-    backdrop-filter: blur(8px);
-}
+        ================================================== */
 
-.ck-bottom-inner {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-}
+        .ck-bottom {
+
+            position:
+                fixed;
+
+            left:
+                0;
+
+            right:
+                0;
+
+            bottom:
+                0;
+
+            z-index:
+                1050;
+
+            background:
+                rgba(255, 255, 255, .97);
+
+            border-top:
+                1px solid #dee2e6;
+
+            box-shadow:
+                0 -3px 15px
+                rgba(0, 0, 0, .08);
+
+            padding:
+                6px 8px;
+
+            backdrop-filter:
+                blur(8px);
+
+            -webkit-backdrop-filter:
+                blur(8px);
+
+        }
+
+
+        html.dark-mode .ck-bottom {
+
+            background:
+                rgba(30, 30, 30, .98) !important;
+
+            border-top-color:
+                #333 !important;
+
+            box-shadow:
+                0 -3px 15px
+                rgba(0, 0, 0, .35) !important;
+
+        }
+
+
+        .ck-bottom-inner {
+
+            width:
+                100% !important;
+
+            max-width:
+                100% !important;
+
+            margin:
+                0 auto;
+
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap:
+                4px;
+
+        }
 
 
         .ck-bottom a {
-            text-decoration: none !important;
-            color: #6c757d;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            font-size: .68rem;
-            padding: 5px 2px;
-            border-radius: 10px;
-            transition: .2s ease;
+
+            text-decoration:
+                none !important;
+
+            color:
+                #6c757d;
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            gap:
+                3px;
+
+            font-size:
+                .68rem;
+
+            padding:
+                5px 2px;
+
+            border-radius:
+                10px;
+
+            transition:
+                .2s ease;
+
         }
+
+
+        html.dark-mode .ck-bottom a {
+
+            color:
+                #aaa !important;
+
+        }
+
 
         .ck-bottom a i {
-            font-size: 1.15rem;
+
+            font-size:
+                1.15rem;
+
         }
+
 
         .ck-bottom a:hover {
-            color: #dc3545;
-            background: rgba(220, 53, 69, .08);
+
+            color:
+                #dc3545;
+
+            background:
+                rgba(220, 53, 69, .08);
+
         }
+
+
+        html.dark-mode .ck-bottom a:hover {
+
+            color:
+                #ff6b7a !important;
+
+            background:
+                rgba(220, 53, 69, .12) !important;
+
+        }
+
 
         .ck-bottom a.active {
-            color: #dc3545 !important;
-            font-weight: 700;
+
+            color:
+                #dc3545 !important;
+
+            font-weight:
+                700;
+
         }
 
-        body.dark-mode .ck-bottom a {
-            color: #adb5bd;
+
+        html.dark-mode .ck-bottom a.active {
+
+            color:
+                #ff6b7a !important;
+
         }
 
-        body.dark-mode .ck-bottom a:hover,
-        body.dark-mode .ck-bottom a.active {
-            color: #ff6b7a !important;
-        }
 
         /* =================================================
-           MOBILE
-        ================================================= */
-        @media (max-width: 380px) {
+           TABLET
+        ================================================== */
+
+        @media (min-width: 768px) {
+
             .page-container {
-                padding-left: 10px !important;
-                padding-right: 10px !important;
+
+                padding-left:
+                    35px !important;
+
+                padding-right:
+                    35px !important;
+
             }
+
+
+            .ck-topbar {
+
+                padding:
+                    20px;
+
+                border-radius:
+                    20px;
+
+            }
+
+
+            .ck-logo {
+
+                width:
+                    72px;
+
+                height:
+                    72px;
+
+                min-width:
+                    72px;
+
+                border-radius:
+                    16px;
+
+            }
+
+
+            .ck-title-top {
+
+                font-size:
+                    1.35rem;
+
+            }
+
+
+            .ck-subtitle-top {
+
+                font-size:
+                    1rem;
+
+            }
+
+
+            .pengeluaran-card {
+
+                border-radius:
+                    20px;
+
+            }
+
+
+            .pengeluaran-card .card-body {
+
+                padding:
+                    25px !important;
+
+            }
+
+
+            .form-label {
+
+                font-size:
+                    1rem;
+
+            }
+
+
+            .form-control,
+            .form-select {
+
+                min-height:
+                    52px;
+
+                font-size:
+                    1rem;
+
+            }
+
+
+            .btn-simpan {
+
+                min-height:
+                    52px;
+
+                font-size:
+                    1rem;
+
+            }
+
+
+            .ck-bottom {
+
+                padding:
+                    8px 25px;
+
+            }
+
 
             .ck-bottom a {
-                font-size: .62rem;
+
+                font-size:
+                    .8rem;
+
+                padding:
+                    8px 4px;
+
             }
+
 
             .ck-bottom a i {
-                font-size: 1.05rem;
+
+                font-size:
+                    1.35rem;
+
             }
+
         }
+
+
+        /* =================================================
+           LAYAR BESAR
+        ================================================== */
+
+        @media (min-width: 992px) {
+
+            .page-container {
+
+                padding-left:
+                    50px !important;
+
+                padding-right:
+                    50px !important;
+
+            }
+
+
+            .ck-topbar {
+
+                padding:
+                    24px;
+
+            }
+
+
+            .ck-logo {
+
+                width:
+                    86px;
+
+                height:
+                    86px;
+
+                min-width:
+                    86px;
+
+            }
+
+
+            .ck-title-top {
+
+                font-size:
+                    1.5rem;
+
+            }
+
+
+            .ck-subtitle-top {
+
+                font-size:
+                    1.05rem;
+
+            }
+
+
+            .pengeluaran-card .card-body {
+
+                padding:
+                    30px !important;
+
+            }
+
+        }
+
+
+        /* =================================================
+           MOBILE KECIL
+        ================================================== */
+
+        @media (max-width: 380px) {
+
+            .page-container {
+
+                padding-left:
+                    10px !important;
+
+                padding-right:
+                    10px !important;
+
+            }
+
+
+            .ck-topbar {
+
+                padding:
+                    12px;
+
+                gap:
+                    10px;
+
+            }
+
+
+            .ck-logo {
+
+                width:
+                    50px;
+
+                height:
+                    50px;
+
+                min-width:
+                    50px;
+
+            }
+
+
+            .ck-title-top {
+
+                font-size:
+                    1rem;
+
+            }
+
+
+            .ck-subtitle-top {
+
+                font-size:
+                    .75rem;
+
+            }
+
+
+            .ck-bottom a {
+
+                font-size:
+                    .62rem;
+
+            }
+
+
+            .ck-bottom a i {
+
+                font-size:
+                    1.05rem;
+
+            }
+
+        }
+
     </style>
+
 </head>
 
+
 <body>
+
 
 <!-- =====================================================
      CONTAINER UTAMA
 ====================================================== -->
-<div class="container page-container py-4">
 
-    <!-- Topbar Header Dinamis -->
+<div
+    class="container-fluid page-container py-4"
+>
+
+
+    <!-- =================================================
+         TOPBAR HEADER
+    ================================================== -->
+
     <div class="ck-topbar">
-        <img id="logoPreviewV2" src="assets/logo-catatan-kas.jpg" class="ck-logo" alt="Logo Catatan Kas">
+
+        <img
+            id="logoPreviewV2"
+            src="assets/logo-catatan-kas.jpg"
+            class="ck-logo"
+            alt="Logo Catatan Kas"
+        >
+
         <div>
-            <p class="ck-title-top">Catatan Kas</p>
-            <span class="ck-subtitle-top" id="namaPondokHeader">Madrasah Al-Fattah</span>
+
+            <p class="ck-title-top">
+                Catatan Kas
+            </p>
+
+            <span
+                class="ck-subtitle-top"
+                id="namaPondokHeader"
+            >
+                Madrasah Al-Fattah
+            </span>
+
         </div>
+
     </div>
 
-    <!-- =================================================
-         FORM INPUT
-    ================================================== -->
-    <div class="card pengeluaran-card shadow p-4 mb-4">
-
-        <!-- KEMBALI -->
-        <a href="index.html" class="ck-back">
-            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
-        </a>
-
-        <!-- JUDUL -->
-        <h4 class="mb-4 fw-bold text-danger">
-            Input Pengeluaran
-        </h4>
-
-        <!-- JENIS PENGELUARAN -->
-        <label class="form-label" for="jenisPengeluaran">Jenis Pengeluaran</label>
-        <select id="jenisPengeluaran" class="form-select mb-3 bg-light border-0">
-            <option value="">Pilih Jenis</option>
-            <option value="SPP">SPP</option>
-            <option value="Syahriyyah">Syahriyyah</option>
-            <option value="Infaq">Infaq</option>
-            <option value="Kas">Kas</option>
-            <option value="Beras">Beras</option>
-            <option value="Lainnya">Lainnya</option>
-        </select>
-
-        <!-- KETERANGAN -->
-        <label class="form-label" for="keterangan">Keterangan</label>
-        <input id="keterangan" type="text" class="form-control mb-3 bg-light border-0" placeholder="Contoh: Belanja dapur" autocomplete="off">
-
-        <!-- TANGGAL -->
-        <label class="form-label" for="tanggal">Tanggal</label>
-        <input type="date" id="tanggal" class="form-control mb-3 bg-light border-0">
-
-        <!-- JUMLAH -->
-        <label id="labelJumlah" class="form-label" for="nominal">Nominal (Rp)</label>
-        <input type="number" id="nominal" class="form-control mb-3 bg-light border-0" placeholder="Masukkan nominal" min="0" step="any">
-
-        <!-- SATUAN -->
-        <label class="form-label" for="satuan">Satuan</label>
-        <select id="satuan" class="form-select mb-4 bg-light border-0" disabled>
-            <option value="Rupiah">Rupiah</option>
-            <option value="Liter">Liter</option>
-        </select>
-
-        <!-- SIMPAN -->
-        <button type="button" id="simpanPengeluaran" class="btn btn-danger btn-simpan w-100">
-            <i class="bi bi-save me-1"></i> Simpan Pengeluaran
-        </button>
-
-    </div> <!-- TUTUP CARD FORM PENGELUARAN -->
 
     <!-- =================================================
-         RIWAYAT
+         FORM INPUT PENGELUARAN
     ================================================== -->
-    <div class="card pengeluaran-card shadow p-4">
-        <h5 class="riwayat-title mb-3">
-            <i class="bi bi-clock-history me-1"></i> Riwayat Pengeluaran
-        </h5>
-        <ul id="daftarPengeluaran" class="list-group">
-            <li class="list-group-item text-center text-muted">
-                Memuat riwayat...
-            </li>
-        </ul>
+
+    <div
+        class="card pengeluaran-card shadow p-3 mb-4"
+    >
+
+        <div class="card-body p-1">
+
+
+            <!-- KEMBALI -->
+
+            <a
+                href="index.html"
+                class="ck-back"
+            >
+
+                <i class="bi bi-arrow-left"></i>
+
+                Kembali ke Dashboard
+
+            </a>
+
+
+            <!-- JUDUL -->
+
+            <h4
+                class="mb-4 fw-bold text-danger"
+            >
+
+                <i class="bi bi-wallet2 me-1"></i>
+
+                Input Pengeluaran
+
+            </h4>
+
+
+            <!-- JENIS PENGELUARAN -->
+
+            <div class="mb-3">
+
+                <label
+                    class="form-label"
+                    for="jenisPengeluaran"
+                >
+                    Jenis Pengeluaran
+                </label>
+
+                <select
+                    id="jenisPengeluaran"
+                    class="form-select bg-light border-0"
+                >
+
+                    <option value="">
+                        Pilih Jenis
+                    </option>
+
+                    <option value="SPP">
+                        SPP
+                    </option>
+
+                    <option value="Syahriyyah">
+                        Syahriyyah
+                    </option>
+
+                    <option value="Infaq">
+                        Infaq
+                    </option>
+
+                    <option value="Kas">
+                        Kas
+                    </option>
+
+                    <option value="Beras">
+                        Beras
+                    </option>
+
+                    <option value="Lainnya">
+                        Lainnya
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- KETERANGAN -->
+
+            <div class="mb-3">
+
+                <label
+                    class="form-label"
+                    for="keterangan"
+                >
+                    Keterangan
+                </label>
+
+                <input
+                    id="keterangan"
+                    type="text"
+                    class="form-control bg-light border-0"
+                    placeholder="Contoh: Belanja dapur"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <!-- TANGGAL -->
+
+            <div class="mb-3">
+
+                <label
+                    class="form-label"
+                    for="tanggal"
+                >
+                    Tanggal
+                </label>
+
+                <input
+                    type="date"
+                    id="tanggal"
+                    class="form-control bg-light border-0"
+                >
+
+            </div>
+
+
+            <!-- JUMLAH -->
+
+            <div class="mb-3">
+
+                <label
+                    id="labelJumlah"
+                    class="form-label"
+                    for="nominal"
+                >
+                    Nominal (Rp)
+                </label>
+
+                <input
+                    type="number"
+                    id="nominal"
+                    class="form-control bg-light border-0"
+                    placeholder="Masukkan nominal"
+                    min="0"
+                    step="any"
+                >
+
+            </div>
+
+
+            <!-- SATUAN -->
+
+            <div class="mb-4">
+
+                <label
+                    class="form-label"
+                    for="satuan"
+                >
+                    Satuan
+                </label>
+
+                <select
+                    id="satuan"
+                    class="form-select bg-light border-0"
+                    disabled
+                >
+
+                    <option value="Rupiah">
+                        Rupiah
+                    </option>
+
+                    <option value="Liter">
+                        Liter
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SIMPAN -->
+
+            <button
+                type="button"
+                id="simpanPengeluaran"
+                class="btn btn-danger btn-simpan w-100"
+            >
+
+                <i
+                    class="bi bi-save me-1"
+                ></i>
+
+                Simpan Pengeluaran
+
+            </button>
+
+        </div>
+
     </div>
+
+
+    <!-- =================================================
+         RIWAYAT PENGELUARAN
+    ================================================== -->
+
+    <div
+        class="card pengeluaran-card shadow p-3"
+    >
+
+        <div class="card-body p-1">
+
+            <h5
+                class="riwayat-title mb-3"
+            >
+
+                <i
+                    class="bi bi-clock-history me-1"
+                ></i>
+
+                Riwayat Pengeluaran
+
+            </h5>
+
+            <ul
+                id="daftarPengeluaran"
+                class="list-group list-group-flush"
+            >
+
+                <li
+                    class="list-group-item text-center text-muted border-0"
+                >
+                    Memuat riwayat...
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
 
 </div>
 
+
 <!-- =====================================================
-     FUNGSI UBAH SATUAN & INISIALISASI
+     FUNGSI UBAH SATUAN
 ====================================================== -->
+
 <script>
+
 function ubahSatuan() {
-    const jenis = document.getElementById("jenisPengeluaran");
-    const satuan = document.getElementById("satuan");
-    const label = document.getElementById("labelJumlah");
-    const jumlah = document.getElementById("nominal");
 
-    if (!jenis || !satuan || !label || !jumlah) return;
+    const jenis =
+        document.getElementById(
+            "jenisPengeluaran"
+        );
 
-    if (jenis.value === "Beras") {
-        satuan.value = "Liter";
-        label.textContent = "Jumlah (Liter)";
-        jumlah.placeholder = "Masukkan jumlah liter";
-    } else {
-        satuan.value = "Rupiah";
-        label.textContent = "Nominal (Rp)";
-        jumlah.placeholder = "Masukkan nominal";
+    const satuan =
+        document.getElementById(
+            "satuan"
+        );
+
+    const label =
+        document.getElementById(
+            "labelJumlah"
+        );
+
+    const jumlah =
+        document.getElementById(
+            "nominal"
+        );
+
+
+    if (
+        !jenis ||
+        !satuan ||
+        !label ||
+        !jumlah
+    ) {
+
+        return;
+
     }
+
+
+    if (
+        jenis.value === "Beras"
+    ) {
+
+        satuan.value =
+            "Liter";
+
+        label.textContent =
+            "Jumlah (Liter)";
+
+        jumlah.placeholder =
+            "Masukkan jumlah liter";
+
+        jumlah.step =
+            "0.1";
+
+    }
+
+    else {
+
+        satuan.value =
+            "Rupiah";
+
+        label.textContent =
+            "Nominal (Rp)";
+
+        jumlah.placeholder =
+            "Masukkan nominal";
+
+        jumlah.step =
+            "any";
+
+    }
+
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    // Muat Pengaturan Nama Pondok & Logo
-    const pengaturan = JSON.parse(localStorage.getItem("pengaturanAplikasi"));
-    if (pengaturan && pengaturan.namaPondok) {
-        const headerEl = document.getElementById("namaPondokHeader");
-        if (headerEl) headerEl.textContent = pengaturan.namaPondok;
+
+/* =====================================================
+   NAMA PONDOK & LOGO
+====================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        /* =========================================
+           NAMA PONDOK
+        ========================================= */
+
+        const headerEl =
+            document.getElementById(
+                "namaPondokHeader"
+            );
+
+
+        try {
+
+            const pengaturan =
+                JSON.parse(
+                    localStorage.getItem(
+                        "pengaturanAplikasi"
+                    )
+                ) || {};
+
+
+            if (
+                headerEl &&
+                pengaturan.namaPondok
+            ) {
+
+                headerEl.textContent =
+                    pengaturan.namaPondok;
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Pengaturan aplikasi tidak valid.",
+                error
+            );
+
+        }
+
+
+        /* =========================================
+           LOGO DASHBOARD
+        ========================================= */
+
+        const logoDefault =
+            "assets/logo-catatan-kas.jpg";
+
+
+        let savedLogo =
+            null;
+
+
+        try {
+
+            savedLogo =
+                localStorage.getItem(
+                    "logoDashboard"
+                );
+
+        } catch (error) {
+
+            console.warn(
+                "Logo tidak dapat dibaca.",
+                error
+            );
+
+        }
+
+
+        const logoImgs =
+            document.querySelectorAll(
+                ".ck-logo, #logoPreviewV2"
+            );
+
+
+        if (
+            savedLogo
+        ) {
+
+            logoImgs.forEach(
+                function (img) {
+
+                    img.src =
+                        savedLogo;
+
+                }
+            );
+
+        }
+
+
+        logoImgs.forEach(
+            function (img) {
+
+                img.onerror =
+                    function () {
+
+                        try {
+
+                            localStorage.removeItem(
+                                "logoDashboard"
+                            );
+
+                        } catch (error) {}
+
+                        img.src =
+                            logoDefault;
+
+                    };
+
+            }
+        );
+
+
+        /* =========================================
+           EVENT JENIS PENGELUARAN
+        ========================================= */
+
+        const jenis =
+            document.getElementById(
+                "jenisPengeluaran"
+            );
+
+
+        if (jenis) {
+
+            jenis.addEventListener(
+                "change",
+                ubahSatuan
+            );
+
+            ubahSatuan();
+
+        }
+
     }
 
-    const savedLogo = localStorage.getItem("logoDashboard");
-    if (savedLogo) {
-        const logoImgs = document.querySelectorAll(".ck-logo, #logoPreviewV2");
-        logoImgs.forEach(img => {
-            img.src = savedLogo;
-        });
-    }
+);
 
-    // Event Listener Jenis Pengeluaran
-    const jenis = document.getElementById("jenisPengeluaran");
-    if (jenis) {
-        jenis.addEventListener("change", ubahSatuan);
-        ubahSatuan();
-    }
-});
 </script>
+
 
 <!-- =====================================================
      PENGELUARAN JAVASCRIPT
 ====================================================== -->
-<script type="module" src="./js/pengeluaran.js"></script>
 
-<!-- =====================================================
-     THEME
-====================================================== -->
-<script src="./js/theme.js"></script>
+<script
+    type="module"
+    src="./js/pengeluaran.js"
+></script>
+
 
 <!-- =====================================================
      AUTH GUARD
 ====================================================== -->
-<script type="module" src="./js/auth-guard.js"></script>
+
+<script
+    type="module"
+    src="./js/auth-guard.js"
+></script>
+
+
+<!-- =====================================================
+     THEME GLOBAL
+====================================================== -->
+
+<script
+    src="./js/theme.js"
+></script>
+
 
 <!-- =====================================================
      BOTTOM NAVIGATION
 ====================================================== -->
+
 <div class="ck-bottom">
+
     <div class="ck-bottom-inner">
-        <a href="index.html">
+
+
+        <a
+            href="index.html"
+        >
+
             <i class="bi bi-house-fill"></i>
-            <span>Beranda</span>
+
+            <span>
+                Beranda
+            </span>
+
         </a>
-        <a href="santri.html">
+
+
+        <a
+            href="santri.html"
+        >
+
             <i class="bi bi-people-fill"></i>
-            <span>Santri</span>
+
+            <span>
+                Santri
+            </span>
+
         </a>
-        <a href="pembayaran.html">
+
+
+        <a
+            href="pembayaran.html"
+        >
+
             <i class="bi bi-cash-stack"></i>
-            <span>Bayar</span>
+
+            <span>
+                Bayar
+            </span>
+
         </a>
-        <a href="pengeluaran.html" class="active">
+
+
+        <a
+            href="pengeluaran.html"
+            class="active"
+            aria-current="page"
+        >
+
             <i class="bi bi-wallet2"></i>
-            <span>Keluar</span>
+
+            <span>
+                Keluar
+            </span>
+
         </a>
-        <a href="laporan.html">
+
+
+        <a
+            href="laporan.html"
+        >
+
             <i class="bi bi-bar-chart-fill"></i>
-            <span>Laporan</span>
+
+            <span>
+                Laporan
+            </span>
+
         </a>
+
+
     </div>
+
 </div>
+
 
 <!-- =====================================================
      BOOTSTRAP JS
 ====================================================== -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+></script>
+
 
 </body>
+
 </html>
