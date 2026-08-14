@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,75 +25,24 @@ import androidx.webkit.WebViewClientCompat;
 
 import java.io.File;
 
-
-/**
- * ============================================================
- * CATATAN KAS
- * MainActivity.java
- * ============================================================
- *
- * Fungsi:
- *
- * 1. Menjalankan aplikasi HTML melalui WebView
- * 2. Menyediakan AndroidDownload ke JavaScript
- * 3. Download APK update melalui DownloadManager
- * 4. Menunggu download selesai
- * 5. Membuka installer APK otomatis
- * 6. Mendukung Install Unknown Apps
- * 7. WebViewAssetLoader
- * 8. Tombol Back
- *
- * JavaScript:
- *
- * window.AndroidDownload.downloadApk(
- *      apkUrl,
- *      version
- * );
- *
- * ============================================================
- */
 public class MainActivity extends AppCompatActivity {
 
-    // ========================================================
-    // WEBVIEW
-    // ========================================================
-
     private WebView webView;
-
-
-    // ========================================================
-    // DOWNLOAD MANAGER
-    // ========================================================
 
     private DownloadManager downloadManager;
 
     private long downloadId = -1;
 
-
-    // ========================================================
-    // FILE APK YANG AKAN DIINSTALL
-    // ========================================================
-
     private File pendingApkFile;
 
-
-    // ========================================================
-    // STATUS INSTALLER
-    // ========================================================
-
     private boolean waitingInstallPermission = false;
-
-
-    // ========================================================
-    // RECEIVER DOWNLOAD SELESAI
-    // ========================================================
 
     private BroadcastReceiver downloadReceiver;
 
 
-    // ========================================================
+    // =========================================================
     // ON CREATE
-    // ========================================================
+    // =========================================================
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -102,10 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-
-        // ====================================================
+        // =====================================================
         // DOWNLOAD MANAGER
-        // ====================================================
+        // =====================================================
 
         downloadManager =
                 (DownloadManager)
@@ -114,12 +61,11 @@ public class MainActivity extends AppCompatActivity {
                         );
 
 
-        // ====================================================
+        // =====================================================
         // WEBVIEW
-        // ====================================================
+        // =====================================================
 
-        webView =
-                new WebView(this);
+        webView = new WebView(this);
 
         setContentView(webView);
 
@@ -142,16 +88,34 @@ public class MainActivity extends AppCompatActivity {
 
         settings.setDisplayZoomControls(false);
 
-        settings.setMediaPlaybackRequiresUserGesture(false);
-
         settings.setSupportZoom(false);
+
+        settings.setMediaPlaybackRequiresUserGesture(false);
 
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
 
-        // ====================================================
-        // ANDROID JAVASCRIPT INTERFACE
-        // ====================================================
+        // =====================================================
+        // PENTING UNTUK TAMPILAN WEBVIEW
+        // =====================================================
+
+        settings.setUseWideViewPort(false);
+
+        settings.setLoadWithOverviewMode(false);
+
+
+        // =====================================================
+        // BACKGROUND WEBVIEW
+        // =====================================================
+
+        webView.setBackgroundColor(
+                android.graphics.Color.TRANSPARENT
+        );
+
+
+        // =====================================================
+        // JAVASCRIPT INTERFACE
+        // =====================================================
 
         webView.addJavascriptInterface(
                 new AndroidDownload(),
@@ -159,42 +123,44 @@ public class MainActivity extends AppCompatActivity {
         );
 
 
-        // ====================================================
+        // =====================================================
         // ASSET LOADER
-        // ====================================================
+        // =====================================================
 
         final WebViewAssetLoader assetLoader =
                 new WebViewAssetLoader.Builder()
                         .addPathHandler(
                                 "/assets/",
-                                new WebViewAssetLoader.AssetsPathHandler(
-                                        this
-                                )
+                                new WebViewAssetLoader
+                                        .AssetsPathHandler(this)
                         )
                         .build();
 
 
-        // ====================================================
+        // =====================================================
         // WEBVIEW CLIENT
-        // ====================================================
+        // =====================================================
 
         webView.setWebViewClient(
                 new WebViewClientCompat() {
 
                     @Override
-                    public WebResourceResponse shouldInterceptRequest(
+                    public WebResourceResponse
+                    shouldInterceptRequest(
                             WebView view,
                             WebResourceRequest request
                     ) {
 
-                        return assetLoader.shouldInterceptRequest(
-                                request.getUrl()
-                        );
+                        return assetLoader
+                                .shouldInterceptRequest(
+                                        request.getUrl()
+                                );
                     }
 
 
                     @Override
-                    public boolean shouldOverrideUrlLoading(
+                    public boolean
+                    shouldOverrideUrlLoading(
                             WebView view,
                             WebResourceRequest request
                     ) {
@@ -202,23 +168,20 @@ public class MainActivity extends AppCompatActivity {
                         Uri uri =
                                 request.getUrl();
 
-
                         if (uri == null) {
                             return false;
                         }
 
-
                         String url =
                                 uri.toString();
-
 
                         String lowerUrl =
                                 url.toLowerCase();
 
 
-                        // ====================================
-                        // GITHUB / APK
-                        // ====================================
+                        // =================================================
+                        // LINK GITHUB / APK
+                        // =================================================
 
                         if (
                                 lowerUrl.contains(
@@ -240,9 +203,9 @@ public class MainActivity extends AppCompatActivity {
                         }
 
 
-                        // ====================================
-                        // EXTERNAL URL LAIN
-                        // ====================================
+                        // =================================================
+                        // LINK EXTERNAL LAIN
+                        // =================================================
 
                         if (
                                 !lowerUrl.startsWith(
@@ -267,25 +230,25 @@ public class MainActivity extends AppCompatActivity {
         );
 
 
-        // ====================================================
-        // REGISTER DOWNLOAD RECEIVER
-        // ====================================================
+        // =====================================================
+        // RECEIVER DOWNLOAD
+        // =====================================================
 
         registerDownloadReceiver();
 
 
-        // ====================================================
-        // LOAD APLIKASI
-        // ====================================================
+        // =====================================================
+        // LOAD HTML
+        // =====================================================
 
         webView.loadUrl(
                 "https://appassets.androidplatform.net/assets/index.html"
         );
 
 
-        // ====================================================
-        // TOMBOL BACK
-        // ====================================================
+        // =====================================================
+        // BACK BUTTON
+        // =====================================================
 
         getOnBackPressedDispatcher().addCallback(
                 this,
@@ -312,25 +275,15 @@ public class MainActivity extends AppCompatActivity {
 
                 }
         );
-
     }
 
 
-    // ========================================================
+    // =========================================================
     // JAVASCRIPT INTERFACE
-    // ========================================================
+    // =========================================================
 
     public class AndroidDownload {
 
-
-        /**
-         * Dipanggil dari JavaScript:
-         *
-         * window.AndroidDownload.downloadApk(
-         *      apkUrl,
-         *      version
-         * );
-         */
         @JavascriptInterface
         public void downloadApk(
                 String apkUrl,
@@ -338,24 +291,18 @@ public class MainActivity extends AppCompatActivity {
         ) {
 
             runOnUiThread(
-                    () -> {
-
-                        startApkDownload(
-                                apkUrl,
-                                version
-                        );
-
-                    }
+                    () -> startApkDownload(
+                            apkUrl,
+                            version
+                    )
             );
-
         }
-
     }
 
 
-    // ========================================================
-    // MULAI DOWNLOAD APK
-    // ========================================================
+    // =========================================================
+    // DOWNLOAD APK
+    // =========================================================
 
     private void startApkDownload(
             String apkUrl,
@@ -378,52 +325,30 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-            // =================================================
-            // BERSIHKAN VERSI
-            // =================================================
-
             String cleanVersion =
                     cleanVersion(version);
 
 
-            if (
-                    cleanVersion.isEmpty()
-            ) {
-
+            if (cleanVersion.isEmpty()) {
                 cleanVersion = "latest";
-
             }
 
 
-            // =================================================
-            // NAMA FILE
-            // =================================================
-
             String fileName =
                     "Keuangan-v"
-                            +
-                            cleanVersion
-                            +
-                            ".apk";
+                            + cleanVersion
+                            + ".apk";
 
 
             // =================================================
-            // HAPUS DOWNLOAD LAMA DENGAN NAMA SAMA
+            // HAPUS APK LAMA
             // =================================================
 
-            deleteOldApk(
-                    fileName
-            );
+            deleteOldApk(fileName);
 
-
-            // =================================================
-            // DOWNLOAD REQUEST
-            // =================================================
 
             Uri downloadUri =
-                    Uri.parse(
-                            apkUrl
-                    );
+                    Uri.parse(apkUrl);
 
 
             DownloadManager.Request request =
@@ -432,45 +357,28 @@ public class MainActivity extends AppCompatActivity {
                     );
 
 
-            // =================================================
-            // HEADER
-            // =================================================
-
             request.addRequestHeader(
                     "User-Agent",
-                    "Mozilla/5.0 " +
-                    "(Android) CatatanKas"
+                    "Mozilla/5.0 Android CatatanKas"
             );
 
 
-            // =================================================
-            // JUDUL DOWNLOAD
-            // =================================================
-
             request.setTitle(
-                    "Update Catatan Kas " +
-                    cleanVersion
+                    "Update Catatan Kas v"
+                            + cleanVersion
             );
 
 
             request.setDescription(
-                    "Mengunduh APK versi " +
-                    cleanVersion
+                    "Mengunduh Catatan Kas v"
+                            + cleanVersion
             );
 
-
-            // =================================================
-            // MIME TYPE APK
-            // =================================================
 
             request.setMimeType(
                     "application/vnd.android.package-archive"
             );
 
-
-            // =================================================
-            // NOTIFIKASI DOWNLOAD
-            // =================================================
 
             request.setNotificationVisibility(
                     DownloadManager.Request
@@ -479,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             // =================================================
-            // SIMPAN KE FOLDER DOWNLOAD APLIKASI
+            // SIMPAN KE FOLDER PRIVATE APLIKASI
             // =================================================
 
             request.setDestinationInExternalFilesDir(
@@ -499,37 +407,49 @@ public class MainActivity extends AppCompatActivity {
                     );
 
 
-            // =================================================
-            // SIMPAN FILE YANG DIHARAPKAN
-            // =================================================
-
-            pendingApkFile =
-                    new File(
-                            getExternalFilesDir(
-                                    Environment.DIRECTORY_DOWNLOADS
-                            ),
-                            fileName
+            File directory =
+                    getExternalFilesDir(
+                            Environment.DIRECTORY_DOWNLOADS
                     );
 
 
+            if (directory != null) {
+
+                pendingApkFile =
+                        new File(
+                                directory,
+                                fileName
+                        );
+            }
+
+
             // =================================================
-            // UPDATE WEBVIEW
+            // BERITAHU JAVASCRIPT
             // =================================================
 
             sendJavascript(
-                    "window.dispatchEvent(" +
-                    "new CustomEvent('apkDownloadStarted'," +
-                    "{detail:{version:'" +
-                    escapeJs(cleanVersion) +
-                    "'}})" +
-                    ")"
+                    "window.dispatchEvent("
+                            +
+                            "new CustomEvent("
+                            +
+                            "'apkDownloadStarted',"
+                            +
+                            "{detail:{version:'"
+                            +
+                            escapeJs(cleanVersion)
+                            +
+                            "'}}"
+                            +
+                            ")"
+                            +
+                            ")"
             );
 
 
             showMessage(
-                    "Download update " +
-                    cleanVersion +
-                    " dimulai..."
+                    "Download update v"
+                            + cleanVersion
+                            + " dimulai..."
             );
 
 
@@ -537,19 +457,16 @@ public class MainActivity extends AppCompatActivity {
 
             e.printStackTrace();
 
-
             showMessage(
                     "Gagal memulai download APK."
             );
-
         }
-
     }
 
 
-    // ========================================================
-    // REGISTER DOWNLOAD RECEIVER
-    // ========================================================
+    // =========================================================
+    // RECEIVER DOWNLOAD
+    // =========================================================
 
     private void registerDownloadReceiver() {
 
@@ -576,7 +493,8 @@ public class MainActivity extends AppCompatActivity {
 
                         long completedId =
                                 intent.getLongExtra(
-                                        DownloadManager.EXTRA_DOWNLOAD_ID,
+                                        DownloadManager
+                                                .EXTRA_DOWNLOAD_ID,
                                         -1
                                 );
 
@@ -592,9 +510,7 @@ public class MainActivity extends AppCompatActivity {
                         checkDownloadResult(
                                 completedId
                         );
-
                     }
-
                 };
 
 
@@ -622,15 +538,13 @@ public class MainActivity extends AppCompatActivity {
                     downloadReceiver,
                     filter
             );
-
         }
-
     }
 
 
-    // ========================================================
-    // CEK HASIL DOWNLOAD
-    // ========================================================
+    // =========================================================
+    // CEK DOWNLOAD
+    // =========================================================
 
     private void checkDownloadResult(
             long completedId
@@ -694,16 +608,6 @@ public class MainActivity extends AppCompatActivity {
                     );
 
 
-            String localUri =
-                    localUriIndex >= 0
-                            ?
-                            cursor.getString(
-                                    localUriIndex
-                            )
-                            :
-                            null;
-
-
             int reason =
                     reasonIndex >= 0
                             ?
@@ -714,11 +618,21 @@ public class MainActivity extends AppCompatActivity {
                             0;
 
 
+            String localUri =
+                    localUriIndex >= 0
+                            ?
+                            cursor.getString(
+                                    localUriIndex
+                            )
+                            :
+                            null;
+
+
             cursor.close();
 
 
             // =================================================
-            // DOWNLOAD BERHASIL
+            // BERHASIL
             // =================================================
 
             if (
@@ -736,7 +650,6 @@ public class MainActivity extends AppCompatActivity {
                             resolveDownloadedFile(
                                     localUri
                             );
-
                 }
 
 
@@ -747,9 +660,15 @@ public class MainActivity extends AppCompatActivity {
                 ) {
 
                     sendJavascript(
-                            "window.dispatchEvent(" +
-                            "new CustomEvent('apkDownloadComplete')" +
-                            ")"
+                            "window.dispatchEvent("
+                                    +
+                                    "new CustomEvent("
+                                    +
+                                    "'apkDownloadComplete'"
+                                    +
+                                    ")"
+                                    +
+                                    ")"
                     );
 
 
@@ -759,10 +678,6 @@ public class MainActivity extends AppCompatActivity {
                     );
 
 
-                    // =========================================
-                    // BUKA INSTALLER
-                    // =========================================
-
                     installApk(
                             pendingApkFile
                     );
@@ -770,10 +685,9 @@ public class MainActivity extends AppCompatActivity {
                 } else {
 
                     showMessage(
-                            "APK selesai diunduh, " +
+                            "APK berhasil diunduh, " +
                             "tetapi file tidak ditemukan."
                     );
-
                 }
 
 
@@ -782,7 +696,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             // =================================================
-            // DOWNLOAD GAGAL
+            // GAGAL
             // =================================================
 
             if (
@@ -791,37 +705,39 @@ public class MainActivity extends AppCompatActivity {
             ) {
 
                 sendJavascript(
-                        "window.dispatchEvent(" +
-                        "new CustomEvent('apkDownloadFailed')" +
-                        ")"
+                        "window.dispatchEvent("
+                                +
+                                "new CustomEvent("
+                                +
+                                "'apkDownloadFailed'"
+                                +
+                                ")"
+                                +
+                                ")"
                 );
 
 
                 showMessage(
-                        "Download APK gagal. " +
-                        "Kode: " +
-                        reason
+                        "Download APK gagal. Kode: "
+                                + reason
                 );
-
             }
+
 
         } catch (Exception e) {
 
             e.printStackTrace();
 
-
             showMessage(
                     "Terjadi kesalahan saat memeriksa download."
             );
-
         }
-
     }
 
 
-    // ========================================================
-    // CARI FILE HASIL DOWNLOAD
-    // ========================================================
+    // =========================================================
+    // RESOLVE FILE
+    // =========================================================
 
     private File resolveDownloadedFile(
             String localUri
@@ -840,39 +756,37 @@ public class MainActivity extends AppCompatActivity {
 
 
             if (
-                    localUri.startsWith(
-                            "file://"
-                    )
+                    localUri.startsWith("file://")
             ) {
 
                 Uri uri =
-                        Uri.parse(
-                                localUri
-                        );
+                        Uri.parse(localUri);
 
 
-                return new File(
-                        uri.getPath()
-                );
+                String path =
+                        uri.getPath();
 
+
+                if (path != null) {
+
+                    return new File(path);
+                }
             }
 
 
         } catch (Exception e) {
 
             e.printStackTrace();
-
         }
 
 
         return null;
-
     }
 
 
-    // ========================================================
+    // =========================================================
     // INSTALL APK
-    // ========================================================
+    // =========================================================
 
     private void installApk(
             File apkFile
@@ -896,10 +810,9 @@ public class MainActivity extends AppCompatActivity {
                 apkFile;
 
 
-        // ====================================================
+        // =====================================================
         // ANDROID 8+
-        // CEK IZIN INSTALL UNKNOWN APPS
-        // ====================================================
+        // =====================================================
 
         if (
                 Build.VERSION.SDK_INT >=
@@ -924,20 +837,19 @@ public class MainActivity extends AppCompatActivity {
                                     Settings
                                             .ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                                     Uri.parse(
-                                            "package:" +
-                                            getPackageName()
+                                            "package:"
+                                                    +
+                                                    getPackageName()
                                     )
                             );
 
 
-                    startActivity(
-                            intent
-                    );
+                    startActivity(intent);
 
 
                     showMessage(
-                            "Izinkan pemasangan aplikasi " +
-                            "dari sumber ini, lalu installer akan dibuka."
+                            "Aktifkan izin " +
+                            "Install aplikasi tidak dikenal."
                     );
 
 
@@ -948,32 +860,25 @@ public class MainActivity extends AppCompatActivity {
 
                     showMessage(
                             "Silakan aktifkan izin " +
-                            "'Install aplikasi tidak dikenal'."
+                            "Install aplikasi tidak dikenal."
                     );
-
                 }
 
 
                 return;
             }
-
         }
 
-
-        // ====================================================
-        // BUKA INSTALLER
-        // ====================================================
 
         openApkInstaller(
                 apkFile
         );
-
     }
 
 
-    // ========================================================
-    // BUKA INSTALLER APK
-    // ========================================================
+    // =========================================================
+    // OPEN INSTALLER
+    // =========================================================
 
     private void openApkInstaller(
             File apkFile
@@ -984,10 +889,6 @@ public class MainActivity extends AppCompatActivity {
             Uri apkUri;
 
 
-            // =================================================
-            // ANDROID NOUGAT+
-            // =================================================
-
             if (
                     Build.VERSION.SDK_INT >=
                     Build.VERSION_CODES.N
@@ -996,18 +897,16 @@ public class MainActivity extends AppCompatActivity {
                 apkUri =
                         FileProvider.getUriForFile(
                                 this,
-                                getPackageName() +
-                                ".fileprovider",
+                                getPackageName()
+                                        +
+                                        ".fileprovider",
                                 apkFile
                         );
 
             } else {
 
                 apkUri =
-                        Uri.fromFile(
-                                apkFile
-                        );
-
+                        Uri.fromFile(apkFile);
             }
 
 
@@ -1033,14 +932,7 @@ public class MainActivity extends AppCompatActivity {
             );
 
 
-            intent.addFlags(
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            );
-
-
-            startActivity(
-                    intent
-            );
+            startActivity(intent);
 
 
         } catch (Exception e) {
@@ -1051,25 +943,19 @@ public class MainActivity extends AppCompatActivity {
             showMessage(
                     "Installer APK tidak dapat dibuka."
             );
-
         }
-
     }
 
 
-    // ========================================================
-    // ON RESUME
-    // ========================================================
+    // =========================================================
+    // RESUME
+    // =========================================================
 
     @Override
     protected void onResume() {
 
         super.onResume();
 
-
-        // ====================================================
-        // KALAU USER BARU SELESAI MEMBERI IZIN
-        // ====================================================
 
         if (
                 waitingInstallPermission
@@ -1096,19 +982,15 @@ public class MainActivity extends AppCompatActivity {
                     openApkInstaller(
                             pendingApkFile
                     );
-
                 }
-
             }
-
         }
-
     }
 
 
-    // ========================================================
+    // =========================================================
     // HAPUS APK LAMA
-    // ========================================================
+    // =========================================================
 
     private void deleteOldApk(
             String fileName
@@ -1137,21 +1019,19 @@ public class MainActivity extends AppCompatActivity {
             if (oldFile.exists()) {
 
                 oldFile.delete();
-
             }
+
 
         } catch (Exception e) {
 
             e.printStackTrace();
-
         }
-
     }
 
 
-    // ========================================================
-    // BUKA LINK EXTERNAL
-    // ========================================================
+    // =========================================================
+    // EXTERNAL URL
+    // =========================================================
 
     private void openExternalUrl(
             Uri uri
@@ -1166,14 +1046,8 @@ public class MainActivity extends AppCompatActivity {
                     );
 
 
-            intent.addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK
-            );
+            startActivity(intent);
 
-
-            startActivity(
-                    intent
-            );
 
         } catch (Exception e) {
 
@@ -1183,79 +1057,63 @@ public class MainActivity extends AppCompatActivity {
             showMessage(
                     "Tidak ada aplikasi untuk membuka link."
             );
-
         }
-
     }
 
 
-    // ========================================================
-    // KIRIM JAVASCRIPT
-    // ========================================================
+    // =========================================================
+    // JAVASCRIPT
+    // =========================================================
 
     private void sendJavascript(
             String javascript
     ) {
 
-        if (
-                webView == null
-        ) {
-
+        if (webView == null) {
             return;
         }
 
 
         runOnUiThread(
-                () -> {
-
-                    webView.evaluateJavascript(
-                            javascript,
-                            null
-                    );
-
-                }
+                () -> webView.evaluateJavascript(
+                        javascript,
+                        null
+                )
         );
-
     }
 
 
-    // ========================================================
-    // PESAN
-    // ========================================================
+    // =========================================================
+    // TOAST
+    // =========================================================
 
     private void showMessage(
             String message
     ) {
 
         runOnUiThread(
-                () -> {
-
-                    android.widget.Toast.makeText(
-                            MainActivity.this,
-                            message,
-                            android.widget.Toast.LENGTH_LONG
-                    ).show();
-
-                }
+                () ->
+                        android.widget.Toast
+                                .makeText(
+                                        MainActivity.this,
+                                        message,
+                                        android.widget.Toast.LENGTH_LONG
+                                )
+                                .show()
         );
-
     }
 
 
-    // ========================================================
-    // BERSIHKAN VERSI
-    // ========================================================
+    // =========================================================
+    // CLEAN VERSION
+    // =========================================================
 
     private String cleanVersion(
             String version
     ) {
 
-        if (
-                version == null
-        ) {
-
+        if (version == null) {
             return "";
-
         }
 
 
@@ -1265,24 +1123,19 @@ public class MainActivity extends AppCompatActivity {
                         "(?i)^v",
                         ""
                 );
-
     }
 
 
-    // ========================================================
-    // ESCAPE JAVASCRIPT
-    // ========================================================
+    // =========================================================
+    // ESCAPE JS
+    // =========================================================
 
     private String escapeJs(
             String value
     ) {
 
-        if (
-                value == null
-        ) {
-
+        if (value == null) {
             return "";
-
         }
 
 
@@ -1307,24 +1160,17 @@ public class MainActivity extends AppCompatActivity {
                         "\r",
                         "\\r"
                 );
-
     }
 
 
-    // ========================================================
-    // ON DESTROY
-    // ========================================================
+    // =========================================================
+    // DESTROY
+    // =========================================================
 
     @Override
     protected void onDestroy() {
 
-        // ====================================================
-        // UNREGISTER RECEIVER
-        // ====================================================
-
-        if (
-                downloadReceiver != null
-        ) {
+        if (downloadReceiver != null) {
 
             try {
 
@@ -1332,31 +1178,18 @@ public class MainActivity extends AppCompatActivity {
                         downloadReceiver
                 );
 
-            } catch (Exception e) {
-
-                e.printStackTrace();
-
+            } catch (Exception ignored) {
             }
+
 
             downloadReceiver =
                     null;
-
         }
 
 
-        // ====================================================
-        // WEBVIEW
-        // ====================================================
-
-        if (
-                webView != null
-        ) {
+        if (webView != null) {
 
             webView.stopLoading();
-
-            webView.clearHistory();
-
-            webView.clearCache(false);
 
             webView.removeJavascriptInterface(
                     "AndroidDownload"
@@ -1364,14 +1197,10 @@ public class MainActivity extends AppCompatActivity {
 
             webView.destroy();
 
-            webView =
-                    null;
-
+            webView = null;
         }
 
 
         super.onDestroy();
-
     }
-
 }
