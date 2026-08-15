@@ -1,10 +1,18 @@
-// ======================================
-// Syahriyyah App
-// Pembayaran Santri
-// Bagian 1 & 2 (Lengkap dengan Edit & Hapus Firebase)
-// ======================================
+// ======================================================
+// CATATAN KAS - PEMBAYARAN SANTRI
+// Versi perbaikan lengkap
+// - Simpan
+// - Edit
+// - Hapus
+// - Riwayat
+// - Firebase Authentication
+// - Support ID HTML lama & baru
+// ======================================================
 
-import { db } from "./firebase-config.js";
+import {
+    db,
+    auth
+} from "./firebase-config.js";
 
 import {
     collection,
@@ -13,400 +21,1337 @@ import {
     updateDoc,
     deleteDoc,
     doc,
-    serverTimestamp,
-    query,
-    orderBy
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-// ======================================
-// Elemen HTML
-// ======================================
 
-const selectSantri = document.getElementById("santri");
-const riwayat = document.getElementById("riwayat");
+// ======================================================
+// VARIABEL
+// ======================================================
 
-// Variabel global untuk mode Edit database
 let idEditPembayaran = null;
+let userSiap = false;
 
 
-// ======================================
-// Tampilkan Data Santri
-// ======================================
+// ======================================================
+// HELPER ELEMENT
+// ======================================================
+
+function el(id) {
+    return document.getElementById(id);
+}
+
+
+// Nama santri mendukung HTML lama dan terbaru
+function getInputSantri() {
+
+    return (
+        el("namaSantriPemasukan") ||
+        el("santri") ||
+        el("namaSantri")
+    );
+
+}
+
+
+// ======================================================
+// FORMAT RUPIAH
+// ======================================================
+
+function rupiah(nilai) {
+
+    const angka = Number(nilai) || 0;
+
+    return "Rp " +
+        angka.toLocaleString("id-ID");
+
+}
+
+
+// ======================================================
+// ESCAPE HTML
+// ======================================================
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+// ======================================================
+// FORMAT TANGGAL
+// ======================================================
+
+function formatTanggal(data) {
+
+    if (!data) return "-";
+
+    const nilai =
+        data.tanggal ||
+        data.createdAt ||
+        null;
+
+    if (
+        nilai &&
+        typeof nilai.toDate === "function"
+    ) {
+
+        return nilai
+            .toDate()
+            .toLocaleDateString("id-ID");
+
+    }
+
+    if (nilai instanceof Date) {
+
+        return nilai.toLocaleDateString("id-ID");
+
+    }
+
+    if (typeof nilai === "string") {
+
+        const tanggal =
+            new Date(nilai);
+
+        if (!isNaN(tanggal.getTime())) {
+
+            return tanggal
+                .toLocaleDateString("id-ID");
+
+        }
+
+        return nilai;
+
+    }
+
+    return "-";
+
+}
+
+
+// ======================================================
+// TAMPILKAN SANTRI
+// ======================================================
 
 async function tampilkanSantri() {
 
+    const input =
+        getInputSantri();
+
+    const select =
+        el("santri");
+
+    const datalist =
+        el("datalistSantri");
+
     try {
 
-        selectSantri.innerHTML = `
-            <option value="">
-                Pilih Santri
-            </option>
-        `;
+        const snapshot =
+            await getDocs(
+                collection(db, "santri")
+            );
 
-        const snapshot = await getDocs(
-            collection(db, "santri")
-        );
 
-        snapshot.forEach((docItem) => {
+        // ------------------------------------------
+        // JIKA HTML MENGGUNAKAN SELECT
+        // ------------------------------------------
 
-            const data = docItem.data();
+        if (select && select.tagName === "SELECT") {
 
-            selectSantri.innerHTML += `
-                <option value="${data.nama}">
-                    ${data.nama}
+            select.innerHTML = `
+                <option value="">
+                    Pilih Santri
                 </option>
             `;
 
-        });
+            snapshot.forEach((docItem) => {
+
+                const data =
+                    docItem.data();
+
+                if (!data.nama) return;
+
+                const option =
+                    document.createElement("option");
+
+                option.value =
+                    data.nama;
+
+                option.textContent =
+                    data.nama;
+
+                select.appendChild(option);
+
+            });
+
+        }
+
+
+        // ------------------------------------------
+        // JIKA HTML MENGGUNAKAN DATALIST
+        // ------------------------------------------
+
+        if (datalist) {
+
+            datalist.innerHTML = "";
+
+            snapshot.forEach((docItem) => {
+
+                const data =
+                    docItem.data();
+
+                if (!data.nama) return;
+
+                const option =
+                    document.createElement("option");
+
+                option.value =
+                    data.nama;
+
+                datalist.appendChild(option);
+
+            });
+
+        }
+
+
+        // Mencegah warning jika input tidak ditemukan
+        if (!input) {
+
+            console.warn(
+                "Input nama santri tidak ditemukan."
+            );
+
+        }
 
     } catch (error) {
 
-        console.error(error);
-
-        alert("Gagal mengambil data santri.");
+        console.error(
+            "Gagal mengambil data santri:",
+            error
+        );
 
     }
 
 }
 
 
-// ======================================
-// Pilihan Pembayaran
-// ======================================
+// ======================================================
+// PILIH JENIS PEMBAYARAN
+// ======================================================
 
 window.pilihPembayaran = function () {
 
-    const jenis = document.getElementById("jenis").value;
+    const jenisEl =
+        el("jenis");
 
-    const nominal = document.getElementById("nominal");
+    const nominalEl =
+        el("nominal");
 
-    const beras = document.getElementById("berasPilihan");
+    const berasEl =
+        el("berasPilihan");
 
-    beras.style.display = "none";
 
-    nominal.placeholder = "Masukkan nominal";
+    if (!jenisEl || !nominalEl) {
+
+        console.warn(
+            "Elemen jenis atau nominal tidak ditemukan."
+        );
+
+        return;
+
+    }
+
+
+    const jenis =
+        jenisEl.value;
+
+
+    if (berasEl) {
+
+        berasEl.style.display =
+            "none";
+
+    }
+
+
+    nominalEl.placeholder =
+        "Masukkan nominal";
+
+
+    nominalEl.step =
+        "1";
+
 
     if (jenis === "SPP") {
 
-        nominal.value = 50000;
+        nominalEl.value =
+            "50000";
 
     }
 
     else if (jenis === "Syahriyyah") {
 
-        nominal.value = 80000;
+        nominalEl.value =
+            "80000";
 
     }
 
     else if (jenis === "Kas") {
 
-        nominal.value = 30000;
+        nominalEl.value =
+            "30000";
 
     }
 
     else if (jenis === "Infaq") {
 
-        nominal.value = "";
+        nominalEl.value =
+            "";
 
     }
 
     else if (jenis === "Beras") {
 
-        nominal.value = "";
+        nominalEl.value =
+            "";
 
-        beras.style.display = "block";
+        if (berasEl) {
+
+            berasEl.style.display =
+                "block";
+
+        }
 
     }
 
     else {
 
-        nominal.value = "";
+        nominalEl.value =
+            "";
 
     }
 
 };
 
 
-// ======================================
-// Pengaturan Beras
-// ======================================
+// ======================================================
+// PENGATURAN BERAS
+// ======================================================
 
 window.aturBeras = function () {
 
-    const tipe = document.getElementById("tipeBeras").value;
+    const tipeEl =
+        el("tipeBeras");
 
-    const nominal = document.getElementById("nominal");
-
-    if (tipe === "uang") {
-
-        nominal.placeholder = "Masukkan nominal";
-
-        nominal.value = 120000;
-
-    }
-
-    else {
-
-        nominal.placeholder = "Masukkan jumlah liter";
-
-        nominal.value = "";
-
-    }
-
-};
+    const nominalEl =
+        el("nominal");
 
 
-// ======================================
-// Simpan / Perbarui Pembayaran (Firebase)
-// ======================================
+    if (!tipeEl || !nominalEl) {
 
-window.simpanPembayaran = async function () {
-
-    const nama = document.getElementById("santri").value;
-    const jenis = document.getElementById("jenis").value;
-    const nilai = document.getElementById("nominal").value;
-    const tipeBeras = document.getElementById("tipeBeras").value;
-
-    if (!nama || !jenis || !nilai) {
-
-        alert("Silakan lengkapi data pembayaran.");
         return;
 
     }
 
-    const data = {
-        nama_santri: nama,
-        jenis: jenis,
-    };
 
-    // ==========================
-    // Pembayaran Beras
-    // ==========================
+    if (tipeEl.value === "uang") {
 
-    if (jenis === "Beras") {
+        nominalEl.placeholder =
+            "Masukkan nominal";
 
-        if (tipeBeras === "liter") {
+        nominalEl.step =
+            "1";
 
-            data.nominal = 0;
-            data.jumlah = Number(nilai);
-            data.satuan = "Liter";
+        if (
+            !nominalEl.value ||
+            Number(nominalEl.value) <= 0
+        ) {
 
-        } else {
-
-            data.nominal = Number(nilai);
-            data.jumlah = 0;
-            data.satuan = "Rupiah";
+            nominalEl.value =
+                "120000";
 
         }
 
     }
-
-    // ==========================
-    // Pembayaran Uang
-    // ==========================
 
     else {
 
-        data.nominal = Number(nilai);
-        data.jumlah = 0;
-        data.satuan = "Rupiah";
+        nominalEl.placeholder =
+            "Masukkan jumlah liter";
+
+        nominalEl.step =
+            "0.1";
+
+        nominalEl.value =
+            "";
 
     }
 
+};
+
+
+// ======================================================
+// AMBIL TOMBOL SIMPAN
+// ======================================================
+
+function getTombolSimpan() {
+
+    return (
+        el("btnSimpanPembayaran") ||
+        document.querySelector(
+            "button[onclick*='simpanPembayaran']"
+        ) ||
+        document.querySelector(
+            "#formPembayaran button[type='submit']"
+        )
+    );
+
+}
+
+
+// ======================================================
+// RESET FORM
+// ======================================================
+
+function resetFormPembayaran() {
+
+    const namaEl =
+        getInputSantri();
+
+    const jenisEl =
+        el("jenis");
+
+    const nominalEl =
+        el("nominal");
+
+    const tipeEl =
+        el("tipeBeras");
+
+    const berasEl =
+        el("berasPilihan");
+
+    const tombol =
+        getTombolSimpan();
+
+
+    if (namaEl) {
+
+        namaEl.value =
+            "";
+
+    }
+
+
+    if (
+        jenisEl &&
+        jenisEl.tagName === "SELECT"
+    ) {
+
+        jenisEl.value =
+            "";
+
+    }
+
+
+    if (nominalEl) {
+
+        nominalEl.value =
+            "";
+
+        nominalEl.placeholder =
+            "Masukkan nominal";
+
+        nominalEl.step =
+            "1";
+
+    }
+
+
+    if (tipeEl) {
+
+        tipeEl.value =
+            "uang";
+
+    }
+
+
+    if (berasEl) {
+
+        berasEl.style.display =
+            "none";
+
+    }
+
+
+    idEditPembayaran =
+        null;
+
+
+    if (tombol) {
+
+        tombol.disabled =
+            false;
+
+        tombol.innerHTML =
+            '<i class="bi bi-check-circle me-1"></i> Simpan Pembayaran';
+
+    }
+
+}
+
+
+// ======================================================
+// SIMPAN PEMBAYARAN
+// ======================================================
+
+window.simpanPembayaran = async function () {
+
+    const namaEl =
+        getInputSantri();
+
+    const jenisEl =
+        el("jenis");
+
+    const nominalEl =
+        el("nominal");
+
+    const tipeEl =
+        el("tipeBeras");
+
+    const tombol =
+        getTombolSimpan();
+
+
+    if (
+        !namaEl ||
+        !jenisEl ||
+        !nominalEl
+    ) {
+
+        alert(
+            "Form pembayaran tidak ditemukan. Silakan refresh aplikasi."
+        );
+
+        return;
+
+    }
+
+
+    const nama =
+        String(
+            namaEl.value || ""
+        ).trim();
+
+
+    const jenis =
+        String(
+            jenisEl.value || ""
+        ).trim();
+
+
+    const nilai =
+        Number(
+            nominalEl.value
+        );
+
+
+    const tipeBeras =
+        tipeEl?.value ||
+        "uang";
+
+
+    // ------------------------------------------
+    // VALIDASI
+    // ------------------------------------------
+
+    if (!nama) {
+
+        alert(
+            "Silakan isi atau pilih nama santri."
+        );
+
+        namaEl.focus();
+
+        return;
+
+    }
+
+
+    if (!jenis) {
+
+        alert(
+            "Silakan pilih jenis pembayaran."
+        );
+
+        jenisEl.focus();
+
+        return;
+
+    }
+
+
+    if (
+        !Number.isFinite(nilai) ||
+        nilai <= 0
+    ) {
+
+        alert(
+            "Nominal / jumlah harus lebih dari 0."
+        );
+
+        nominalEl.focus();
+
+        return;
+
+    }
+
+
+    if (!userSiap) {
+
+        alert(
+            "Silakan login terlebih dahulu."
+        );
+
+        return;
+
+    }
+
+
+    // ------------------------------------------
+    // DATA FIREBASE
+    // ------------------------------------------
+
+    const data = {
+
+        nama_santri:
+            nama,
+
+        jenis:
+            jenis,
+
+        nominal:
+            0,
+
+        jumlah:
+            0,
+
+        satuan:
+            "Rupiah"
+
+    };
+
+
+    if (
+        jenis === "Beras" &&
+        tipeBeras === "liter"
+    ) {
+
+        data.nominal =
+            0;
+
+        data.jumlah =
+            nilai;
+
+        data.satuan =
+            "Liter";
+
+    }
+
+    else {
+
+        data.nominal =
+            nilai;
+
+        data.jumlah =
+            0;
+
+        data.satuan =
+            "Rupiah";
+
+    }
+
+
+    // ------------------------------------------
+    // DISABLE TOMBOL
+    // ------------------------------------------
+
+    if (tombol) {
+
+        tombol.disabled =
+            true;
+
+        tombol.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+
+    }
+
+
     try {
 
-        if (idEditPembayaran === null) {
-            // Mode Tambah Baru
-            data.tanggal = serverTimestamp();
-            data.bulan = new Date().getMonth() + 1;
-            data.tahun = new Date().getFullYear();
+        // --------------------------------------
+        // TAMBAH BARU
+        // --------------------------------------
 
-            await addDoc(collection(db, "payments"), data);
-            alert("Pembayaran berhasil disimpan.");
+        if (
+            idEditPembayaran === null
+        ) {
 
-        } else {
-            // Mode Edit (Update data di Firebase berdasarkan ID dokumen)
-            await updateDoc(doc(db, "payments", idEditPembayaran), data);
-            alert("Pembayaran berhasil diperbarui.");
+            data.tanggal =
+                serverTimestamp();
 
-            // Reset mode edit
-            idEditPembayaran = null;
-            document.querySelector("button[onclick='simpanPembayaran()']").textContent = "Simpan Pembayaran";
+            data.bulan =
+                new Date().getMonth() + 1;
+
+            data.tahun =
+                new Date().getFullYear();
+
+
+            await addDoc(
+                collection(
+                    db,
+                    "payments"
+                ),
+                data
+            );
+
+
+            alert(
+                "Pembayaran berhasil disimpan!"
+            );
+
         }
 
-        // Reset Form
-        document.getElementById("nominal").value = "";
-        document.getElementById("jenis").value = "";
-        document.getElementById("santri").value = "";
-        document.getElementById("berasPilihan").style.display = "none";
+        // --------------------------------------
+        // UPDATE
+        // --------------------------------------
 
-        tampilkanRiwayat();
+        else {
+
+            await updateDoc(
+                doc(
+                    db,
+                    "payments",
+                    idEditPembayaran
+                ),
+                data
+            );
+
+
+            alert(
+                "Pembayaran berhasil diperbarui!"
+            );
+
+        }
+
+
+        // --------------------------------------
+        // RESET
+        // --------------------------------------
+
+        resetFormPembayaran();
+
+
+        await tampilkanRiwayat();
+
+
+        // Beritahu halaman lain
+        window.dispatchEvent(
+            new CustomEvent(
+                "dataKeuanganBerubah"
+            )
+        );
+
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Gagal menyimpan pembayaran:",
+            error
+        );
 
-        alert("Gagal menyimpan pembayaran ke database.");
+
+        alert(
+            "Gagal menyimpan pembayaran:\n" +
+            (
+                error?.message ||
+                "Terjadi kesalahan."
+            )
+        );
+
+
+        if (tombol) {
+
+            tombol.disabled =
+                false;
+
+            tombol.innerHTML =
+                '<i class="bi bi-check-circle me-1"></i> Simpan Pembayaran';
+
+        }
 
     }
 
 };
 
 
-// ======================================
-// Hapus Pembayaran (Firebase)
-// ======================================
+// ======================================================
+// HAPUS PEMBAYARAN
+// ======================================================
 
-window.hapusPembayaran = async function (idDoc) {
-    if (confirm("Apakah Anda yakin ingin menghapus data pembayaran ini dari database?")) {
+window.hapusPembayaran =
+    async function (idDoc) {
+
+        if (!idDoc) return;
+
+
+        if (!userSiap) {
+
+            alert(
+                "Silakan login terlebih dahulu."
+            );
+
+            return;
+
+        }
+
+
+        const yakin =
+            confirm(
+                "Apakah Anda yakin ingin menghapus pembayaran ini?"
+            );
+
+
+        if (!yakin) return;
+
+
         try {
-            await deleteDoc(doc(db, "payments", idDoc));
-            alert("Data berhasil dihapus.");
-            tampilkanRiwayat();
+
+            await deleteDoc(
+                doc(
+                    db,
+                    "payments",
+                    idDoc
+                )
+            );
+
+
+            alert(
+                "Data pembayaran berhasil dihapus."
+            );
+
+
+            await tampilkanRiwayat();
+
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    "dataKeuanganBerubah"
+                )
+            );
+
+
         } catch (error) {
-            console.error(error);
-            alert("Gagal menghapus data.");
+
+            console.error(
+                "Gagal menghapus pembayaran:",
+                error
+            );
+
+
+            alert(
+                "Gagal menghapus pembayaran:\n" +
+                (
+                    error?.message ||
+                    "Terjadi kesalahan."
+                )
+            );
+
         }
-    }
-};
+
+    };
 
 
-// ======================================
-// Ambil Data untuk Diedit
-// ======================================
+// ======================================================
+// MULAI EDIT
+// ======================================================
 
-window.mulaiEditPembayaran = async function (idDoc, nama, jenis, nominal, jumlah, satuan) {
-    idEditPembayaran = idDoc;
+window.mulaiEditPembayaran =
+    function (
+        idDoc,
+        nama,
+        jenis,
+        nominal,
+        jumlah,
+        satuan
+    ) {
 
-    document.getElementById("santri").value = nama;
-    document.getElementById("jenis").value = jenis;
+        const namaEl =
+            getInputSantri();
 
-    const inputNominal = document.getElementById("nominal");
-    const berasPilihan = document.getElementById("berasPilihan");
+        const jenisEl =
+            el("jenis");
 
-    berasPilihan.style.display = "none";
+        const nominalEl =
+            el("nominal");
 
-    if (jenis === "Beras") {
-        berasPilihan.style.display = "block";
-        if (satuan === "Liter") {
-            document.getElementById("tipeBeras").value = "liter";
-            inputNominal.value = jumlah;
-            inputNominal.placeholder = "Masukkan jumlah liter";
-        } else {
-            document.getElementById("tipeBeras").value = "uang";
-            inputNominal.value = nominal;
-            inputNominal.placeholder = "Masukkan nominal";
+        const tipeEl =
+            el("tipeBeras");
+
+        const berasEl =
+            el("berasPilihan");
+
+        const tombol =
+            getTombolSimpan();
+
+
+        if (
+            !namaEl ||
+            !jenisEl ||
+            !nominalEl
+        ) {
+
+            alert(
+                "Form pembayaran tidak ditemukan."
+            );
+
+            return;
+
         }
-    } else {
-        inputNominal.value = nominal;
-    }
-
-    // Ubah teks tombol simpan
-    document.querySelector("button[onclick='simpanPembayaran()']").textContent = "Simpan Perubahan";
-    
-    // Gulir ke atas form
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
 
 
-// ======================================
-// Tampilkan Riwayat Pembayaran
-// ======================================
+        idEditPembayaran =
+            idDoc;
+
+
+        namaEl.value =
+            nama || "";
+
+
+        jenisEl.value =
+            jenis || "";
+
+
+        if (
+            jenis === "Beras"
+        ) {
+
+            if (berasEl) {
+
+                berasEl.style.display =
+                    "block";
+
+            }
+
+
+            if (
+                satuan === "Liter"
+            ) {
+
+                if (tipeEl) {
+
+                    tipeEl.value =
+                        "liter";
+
+                }
+
+
+                nominalEl.value =
+                    jumlah || "";
+
+
+                nominalEl.placeholder =
+                    "Masukkan jumlah liter";
+
+
+                nominalEl.step =
+                    "0.1";
+
+            }
+
+            else {
+
+                if (tipeEl) {
+
+                    tipeEl.value =
+                        "uang";
+
+                }
+
+
+                nominalEl.value =
+                    nominal || "";
+
+
+                nominalEl.placeholder =
+                    "Masukkan nominal";
+
+
+                nominalEl.step =
+                    "1";
+
+            }
+
+        }
+
+        else {
+
+            if (berasEl) {
+
+                berasEl.style.display =
+                    "none";
+
+            }
+
+
+            nominalEl.value =
+                nominal || "";
+
+
+            nominalEl.placeholder =
+                "Masukkan nominal";
+
+
+            nominalEl.step =
+                "1";
+
+        }
+
+
+        if (tombol) {
+
+            tombol.disabled =
+                false;
+
+            tombol.innerHTML =
+                '<i class="bi bi-check-circle me-1"></i> Simpan Perubahan';
+
+        }
+
+
+        window.scrollTo({
+
+            top: 0,
+
+            behavior: "smooth"
+
+        });
+
+    };
+
+
+// ======================================================
+// RIWAYAT PEMBAYARAN
+// ======================================================
 
 async function tampilkanRiwayat() {
 
-    if (!riwayat) return;
+    const riwayat =
+        el("riwayat");
+
+
+    if (!riwayat) {
+
+        console.warn(
+            "Elemen #riwayat tidak ditemukan."
+        );
+
+        return;
+
+    }
+
 
     riwayat.innerHTML = `
-        <li class="list-group-item text-center">
+
+        <li class="list-group-item text-center text-muted border-0 py-3">
+
             Memuat data...
+
         </li>
+
     `;
+
 
     try {
 
-        const q = query(
-            collection(db, "payments"),
-            orderBy("tanggal", "desc")
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "payments"
+                )
+            );
+
+
+        const data =
+            [];
+
+
+        snapshot.forEach(
+            (docItem) => {
+
+                data.push({
+
+                    id:
+                        docItem.id,
+
+                    ...docItem.data()
+
+                });
+
+            }
         );
 
-        const snapshot = await getDocs(q);
 
-        riwayat.innerHTML = "";
+        // ------------------------------------------
+        // URUTKAN TERBARU
+        // ------------------------------------------
 
-        if (snapshot.empty) {
+        data.sort(
+            (a, b) => {
+
+                const ta =
+                    a.tanggal &&
+                    typeof a.tanggal.toDate === "function"
+
+                        ? a.tanggal.toDate().getTime()
+
+                        : 0;
+
+
+                const tb =
+                    b.tanggal &&
+                    typeof b.tanggal.toDate === "function"
+
+                        ? b.tanggal.toDate().getTime()
+
+                        : 0;
+
+
+                return tb - ta;
+
+            }
+        );
+
+
+        if (
+            data.length === 0
+        ) {
 
             riwayat.innerHTML = `
-                <li class="list-group-item text-center text-muted">
+
+                <li class="list-group-item text-center text-muted border-0 py-4">
+
+                    <i class="bi bi-receipt fs-2 d-block mb-2"></i>
+
                     Belum ada pembayaran.
+
                 </li>
+
             `;
 
             return;
 
         }
 
-        snapshot.forEach((docItem) => {
 
-            const data = docItem.data();
-            const idDoc = docItem.id; // ID Unik dari Firebase Firestore
+        riwayat.innerHTML =
+            "";
 
-            let nilai = "";
 
-            if (data.satuan === "Liter") {
+        data.forEach(
+            (item) => {
 
-                nilai = `${data.jumlah} Liter`;
+                let nilai;
 
-            } else {
 
-                nilai = "Rp " + Number(data.nominal || 0)
-                    .toLocaleString("id-ID");
+                if (
+                    item.satuan === "Liter"
+                ) {
 
-            }
+                    nilai =
+                        Number(
+                            item.jumlah || 0
+                        ).toLocaleString(
+                            "id-ID"
+                        ) +
+                        " Liter";
 
-            let tanggal = "-";
+                }
 
-            if (data.tanggal) {
+                else {
 
-                tanggal = data.tanggal
-                    .toDate()
-                    .toLocaleDateString("id-ID");
+                    nilai =
+                        rupiah(
+                            item.nominal ||
+                            item.jumlah ||
+                            0
+                        );
 
-            }
+                }
 
-            riwayat.innerHTML += `
-                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+
+                const li =
+                    document.createElement(
+                        "li"
+                    );
+
+
+                li.className =
+                    "list-group-item d-flex justify-content-between align-items-center py-3";
+
+
+                li.innerHTML = `
+
                     <div>
-                        <strong>${data.nama_santri}</strong>
+
+                        <strong class="riwayat-nama">
+
+                            ${escapeHtml(
+                                item.nama_santri
+                            )}
+
+                        </strong>
+
                         <br>
-                        ${data.jenis}
+
+                        <span class="text-muted">
+
+                            ${escapeHtml(
+                                item.jenis
+                            )}
+
+                        </span>
+
                         <br>
-                        <span class="text-success fw-bold">${nilai}</span>
+
+                        <span class="riwayat-nominal">
+
+                            ${escapeHtml(
+                                nilai
+                            )}
+
+                        </span>
+
                         <br>
-                        <small class="text-muted">${tanggal}</small>
+
+                        <small class="text-muted">
+
+                            ${escapeHtml(
+                                formatTanggal(item)
+                            )}
+
+                        </small>
+
                     </div>
-                    <div>
-                        <button class="btn btn-sm btn-outline-primary mb-1 d-block" onclick="mulaiEditPembayaran('${idDoc}', '${data.nama_santri}', '${data.jenis}', '${data.nominal || 0}', '${data.jumlah || 0}', '${data.satuan || ''}')">
+
+
+                    <div class="text-end ms-2">
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary mb-1 d-block"
+                            data-edit
+                        >
+
+                            <i class="bi bi-pencil"></i>
                             Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger d-block" onclick="hapusPembayaran('${idDoc}')">
-                            Hapus
-                        </button>
-                    </div>
-                </li>
-            `;
 
-        });
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger d-block"
+                            data-hapus
+                        >
+
+                            <i class="bi bi-trash"></i>
+                            Hapus
+
+                        </button>
+
+                    </div>
+
+                `;
+
+
+                li
+                    .querySelector("[data-edit]")
+                    .addEventListener(
+                        "click",
+                        function () {
+
+                            window.mulaiEditPembayaran(
+
+                                item.id,
+
+                                item.nama_santri,
+
+                                item.jenis,
+
+                                item.nominal || 0,
+
+                                item.jumlah || 0,
+
+                                item.satuan || ""
+
+                            );
+
+                        }
+                    );
+
+
+                li
+                    .querySelector("[data-hapus]")
+                    .addEventListener(
+                        "click",
+                        function () {
+
+                            window.hapusPembayaran(
+                                item.id
+                            );
+
+                        }
+                    );
+
+
+                riwayat.appendChild(
+                    li
+                );
+
+            }
+        );
+
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Gagal memuat riwayat pembayaran:",
+            error
+        );
+
 
         riwayat.innerHTML = `
-            <li class="list-group-item text-danger">
+
+            <li class="list-group-item text-center text-danger border-0 py-4">
+
+                <i class="bi bi-exclamation-triangle fs-3 d-block mb-2"></i>
+
                 Gagal memuat riwayat pembayaran.
+
             </li>
+
         `;
 
     }
@@ -414,14 +1359,111 @@ async function tampilkanRiwayat() {
 }
 
 
-// ======================================
-// Jalankan Saat Halaman Dibuka
-// ======================================
+// ======================================================
+// PASANG EVENT
+// ======================================================
 
-window.addEventListener("DOMContentLoaded", async () => {
+function pasangEventPembayaran() {
 
-    await tampilkanSantri();
+    const jenisEl =
+        el("jenis");
 
-    await tampilkanRiwayat();
+    const tipeEl =
+        el("tipeBeras");
 
-});
+    const tombol =
+        getTombolSimpan();
+
+
+    if (jenisEl) {
+
+        jenisEl.addEventListener(
+            "change",
+            window.pilihPembayaran
+        );
+
+    }
+
+
+    if (tipeEl) {
+
+        tipeEl.addEventListener(
+            "change",
+            window.aturBeras
+        );
+
+    }
+
+
+    if (tombol) {
+
+        // Hapus onclick lama agar tidak terjadi double submit
+        tombol.removeAttribute(
+            "onclick"
+        );
+
+
+        tombol.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                window.simpanPembayaran();
+
+            }
+        );
+
+    }
+
+}
+
+
+// ======================================================
+// AUTH
+// ======================================================
+
+onAuthStateChanged(
+    auth,
+    async function (user) {
+
+        userSiap =
+            !!user;
+
+
+        if (!user) {
+
+            return;
+
+        }
+
+
+        await tampilkanSantri();
+
+        await tampilkanRiwayat();
+
+    }
+);
+
+
+// ======================================================
+// INIT
+// ======================================================
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        pasangEventPembayaran
+    );
+
+}
+
+else {
+
+    pasangEventPembayaran();
+
+}
