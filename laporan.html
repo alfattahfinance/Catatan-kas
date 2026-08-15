@@ -6,28 +6,14 @@
 <script>
 (function () {
     try {
-        const data = JSON.parse(
-            localStorage.getItem("pengaturanAplikasi")
-        ) || {};
-
+        const data = JSON.parse(localStorage.getItem("pengaturanAplikasi")) || {};
         const tema = data.tema || "light";
-        let dark = tema === "dark";
+        const dark = tema === "dark" ||
+            (tema === "system" &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-        if (tema === "system") {
-            dark = window.matchMedia(
-                "(prefers-color-scheme: dark)"
-            ).matches;
-        }
-
-        document.documentElement.classList.toggle(
-            "dark-mode",
-            dark
-        );
-
-        document.documentElement.setAttribute(
-            "data-theme",
-            dark ? "dark" : "light"
-        );
+        document.documentElement.classList.toggle("dark-mode", dark);
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
     } catch (e) {}
 })();
 </script>
@@ -38,18 +24,16 @@
 
 <title>Laporan Keuangan | Catatan Kas</title>
 
-<link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-    rel="stylesheet"
->
-
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
->
-
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/theme.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- jsPDF -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <style>
 * {
@@ -68,11 +52,7 @@ body {
     padding-bottom: 100px;
 
     background:
-        linear-gradient(
-            135deg,
-            #d8e2dc 0%,
-            #fefae0 100%
-        );
+        linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
 
     background-size: 200% 200%;
     animation: gradientShift 15s ease infinite;
@@ -83,17 +63,9 @@ body {
 }
 
 @keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .mobile-container {
@@ -108,46 +80,34 @@ body {
 .custom-card {
     border: none;
     border-radius: 18px;
-
-    box-shadow:
-        0 4px 14px rgba(0,0,0,.06);
-
-    background:
-        rgba(255,255,255,.92);
-
+    box-shadow: 0 4px 14px rgba(0,0,0,.06);
+    background: rgba(255,255,255,.94);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    transition: .25s ease;
+}
 
-    transition:
-        background .25s ease,
-        color .25s ease,
-        box-shadow .25s ease;
+.custom-card:hover {
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
 }
 
 .ck-topbar {
     display: flex;
     align-items: center;
     gap: 14px;
-
-    background:
-        rgba(255,255,255,.94);
-
+    background: rgba(255,255,255,.94);
     border-radius: 18px;
     padding: 14px;
     margin-bottom: 20px;
-
-    box-shadow:
-        0 4px 14px rgba(0,0,0,.05);
+    box-shadow: 0 4px 14px rgba(0,0,0,.05);
 }
 
 .ck-logo {
     width: 56px;
     height: 56px;
     min-width: 56px;
-
     object-fit: contain;
     border-radius: 14px;
-
     background: #fff;
     border: 1px solid #eee;
 }
@@ -168,15 +128,10 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-
     color: #198754;
     text-decoration: none;
     font-weight: 700;
     margin-bottom: 12px;
-}
-
-.ck-back:hover {
-    color: #146c43;
 }
 
 .page-heading {
@@ -185,40 +140,23 @@ body {
 
 .summary-card {
     height: 100%;
-    transition:
-        transform .2s ease,
-        box-shadow .2s ease;
-}
-
-.summary-card:hover {
-    transform: translateY(-2px);
-
-    box-shadow:
-        0 8px 20px rgba(0,0,0,.08);
 }
 
 .summary-icon {
     width: 48px;
     height: 48px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 14px;
-
-    background:
-        rgba(25,135,84,.10);
-
+    background: rgba(25,135,84,.10);
     color: #198754;
     font-size: 1.4rem;
     flex-shrink: 0;
 }
 
 .summary-icon.danger {
-    background:
-        rgba(220,53,69,.10);
-
+    background: rgba(220,53,69,.10);
     color: #dc3545;
 }
 
@@ -230,19 +168,12 @@ body {
 .form-select {
     min-height: 48px;
     border-radius: 12px;
-
-    border:
-        1px solid rgba(0,0,0,.10);
-
-    box-shadow: none;
+    border: 1px solid rgba(0,0,0,.10);
 }
 
 .form-select:focus {
     border-color: #198754;
-
-    box-shadow:
-        0 0 0 .2rem
-        rgba(25,135,84,.12);
+    box-shadow: 0 0 0 .2rem rgba(25,135,84,.12);
 }
 
 .chart-container {
@@ -251,17 +182,12 @@ body {
     height: 300px;
 }
 
-.chart-container canvas {
-    max-width: 100%;
+.chart-container.small {
+    height: 260px;
 }
 
-.progress {
-    height: 10px;
-    border-radius: 20px;
-}
-
-.progress-bar {
-    border-radius: 20px;
+.chart-title {
+    font-weight: 800;
 }
 
 .table-responsive {
@@ -300,69 +226,54 @@ body {
     margin-bottom: 10px;
 }
 
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.action-buttons .btn {
+    border-radius: 12px;
+    font-weight: 700;
+}
+
 .ck-bottom {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-
     z-index: 1050;
-
-    background:
-        rgba(255,255,255,.97);
-
-    border-top:
-        1px solid #dee2e6;
-
-    box-shadow:
-        0 -3px 15px rgba(0,0,0,.08);
-
+    background: rgba(255,255,255,.97);
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -3px 15px rgba(0,0,0,.08);
     padding: 6px 8px;
-
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 }
 
 .ck-bottom-inner {
     width: 100% !important;
     max-width: 100% !important;
-
     margin: 0 auto;
-
     display: grid;
-    grid-template-columns:
-        repeat(5,1fr);
-
+    grid-template-columns: repeat(5,1fr);
     gap: 4px;
 }
 
 .ck-bottom a {
     text-decoration: none !important;
     color: #6c757d;
-
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
     gap: 3px;
-
     font-size: .68rem;
     padding: 5px 2px;
-
     border-radius: 10px;
-    transition: .2s ease;
 }
 
 .ck-bottom a i {
     font-size: 1.15rem;
-}
-
-.ck-bottom a:hover {
-    color: #198754;
-
-    background:
-        rgba(25,135,84,.08);
 }
 
 .ck-bottom a.active {
@@ -371,8 +282,7 @@ body {
 }
 
 .animasi-angka {
-    animation:
-        angkaTurun .55s ease-out;
+    animation: angkaTurun .55s ease-out;
 }
 
 @keyframes angkaTurun {
@@ -380,43 +290,148 @@ body {
         opacity: 0;
         transform: translateY(-20px);
     }
-
     60% {
         opacity: 1;
         transform: translateY(4px);
     }
-
     100% {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-.stat-mini {
-    border-radius: 15px;
-    padding: 15px;
+/* DARK MODE */
 
-    background:
-        rgba(25,135,84,.06);
+html.dark-mode body,
+html[data-theme="dark"] body,
+body.dark-mode {
+    background: #121212 !important;
+    animation: none !important;
+    color: #f1f1f1 !important;
 }
 
-.stat-mini.danger {
-    background:
-        rgba(220,53,69,.06);
+html.dark-mode .custom-card,
+html[data-theme="dark"] .custom-card,
+body.dark-mode .custom-card,
+html.dark-mode .card,
+html[data-theme="dark"] .card,
+body.dark-mode .card {
+    background: #1e1e1e !important;
+    color: #f1f1f1 !important;
+    border-color: #333 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,.35);
 }
 
-.stat-mini .label {
-    color: #6c757d;
-    font-size: .8rem;
+html.dark-mode .ck-topbar,
+html[data-theme="dark"] .ck-topbar,
+body.dark-mode .ck-topbar {
+    background: #1e1e1e !important;
+    color: #f1f1f1 !important;
 }
 
-.stat-mini .value {
-    font-size: 1.05rem;
-    font-weight: 800;
+html.dark-mode .ck-logo,
+html[data-theme="dark"] .ck-logo,
+body.dark-mode .ck-logo {
+    background: #242424 !important;
+    border-color: #444 !important;
+}
+
+html.dark-mode .ck-title,
+html[data-theme="dark"] .ck-title,
+body.dark-mode .ck-title,
+html.dark-mode .page-heading,
+html[data-theme="dark"] .page-heading,
+body.dark-mode .page-heading {
+    color: #5dd39e !important;
+}
+
+html.dark-mode .ck-subtitle,
+html[data-theme="dark"] .ck-subtitle,
+body.dark-mode .ck-subtitle,
+html.dark-mode .text-muted,
+html[data-theme="dark"] .text-muted,
+body.dark-mode .text-muted {
+    color: #adb5bd !important;
+}
+
+html.dark-mode .ck-back,
+html[data-theme="dark"] .ck-back,
+body.dark-mode .ck-back {
+    color: #5dd39e !important;
+}
+
+html.dark-mode .form-select,
+html[data-theme="dark"] .form-select,
+body.dark-mode .form-select {
+    background-color: #242424 !important;
+    color: #fff !important;
+    border-color: #444 !important;
+}
+
+html.dark-mode .form-select option,
+html[data-theme="dark"] .form-select option,
+body.dark-mode .form-select option {
+    background: #242424;
+    color: #fff;
+}
+
+html.dark-mode .table,
+html[data-theme="dark"] .table,
+body.dark-mode .table {
+    color: #eee !important;
+    --bs-table-color: #eee;
+    --bs-table-bg: transparent;
+}
+
+html.dark-mode .table > :not(caption) > * > *,
+html[data-theme="dark"] .table > :not(caption) > * > *,
+body.dark-mode .table > :not(caption) > * > * {
+    background-color: transparent !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+
+html.dark-mode .table-success,
+html[data-theme="dark"] .table-success,
+body.dark-mode .table-success {
+    --bs-table-bg: #173c2b !important;
+    --bs-table-color: #fff !important;
+    background-color: #173c2b !important;
+    color: #fff !important;
+}
+
+html.dark-mode .ck-bottom,
+html[data-theme="dark"] .ck-bottom,
+body.dark-mode .ck-bottom {
+    background: rgba(30,30,30,.97) !important;
+    border-top-color: #333 !important;
+}
+
+html.dark-mode .ck-bottom a,
+html[data-theme="dark"] .ck-bottom a,
+body.dark-mode .ck-bottom a {
+    color: #adb5bd !important;
+}
+
+html.dark-mode .ck-bottom a.active,
+html[data-theme="dark"] .ck-bottom a.active,
+body.dark-mode .ck-bottom a.active {
+    color: #5dd39e !important;
+}
+
+html.dark-mode .text-success,
+html[data-theme="dark"] .text-success,
+body.dark-mode .text-success {
+    color: #5dd39e !important;
+}
+
+html.dark-mode .text-danger,
+html[data-theme="dark"] .text-danger,
+body.dark-mode .text-danger {
+    color: #ff7180 !important;
 }
 
 @media (min-width:768px) {
-
     .mobile-container {
         padding-left:35px !important;
         padding-right:35px !important;
@@ -452,36 +467,9 @@ body {
     .summary-value {
         font-size:1.35rem;
     }
-
-    .chart-container {
-        height:350px;
-    }
-
-    .form-select {
-        min-height:52px;
-        font-size:1rem;
-    }
-
-    .table {
-        font-size:1rem;
-    }
-
-    .ck-bottom {
-        padding:8px 25px;
-    }
-
-    .ck-bottom a {
-        font-size:.8rem;
-        padding:8px 4px;
-    }
-
-    .ck-bottom a i {
-        font-size:1.35rem;
-    }
 }
 
 @media (min-width:992px) {
-
     .mobile-container {
         padding-left:50px !important;
         padding-right:50px !important;
@@ -504,22 +492,12 @@ body {
     .ck-subtitle {
         font-size:1.05rem;
     }
-
-    .custom-card .card-body {
-        padding:30px !important;
-    }
 }
 
 @media (max-width:380px) {
-
     .mobile-container {
         padding-left:10px !important;
         padding-right:10px !important;
-    }
-
-    .ck-topbar {
-        padding:12px;
-        gap:10px;
     }
 
     .ck-logo {
@@ -532,183 +510,46 @@ body {
         font-size:1rem;
     }
 
-    .ck-subtitle {
-        font-size:.74rem;
-    }
-
-    .ck-bottom a {
-        font-size:.62rem;
-    }
-
-    .ck-bottom a i {
-        font-size:1.05rem;
-    }
-
-    .summary-icon {
-        width:40px;
-        height:40px;
-        font-size:1.1rem;
-    }
-
     .summary-value {
         font-size:1.05rem;
     }
+
+    .chart-container {
+        height:230px;
+    }
 }
 
-/* =========================
-   DARK MODE
-========================= */
+/* CETAK */
 
-html.dark-mode body,
-html[data-theme="dark"] body,
-body.dark-mode {
-    background:#121212 !important;
-    animation:none !important;
-    color:#f1f1f1 !important;
-}
+@media print {
+    body {
+        background:#fff !important;
+        color:#000 !important;
+        padding:0 !important;
+    }
 
-html.dark-mode .custom-card,
-html[data-theme="dark"] .custom-card,
-body.dark-mode .custom-card,
-html.dark-mode .card,
-html[data-theme="dark"] .card,
-body.dark-mode .card {
-    background:#1e1e1e !important;
-    color:#f1f1f1 !important;
-    border-color:#333 !important;
+    .ck-bottom,
+    .ck-back,
+    .action-buttons,
+    .filter-card {
+        display:none !important;
+    }
 
-    box-shadow:
-        0 4px 15px rgba(0,0,0,.35);
-}
+    .custom-card,
+    .ck-topbar {
+        box-shadow:none !important;
+        background:#fff !important;
+        border:1px solid #ddd !important;
+    }
 
-html.dark-mode .ck-topbar,
-html[data-theme="dark"] .ck-topbar,
-body.dark-mode .ck-topbar {
-    background:#1e1e1e !important;
-    color:#f1f1f1 !important;
-    border-color:#333 !important;
+    .mobile-container {
+        padding:0 !important;
+        max-width:none !important;
+    }
 
-    box-shadow:
-        0 4px 15px rgba(0,0,0,.35);
-}
-
-html.dark-mode .ck-logo,
-html[data-theme="dark"] .ck-logo,
-body.dark-mode .ck-logo {
-    background:#242424 !important;
-    border-color:#444 !important;
-}
-
-html.dark-mode .ck-title,
-html[data-theme="dark"] .ck-title,
-body.dark-mode .ck-title,
-html.dark-mode .page-heading,
-html[data-theme="dark"] .page-heading,
-body.dark-mode .page-heading {
-    color:#5dd39e !important;
-}
-
-html.dark-mode .ck-subtitle,
-html[data-theme="dark"] .ck-subtitle,
-body.dark-mode .ck-subtitle,
-html.dark-mode .text-muted,
-html[data-theme="dark"] .text-muted,
-body.dark-mode .text-muted {
-    color:#adb5bd !important;
-}
-
-html.dark-mode .ck-back,
-html[data-theme="dark"] .ck-back,
-body.dark-mode .ck-back {
-    color:#5dd39e !important;
-}
-
-html.dark-mode .form-select,
-html[data-theme="dark"] .form-select,
-body.dark-mode .form-select {
-    background-color:#242424 !important;
-    color:#fff !important;
-    border-color:#444 !important;
-}
-
-html.dark-mode .form-select option,
-html[data-theme="dark"] .form-select option,
-body.dark-mode .form-select option {
-    background:#242424 !important;
-    color:#fff !important;
-}
-
-html.dark-mode .table,
-html[data-theme="dark"] .table,
-body.dark-mode .table {
-    color:#eee !important;
-
-    --bs-table-color:#eee;
-    --bs-table-bg:transparent;
-}
-
-html.dark-mode .table > :not(caption) > * > *,
-html[data-theme="dark"] .table > :not(caption) > * > *,
-body.dark-mode .table > :not(caption) > * > * {
-    background-color:transparent !important;
-    color:#eee !important;
-    border-color:#444 !important;
-}
-
-html.dark-mode .table-success,
-html[data-theme="dark"] .table-success,
-body.dark-mode .table-success {
-    --bs-table-bg:#173c2b !important;
-    --bs-table-color:#fff !important;
-
-    background-color:#173c2b !important;
-    color:#fff !important;
-}
-
-html.dark-mode .ck-bottom,
-html[data-theme="dark"] .ck-bottom,
-body.dark-mode .ck-bottom {
-    background:
-        rgba(30,30,30,.97) !important;
-
-    border-top:
-        1px solid #333 !important;
-
-    box-shadow:
-        0 -4px 15px rgba(0,0,0,.4);
-}
-
-html.dark-mode .ck-bottom a,
-html[data-theme="dark"] .ck-bottom a,
-body.dark-mode .ck-bottom a {
-    color:#adb5bd !important;
-}
-
-html.dark-mode .ck-bottom a.active,
-html[data-theme="dark"] .ck-bottom a.active,
-body.dark-mode .ck-bottom a.active {
-    color:#5dd39e !important;
-}
-
-html.dark-mode .stat-mini {
-    background:rgba(93,211,158,.08);
-}
-
-html.dark-mode .stat-mini.danger {
-    background:rgba(255,113,128,.08);
-}
-
-html.dark-mode .summary-icon {
-    background:rgba(93,211,158,.12) !important;
-    color:#5dd39e !important;
-}
-
-html.dark-mode .text-success {
-    color:#5dd39e !important;
-}
-
-html.dark-mode .text-danger {
-    color:#ff7180 !important;
+    .chart-container {
+        break-inside:avoid;
+    }
 }
 </style>
 </head>
@@ -718,9 +559,7 @@ html.dark-mode .text-danger {
 <div class="container-fluid mobile-container py-4">
 
     <!-- HEADER -->
-
     <div class="ck-topbar">
-
         <img
             id="logoPreviewV2"
             src="assets/logo-catatan-kas.jpg"
@@ -729,9 +568,7 @@ html.dark-mode .text-danger {
         >
 
         <div>
-            <p class="ck-title">
-                Catatan Kas
-            </p>
+            <p class="ck-title">Catatan Kas</p>
 
             <span
                 class="ck-subtitle"
@@ -740,17 +577,12 @@ html.dark-mode .text-danger {
                 Madrasah Al-Fattah
             </span>
         </div>
-
     </div>
 
     <!-- JUDUL -->
-
     <div class="mb-4">
 
-        <a
-            href="index.html"
-            class="ck-back"
-        >
+        <a href="index.html" class="ck-back">
             <i class="bi bi-arrow-left"></i>
             Kembali ke Dashboard
         </a>
@@ -769,14 +601,49 @@ html.dark-mode .text-danger {
 
     </div>
 
-    <!-- RINGKASAN -->
+    <!-- TOMBOL -->
+    <div class="card custom-card mb-4">
+        <div class="card-body">
 
+            <div class="action-buttons">
+
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    id="btnCetak"
+                >
+                    <i class="bi bi-printer-fill"></i>
+                    Cetak Laporan
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-danger"
+                    id="btnPDF"
+                >
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    Simpan PDF
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-outline-success"
+                    id="btnRefresh"
+                >
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Refresh
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- RINGKASAN -->
     <div class="row g-3 mb-4">
 
         <div class="col-12">
-
             <div class="card custom-card summary-card">
-
                 <div class="card-body">
 
                     <div class="d-flex align-items-center">
@@ -803,15 +670,11 @@ html.dark-mode .text-danger {
                     </div>
 
                 </div>
-
             </div>
-
         </div>
 
         <div class="col-6">
-
             <div class="card custom-card summary-card">
-
                 <div class="card-body">
 
                     <div class="text-muted mb-2 small">
@@ -827,15 +690,11 @@ html.dark-mode .text-danger {
                     </h4>
 
                 </div>
-
             </div>
-
         </div>
 
         <div class="col-6">
-
             <div class="card custom-card summary-card">
-
                 <div class="card-body">
 
                     <div class="text-muted mb-2 small">
@@ -851,15 +710,11 @@ html.dark-mode .text-danger {
                     </h4>
 
                 </div>
-
             </div>
-
         </div>
 
         <div class="col-6">
-
             <div class="card custom-card summary-card">
-
                 <div class="card-body">
 
                     <div class="text-muted mb-2 small">
@@ -875,15 +730,11 @@ html.dark-mode .text-danger {
                     </h4>
 
                 </div>
-
             </div>
-
         </div>
 
         <div class="col-6">
-
             <div class="card custom-card summary-card">
-
                 <div class="card-body">
 
                     <div class="text-muted mb-2 small">
@@ -899,15 +750,11 @@ html.dark-mode .text-danger {
                     </h4>
 
                 </div>
-
             </div>
-
         </div>
 
         <div class="col-6">
-
             <div class="card custom-card summary-card">
-
                 <div class="card-body">
 
                     <div class="text-muted mb-2 small">
@@ -923,15 +770,11 @@ html.dark-mode .text-danger {
                     </h4>
 
                 </div>
-
             </div>
-
         </div>
 
         <div class="col-6">
-
             <div class="card custom-card summary-card">
-
                 <div class="card-body">
 
                     <div class="text-muted mb-2 small">
@@ -947,165 +790,24 @@ html.dark-mode .text-danger {
                     </h4>
 
                 </div>
-
             </div>
-
-        </div>
-
-    </div>
-
-    <!-- GRAFIK -->
-
-    <div class="card custom-card mb-4">
-
-        <div class="card-body">
-
-            <div
-                class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"
-            >
-
-                <div>
-
-                    <h5 class="fw-bold mb-1">
-
-                        <i class="bi bi-graph-up-arrow text-success"></i>
-
-                        Grafik Keuangan
-
-                    </h5>
-
-                    <small class="text-muted">
-                        Perbandingan pemasukan dan pengeluaran
-                    </small>
-
-                </div>
-
-                <span
-                    class="badge text-bg-success"
-                    id="periodeGrafik"
-                >
-                    Tahun Ini
-                </span>
-
-            </div>
-
-            <div class="chart-container">
-
-                <canvas id="grafikKeuangan"></canvas>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- REKAP -->
-
-    <div class="card custom-card mb-4">
-
-        <div class="card-body">
-
-            <h5 class="fw-bold mb-3">
-
-                <i class="bi bi-pie-chart-fill text-success"></i>
-
-                Rekap Keuangan
-
-            </h5>
-
-            <div class="row g-3">
-
-                <div class="col-6">
-
-                    <div class="stat-mini">
-
-                        <div class="label">
-                            Total Pemasukan
-                        </div>
-
-                        <div
-                            class="value text-success"
-                            id="rekapPemasukan"
-                        >
-                            Rp 0
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="col-6">
-
-                    <div class="stat-mini danger">
-
-                        <div class="label">
-                            Total Pengeluaran
-                        </div>
-
-                        <div
-                            class="value text-danger"
-                            id="rekapPengeluaran"
-                        >
-                            Rp 0
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="col-12">
-
-                    <div class="stat-mini">
-
-                        <div class="label">
-                            Persentase pengeluaran dari pemasukan
-                        </div>
-
-                        <div
-                            class="value"
-                            id="persentasePengeluaran"
-                        >
-                            0%
-                        </div>
-
-                        <div class="progress mt-2">
-
-                            <div
-                                id="progressPengeluaran"
-                                class="progress-bar bg-danger"
-                                role="progressbar"
-                                style="width:0%"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
         </div>
 
     </div>
 
     <!-- FILTER -->
-
-    <div class="card custom-card mb-4">
+    <div class="card custom-card mb-4 filter-card">
 
         <div class="card-body">
 
             <h5 class="fw-bold mb-3">
-
                 <i class="bi bi-funnel text-success"></i>
-
                 Filter Laporan
-
             </h5>
 
             <div class="row g-3">
 
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-4">
 
                     <label
                         for="bulan"
@@ -1116,13 +818,11 @@ html.dark-mode .text-danger {
 
                     <select
                         id="bulan"
-                        class="form-select bg-light border-0"
+                        class="form-select"
                     >
-
                         <option value="semua">
                             Semua Bulan
                         </option>
-
                         <option value="0">Januari</option>
                         <option value="1">Februari</option>
                         <option value="2">Maret</option>
@@ -1135,12 +835,11 @@ html.dark-mode .text-danger {
                         <option value="9">Oktober</option>
                         <option value="10">November</option>
                         <option value="11">Desember</option>
-
                     </select>
 
                 </div>
 
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-4">
 
                     <label
                         for="tahun"
@@ -1151,18 +850,16 @@ html.dark-mode .text-danger {
 
                     <select
                         id="tahun"
-                        class="form-select bg-light border-0"
+                        class="form-select"
                     >
-
                         <option value="semua">
                             Semua Tahun
                         </option>
-
                     </select>
 
                 </div>
 
-                <div class="col-12">
+                <div class="col-12 col-md-4">
 
                     <label
                         for="filterJenis"
@@ -1173,37 +870,15 @@ html.dark-mode .text-danger {
 
                     <select
                         id="filterJenis"
-                        class="form-select bg-light border-0"
+                        class="form-select"
                     >
-
-                        <option value="semua">
-                            Semua Jenis
-                        </option>
-
-                        <option value="SPP">
-                            SPP
-                        </option>
-
-                        <option value="Syahriyyah">
-                            Syahriyyah
-                        </option>
-
-                        <option value="Infaq">
-                            Infaq
-                        </option>
-
-                        <option value="Kas">
-                            Kas
-                        </option>
-
-                        <option value="Beras">
-                            Beras
-                        </option>
-
-                        <option value="Lainnya">
-                            Lainnya
-                        </option>
-
+                        <option value="semua">Semua Jenis</option>
+                        <option value="SPP">SPP</option>
+                        <option value="Syahriyyah">Syahriyyah</option>
+                        <option value="Infaq">Infaq</option>
+                        <option value="Kas">Kas</option>
+                        <option value="Beras">Beras</option>
+                        <option value="Lainnya">Lainnya</option>
                     </select>
 
                 </div>
@@ -1214,8 +889,72 @@ html.dark-mode .text-danger {
 
     </div>
 
-    <!-- RIWAYAT -->
+    <!-- GRAFIK -->
+    <div class="row g-3 mb-4">
 
+        <div class="col-12 col-lg-8">
+
+            <div class="card custom-card h-100">
+
+                <div class="card-body">
+
+                    <h5 class="chart-title mb-3">
+                        <i class="bi bi-bar-chart-fill text-success"></i>
+                        Pemasukan vs Pengeluaran
+                    </h5>
+
+                    <div class="chart-container">
+                        <canvas id="grafikKeuangan"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-lg-4">
+
+            <div class="card custom-card h-100">
+
+                <div class="card-body">
+
+                    <h5 class="chart-title mb-3">
+                        <i class="bi bi-pie-chart-fill text-success"></i>
+                        Komposisi
+                    </h5>
+
+                    <div class="chart-container small">
+                        <canvas id="grafikKomposisi"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- GRAFIK SALDO -->
+    <div class="card custom-card mb-4">
+
+        <div class="card-body">
+
+            <h5 class="chart-title mb-3">
+                <i class="bi bi-graph-up-arrow text-success"></i>
+                Perkembangan Saldo
+            </h5>
+
+            <div class="chart-container">
+                <canvas id="grafikSaldo"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- RIWAYAT -->
     <div class="card custom-card mb-4">
 
         <div class="card-body">
@@ -1225,11 +964,8 @@ html.dark-mode .text-danger {
             >
 
                 <h5 class="fw-bold mb-0">
-
                     <i class="bi bi-receipt text-success"></i>
-
                     Riwayat Transaksi
-
                 </h5>
 
                 <span
@@ -1243,24 +979,16 @@ html.dark-mode .text-danger {
 
             <div class="table-responsive">
 
-                <table
-                    class="table table-striped table-hover align-middle"
-                >
+                <table class="table table-striped table-hover align-middle">
 
                     <thead class="table-success">
 
                         <tr>
-
                             <th>Tanggal</th>
-
-                            <th>Nama Santri</th>
-
+                            <th>Nama</th>
                             <th>Jenis</th>
-
-                            <th class="text-end">
-                                Jumlah
-                            </th>
-
+                            <th>Transaksi</th>
+                            <th class="text-end">Jumlah</th>
                         </tr>
 
                     </thead>
@@ -1268,14 +996,12 @@ html.dark-mode .text-danger {
                     <tbody id="dataPembayaran">
 
                         <tr>
-
                             <td
-                                colspan="4"
+                                colspan="5"
                                 class="text-center text-muted py-4"
                             >
                                 Memuat data...
                             </td>
-
                         </tr>
 
                     </tbody>
@@ -1290,7 +1016,7 @@ html.dark-mode .text-danger {
 
 </div>
 
-<!-- BOTTOM NAV -->
+<!-- BOTTOM NAVIGATION -->
 
 <div class="ck-bottom">
 
@@ -1329,192 +1055,70 @@ html.dark-mode .text-danger {
 
 </div>
 
-<!-- CHART JS -->
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
 (function () {
 
 "use strict";
 
 const BULAN = [
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember"
+    "Januari","Februari","Maret","April",
+    "Mei","Juni","Juli","Agustus",
+    "September","Oktober","November","Desember"
 ];
 
 const el = {
+    namaPondokHeader: document.getElementById("namaPondokHeader"),
+    subJudulHeader: document.getElementById("subJudulHeader"),
+    logo: document.getElementById("logoPreviewV2"),
 
-    nama:
-        document.getElementById(
-            "namaPondokHeader"
-        ),
+    bulan: document.getElementById("bulan"),
+    tahun: document.getElementById("tahun"),
+    filterJenis: document.getElementById("filterJenis"),
 
-    subjudul:
-        document.getElementById(
-            "subJudulHeader"
-        ),
+    dataPembayaran: document.getElementById("dataPembayaran"),
+    jumlahTransaksi: document.getElementById("jumlahTransaksi"),
 
-    logo:
-        document.getElementById(
-            "logoPreviewV2"
-        ),
+    totalSaldo: document.getElementById("totalSaldo"),
+    hariIni: document.getElementById("hariIni"),
+    pengeluaranHariIni: document.getElementById("pengeluaranHariIni"),
+    bulanIni: document.getElementById("bulanIni"),
+    pengeluaranBulanIni: document.getElementById("pengeluaranBulanIni"),
+    tahunIni: document.getElementById("tahunIni"),
+    pengeluaranTahunIni: document.getElementById("pengeluaranTahunIni"),
 
-    bulan:
-        document.getElementById(
-            "bulan"
-        ),
-
-    tahun:
-        document.getElementById(
-            "tahun"
-        ),
-
-    jenis:
-        document.getElementById(
-            "filterJenis"
-        ),
-
-    data:
-        document.getElementById(
-            "dataPembayaran"
-        ),
-
-    jumlah:
-        document.getElementById(
-            "jumlahTransaksi"
-        ),
-
-    saldo:
-        document.getElementById(
-            "totalSaldo"
-        ),
-
-    hari:
-        document.getElementById(
-            "hariIni"
-        ),
-
-    keluarHari:
-        document.getElementById(
-            "pengeluaranHariIni"
-        ),
-
-    bulanIni:
-        document.getElementById(
-            "bulanIni"
-        ),
-
-    keluarBulan:
-        document.getElementById(
-            "pengeluaranBulanIni"
-        ),
-
-    tahunIni:
-        document.getElementById(
-            "tahunIni"
-        ),
-
-    keluarTahun:
-        document.getElementById(
-            "pengeluaranTahunIni"
-        ),
-
-    rekapMasuk:
-        document.getElementById(
-            "rekapPemasukan"
-        ),
-
-    rekapKeluar:
-        document.getElementById(
-            "rekapPengeluaran"
-        ),
-
-    persen:
-        document.getElementById(
-            "persentasePengeluaran"
-        ),
-
-    progress:
-        document.getElementById(
-            "progressPengeluaran"
-        ),
-
-    grafik:
-        document.getElementById(
-            "grafikKeuangan"
-        ),
-
-    periode:
-        document.getElementById(
-            "periodeGrafik"
-        )
-
+    btnCetak: document.getElementById("btnCetak"),
+    btnPDF: document.getElementById("btnPDF"),
+    btnRefresh: document.getElementById("btnRefresh")
 };
 
-let chart = null;
+let grafikKeuangan = null;
+let grafikKomposisi = null;
+let grafikSaldo = null;
 
 function rupiah(nilai) {
-
-    return "Rp " +
-        (
-            Number(nilai) || 0
-        ).toLocaleString("id-ID");
-
+    return "Rp " + (Number(nilai) || 0).toLocaleString("id-ID");
 }
 
 function getArray(key) {
-
     try {
-
-        const data =
-            JSON.parse(
-                localStorage.getItem(key)
-            );
-
-        return Array.isArray(data)
-            ? data
-            : [];
-
+        const data = JSON.parse(localStorage.getItem(key));
+        return Array.isArray(data) ? data : [];
     } catch (e) {
-
         return [];
-
     }
-
 }
 
-function pembayaran() {
-
-    return getArray(
-        "pembayaran"
-    );
-
+function getPembayaran() {
+    return getArray("pembayaran");
 }
 
-function pengeluaran() {
-
-    return getArray(
-        "pengeluaran"
-    );
-
+function getPengeluaran() {
+    return getArray("pengeluaran");
 }
 
-function nominal(item) {
+function angkaNominal(item) {
 
-    if (!item) {
-        return 0;
-    }
+    if (!item) return 0;
 
     let nilai =
         item.nominal ??
@@ -1523,34 +1127,22 @@ function nominal(item) {
         item.total ??
         0;
 
-    if (
-        typeof nilai ===
-        "string"
-    ) {
-
-        nilai =
-            nilai
-                .replace(/Rp/gi,"")
-                .replace(/\s/g,"")
-                .replace(/\./g,"")
-                .replace(/,/g,".");
-
+    if (typeof nilai === "string") {
+        nilai = nilai
+            .replace(/Rp/gi, "")
+            .replace(/\s/g, "")
+            .replace(/\./g, "")
+            .replace(/,/g, ".");
     }
 
-    const hasil =
-        Number(nilai);
+    const angka = Number(nilai);
 
-    return Number.isFinite(hasil)
-        ? hasil
-        : 0;
-
+    return Number.isFinite(angka) ? angka : 0;
 }
 
-function tanggal(item) {
+function parseTanggal(item) {
 
-    if (!item) {
-        return null;
-    }
+    if (!item) return null;
 
     const nilai =
         item.tanggal ??
@@ -1559,1113 +1151,898 @@ function tanggal(item) {
         item.waktu ??
         null;
 
-    if (!nilai) {
-        return null;
+    if (!nilai) return null;
+
+    if (nilai instanceof Date) {
+        return isNaN(nilai.getTime()) ? null : nilai;
     }
 
-    if (
-        typeof nilai ===
-        "object" &&
-        typeof nilai.toDate ===
-        "function"
-    ) {
-
-        const d =
-            nilai.toDate();
-
-        return isNaN(d.getTime())
-            ? null
-            : d;
-
-    }
-
-    const teks =
-        String(nilai).trim();
+    const teks = String(nilai).trim();
 
     let cocok =
-        teks.match(
-            /^(\d{4})-(\d{1,2})-(\d{1,2})/
-        );
+        teks.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
 
     if (cocok) {
+        const tanggal = new Date(
+            Number(cocok[1]),
+            Number(cocok[2]) - 1,
+            Number(cocok[3])
+        );
 
-        const d =
-            new Date(
-                Number(cocok[1]),
-                Number(cocok[2])-1,
-                Number(cocok[3])
-            );
-
-        return isNaN(d.getTime())
+        return isNaN(tanggal.getTime())
             ? null
-            : d;
-
+            : tanggal;
     }
 
     cocok =
-        teks.match(
-            /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/
-        );
+        teks.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
 
     if (cocok) {
+        const tanggal = new Date(
+            Number(cocok[3]),
+            Number(cocok[2]) - 1,
+            Number(cocok[1])
+        );
 
-        const d =
-            new Date(
-                Number(cocok[3]),
-                Number(cocok[2])-1,
-                Number(cocok[1])
-            );
-
-        return isNaN(d.getTime())
+        return isNaN(tanggal.getTime())
             ? null
-            : d;
-
+            : tanggal;
     }
 
-    const d =
-        new Date(teks);
+    const hasil = new Date(teks);
 
-    return isNaN(d.getTime())
+    return isNaN(hasil.getTime())
         ? null
-        : d;
-
+        : hasil;
 }
 
 function formatTanggal(item) {
 
-    const d =
-        tanggal(item);
+    const tanggal = parseTanggal(item);
 
-    if (!d) {
-
-        return (
-            item?.tanggal ||
+    if (!tanggal) {
+        return item?.tanggal ||
             item?.date ||
-            "-"
-        );
-
+            "-";
     }
 
-    return d.toLocaleDateString(
+    return tanggal.toLocaleDateString(
         "id-ID",
         {
-            day:"2-digit",
-            month:"short",
-            year:"numeric"
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
         }
     );
-
 }
 
-function nama(item) {
-
-    return (
-        item?.nama ??
+function namaItem(item) {
+    return item?.nama ??
         item?.namaSantri ??
         item?.santri ??
-        "-"
-    );
-
+        item?.namaSiswa ??
+        "-";
 }
 
-function jenis(item) {
-
-    return (
-        item?.jenis ??
+function jenisItem(item) {
+    return item?.jenis ??
         item?.kategori ??
         item?.type ??
-        "Lainnya"
-    );
-
+        "Lainnya";
 }
 
-function semua() {
+function tanggalHariIni(item) {
 
-    const hasil = [];
+    const tanggal = parseTanggal(item);
 
-    pembayaran().forEach(
-        item => {
+    if (!tanggal) return false;
 
-            hasil.push({
-                ...item,
-                _tipe:"Pemasukan",
-                _nominal:nominal(item)
-            });
-
-        }
-    );
-
-    pengeluaran().forEach(
-        item => {
-
-            hasil.push({
-                ...item,
-                _tipe:"Pengeluaran",
-                _nominal:nominal(item)
-            });
-
-        }
-    );
-
-    return hasil;
-
-}
-
-function hariIni(item) {
-
-    const d =
-        tanggal(item);
-
-    if (!d) {
-        return false;
-    }
-
-    const now =
-        new Date();
+    const sekarang = new Date();
 
     return (
-        d.getDate() ===
-        now.getDate() &&
-
-        d.getMonth() ===
-        now.getMonth() &&
-
-        d.getFullYear() ===
-        now.getFullYear()
+        tanggal.getDate() === sekarang.getDate() &&
+        tanggal.getMonth() === sekarang.getMonth() &&
+        tanggal.getFullYear() === sekarang.getFullYear()
     );
-
 }
 
-function bulanIni(item) {
+function tanggalBulanIni(item) {
 
-    const d =
-        tanggal(item);
+    const tanggal = parseTanggal(item);
 
-    if (!d) {
-        return false;
-    }
+    if (!tanggal) return false;
 
-    const now =
-        new Date();
+    const sekarang = new Date();
 
     return (
-        d.getMonth() ===
-        now.getMonth() &&
-
-        d.getFullYear() ===
-        now.getFullYear()
+        tanggal.getMonth() === sekarang.getMonth() &&
+        tanggal.getFullYear() === sekarang.getFullYear()
     );
-
 }
 
-function tahunIni(item) {
+function tanggalTahunIni(item) {
 
-    const d =
-        tanggal(item);
+    const tanggal = parseTanggal(item);
 
-    if (!d) {
-        return false;
-    }
+    if (!tanggal) return false;
 
     return (
-        d.getFullYear() ===
-        new Date().getFullYear()
+        tanggal.getFullYear() === new Date().getFullYear()
     );
-
 }
 
-function animasi(node) {
+function animasiAngka(element) {
 
-    if (!node) {
-        return;
-    }
+    if (!element) return;
 
-    node.classList.remove(
-        "animasi-angka"
-    );
+    element.classList.remove("animasi-angka");
 
-    void node.offsetWidth;
+    void element.offsetWidth;
 
-    node.classList.add(
-        "animasi-angka"
-    );
-
+    element.classList.add("animasi-angka");
 }
 
-function ringkasan() {
+function tampilkanRingkasan() {
 
-    const masuk =
-        pembayaran();
+    const pembayaran = getPembayaran();
+    const pengeluaran = getPengeluaran();
 
-    const keluar =
-        pengeluaran();
-
-    const totalMasuk =
-        masuk.reduce(
-            (a,b) =>
-                a + nominal(b),
+    const totalPemasukan =
+        pembayaran.reduce(
+            (total, item) =>
+                total + angkaNominal(item),
             0
         );
 
-    const totalKeluar =
-        keluar.reduce(
-            (a,b) =>
-                a + nominal(b),
+    const totalPengeluaran =
+        pengeluaran.reduce(
+            (total, item) =>
+                total + angkaNominal(item),
             0
         );
 
     const saldo =
-        totalMasuk -
-        totalKeluar;
+        totalPemasukan -
+        totalPengeluaran;
 
-    const masukHari =
-        masuk
-            .filter(hariIni)
-            .reduce(
-                (a,b) =>
-                    a + nominal(b),
-                0
-            );
+    const pemasukanHariIni =
+        pembayaran
+        .filter(tanggalHariIni)
+        .reduce(
+            (total, item) =>
+                total + angkaNominal(item),
+            0
+        );
 
-    const keluarHari =
-        keluar
-            .filter(hariIni)
-            .reduce(
-                (a,b) =>
-                    a + nominal(b),
-                0
-            );
+    const keluarHariIni =
+        pengeluaran
+        .filter(tanggalHariIni)
+        .reduce(
+            (total, item) =>
+                total + angkaNominal(item),
+            0
+        );
 
-    const masukBulan =
-        masuk
-            .filter(bulanIni)
-            .reduce(
-                (a,b) =>
-                    a + nominal(b),
-                0
-            );
+    const pemasukanBulanIni =
+        pembayaran
+        .filter(tanggalBulanIni)
+        .reduce(
+            (total, item) =>
+                total + angkaNominal(item),
+            0
+        );
 
-    const keluarBulan =
-        keluar
-            .filter(bulanIni)
-            .reduce(
-                (a,b) =>
-                    a + nominal(b),
-                0
-            );
+    const keluarBulanIni =
+        pengeluaran
+        .filter(tanggalBulanIni)
+        .reduce(
+            (total, item) =>
+                total + angkaNominal(item),
+            0
+        );
 
-    const masukTahun =
-        masuk
-            .filter(tahunIni)
-            .reduce(
-                (a,b) =>
-                    a + nominal(b),
-                0
-            );
+    const pemasukanTahunIni =
+        pembayaran
+        .filter(tanggalTahunIni)
+        .reduce(
+            (total, item) =>
+                total + angkaNominal(item),
+            0
+        );
 
-    const keluarTahun =
-        keluar
-            .filter(tahunIni)
-            .reduce(
-                (a,b) =>
-                    a + nominal(b),
-                0
-            );
+    const keluarTahunIni =
+        pengeluaran
+        .filter(tanggalTahunIni)
+        .reduce(
+            (total, item) =>
+                total + angkaNominal(item),
+            0
+        );
 
-    el.saldo.textContent =
-        rupiah(saldo);
+    const hasil = {
+        totalSaldo: saldo,
+        hariIni: pemasukanHariIni,
+        pengeluaranHariIni: keluarHariIni,
+        bulanIni: pemasukanBulanIni,
+        pengeluaranBulanIni: keluarBulanIni,
+        tahunIni: pemasukanTahunIni,
+        pengeluaranTahunIni: keluarTahunIni
+    };
 
-    el.hari.textContent =
-        rupiah(masukHari);
+    Object.keys(hasil).forEach(key => {
 
-    el.keluarHari.textContent =
-        rupiah(keluarHari);
+        if (el[key]) {
+            el[key].textContent =
+                rupiah(hasil[key]);
 
-    el.bulanIni.textContent =
-        rupiah(masukBulan);
+            animasiAngka(el[key]);
+        }
 
-    el.keluarBulan.textContent =
-        rupiah(keluarBulan);
-
-    el.tahunIni.textContent =
-        rupiah(masukTahun);
-
-    el.keluarTahun.textContent =
-        rupiah(keluarTahun);
-
-    [
-        el.saldo,
-        el.hari,
-        el.keluarHari,
-        el.bulanIni,
-        el.keluarBulan,
-        el.tahunIni,
-        el.keluarTahun
-    ].forEach(animasi);
-
+    });
 }
 
 function isiTahun() {
 
-    const tahunSet =
-        new Set();
+    if (!el.tahun) return;
 
-    semua().forEach(
-        item => {
+    const tahunSet = new Set();
 
-            const d =
-                tanggal(item);
+    getPembayaran()
+        .concat(getPengeluaran())
+        .forEach(item => {
 
-            if (d) {
+            const tanggal = parseTanggal(item);
+
+            if (tanggal) {
                 tahunSet.add(
-                    d.getFullYear()
+                    tanggal.getFullYear()
                 );
             }
 
-        }
-    );
+        });
 
     tahunSet.add(
         new Date().getFullYear()
     );
 
-    const tahun =
-        Array.from(
-            tahunSet
-        ).sort(
-            (a,b) => b-a
-        );
+    const tahunArray =
+        Array.from(tahunSet)
+        .sort((a,b) => b-a);
 
-    el.tahun.innerHTML =
-        `<option value="semua">
-            Semua Tahun
-        </option>`;
+    el.tahun.innerHTML = "";
 
-    tahun.forEach(
-        t => {
+    const semua =
+        document.createElement("option");
 
-            const option =
-                document.createElement(
-                    "option"
-                );
+    semua.value = "semua";
+    semua.textContent = "Semua Tahun";
 
-            option.value =
-                String(t);
+    el.tahun.appendChild(semua);
 
-            option.textContent =
-                String(t);
+    tahunArray.forEach(tahun => {
 
-            el.tahun.appendChild(
-                option
-            );
+        const option =
+            document.createElement("option");
 
-        }
-    );
+        option.value = String(tahun);
+        option.textContent = String(tahun);
+
+        el.tahun.appendChild(option);
+
+    });
 
     el.tahun.value =
-        String(
-            new Date().getFullYear()
-        );
-
+        String(new Date().getFullYear());
 }
 
-function filterData() {
+function semuaTransaksi() {
+
+    const data = [];
+
+    getPembayaran().forEach(item => {
+
+        data.push({
+            ...item,
+            _tipe: "Pemasukan",
+            _nominal: angkaNominal(item)
+        });
+
+    });
+
+    getPengeluaran().forEach(item => {
+
+        data.push({
+            ...item,
+            _tipe: "Pengeluaran",
+            _nominal: angkaNominal(item)
+        });
+
+    });
+
+    return data;
+}
+
+function transaksiTerfilter() {
 
     const bulan =
-        el.bulan.value;
+        el.bulan?.value || "semua";
 
     const tahun =
-        el.tahun.value;
+        el.tahun?.value || "semua";
 
-    const jenisFilter =
-        el.jenis.value;
+    const jenis =
+        el.filterJenis?.value || "semua";
 
-    return semua()
-        .filter(
-            item => {
+    return semuaTransaksi()
+    .filter(item => {
 
-                const d =
-                    tanggal(item);
+        const tanggal = parseTanggal(item);
 
-                if (
-                    bulan !==
-                    "semua"
-                ) {
+        if (bulan !== "semua") {
 
-                    if (!d) {
-                        return false;
-                    }
+            if (!tanggal) return false;
 
-                    if (
-                        d.getMonth() !==
-                        Number(bulan)
-                    ) {
-
-                        return false;
-
-                    }
-
-                }
-
-                if (
-                    tahun !==
-                    "semua"
-                ) {
-
-                    if (!d) {
-                        return false;
-                    }
-
-                    if (
-                        d.getFullYear() !==
-                        Number(tahun)
-                    ) {
-
-                        return false;
-
-                    }
-
-                }
-
-                if (
-                    jenisFilter !==
-                    "semua"
-                ) {
-
-                    if (
-                        jenis(item) !==
-                        jenisFilter
-                    ) {
-
-                        return false;
-
-                    }
-
-                }
-
-                return true;
-
+            if (
+                tanggal.getMonth() !==
+                Number(bulan)
+            ) {
+                return false;
             }
-        )
-        .sort(
-            (a,b) => {
+        }
 
-                const da =
-                    tanggal(a);
+        if (tahun !== "semua") {
 
-                const db =
-                    tanggal(b);
+            if (!tanggal) return false;
 
-                if (!da) return 1;
-                if (!db) return -1;
-
-                return db-da;
-
+            if (
+                tanggal.getFullYear() !==
+                Number(tahun)
+            ) {
+                return false;
             }
-        );
+        }
 
+        if (jenis !== "semua") {
+
+            if (
+                jenisItem(item) !== jenis
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+
+    })
+    .sort((a,b) => {
+
+        const ta = parseTanggal(a);
+        const tb = parseTanggal(b);
+
+        if (!ta && !tb) return 0;
+        if (!ta) return 1;
+        if (!tb) return -1;
+
+        return tb - ta;
+    });
 }
 
-function tampilkanTabel() {
+function buatBadge(jenis, tipe) {
+
+    const badge =
+        document.createElement("span");
+
+    badge.className =
+        "badge badge-jenis " +
+        (
+            tipe === "Pengeluaran"
+                ? "text-bg-danger"
+                : "text-bg-success"
+        );
+
+    badge.textContent = jenis;
+
+    return badge;
+}
+
+function tampilkanTransaksi() {
+
+    if (!el.dataPembayaran) return;
 
     const data =
-        filterData();
+        transaksiTerfilter();
 
-    el.data.innerHTML =
-        "";
+    el.dataPembayaran.innerHTML = "";
 
-    el.jumlah.textContent =
-        data.length +
-        " transaksi";
+    if (el.jumlahTransaksi) {
+        el.jumlahTransaksi.textContent =
+            data.length + " transaksi";
+    }
 
-    if (
-        data.length ===
-        0
-    ) {
+    if (!data.length) {
 
-        el.data.innerHTML = `
+        const tr =
+            document.createElement("tr");
 
-            <tr>
+        const td =
+            document.createElement("td");
 
-                <td
-                    colspan="4"
-                    class="text-center py-4 empty-state"
-                >
+        td.colSpan = 5;
 
-                    <i class="bi bi-receipt"></i>
+        td.className =
+            "text-center py-4 empty-state";
 
-                    <div class="fw-semibold">
-                        Belum ada transaksi
-                    </div>
-
-                    <small>
-                        Tidak ada data yang sesuai
-                        dengan filter.
-                    </small>
-
-                </td>
-
-            </tr>
-
+        td.innerHTML = `
+            <i class="bi bi-receipt"></i>
+            <div class="fw-semibold">
+                Belum ada transaksi
+            </div>
+            <small>
+                Tidak ada data yang sesuai dengan filter.
+            </small>
         `;
 
-        return;
+        tr.appendChild(td);
 
+        el.dataPembayaran.appendChild(tr);
+
+        return;
     }
 
-    data.forEach(
-        item => {
+    data.forEach(item => {
 
-            const tr =
-                document.createElement(
-                    "tr"
-                );
+        const tr =
+            document.createElement("tr");
 
-            const tdTanggal =
-                document.createElement(
-                    "td"
-                );
+        const tdTanggal =
+            document.createElement("td");
 
-            tdTanggal.textContent =
-                formatTanggal(item);
+        tdTanggal.textContent =
+            formatTanggal(item);
 
-            const tdNama =
-                document.createElement(
-                    "td"
-                );
+        const tdNama =
+            document.createElement("td");
 
-            tdNama.textContent =
-                nama(item);
+        tdNama.textContent =
+            namaItem(item);
 
-            const tdJenis =
-                document.createElement(
-                    "td"
-                );
+        const tdJenis =
+            document.createElement("td");
 
-            const badge =
-                document.createElement(
-                    "span"
-                );
+        tdJenis.appendChild(
+            buatBadge(
+                jenisItem(item),
+                item._tipe
+            )
+        );
 
-            badge.className =
-                "badge badge-jenis " +
-                (
-                    item._tipe ===
-                    "Pengeluaran"
-                        ? "text-bg-danger"
-                        : "text-bg-success"
-                );
+        const tdTipe =
+            document.createElement("td");
 
-            badge.textContent =
-                jenis(item);
+        tdTipe.textContent =
+            item._tipe;
 
-            tdJenis.appendChild(
-                badge
+        const tdNominal =
+            document.createElement("td");
+
+        tdNominal.className =
+            "text-end fw-bold " +
+            (
+                item._tipe === "Pengeluaran"
+                    ? "text-danger"
+                    : "text-success"
             );
 
-            const tdNominal =
-                document.createElement(
-                    "td"
-                );
+        tdNominal.textContent =
+            (
+                item._tipe === "Pengeluaran"
+                    ? "- "
+                    : "+ "
+            ) +
+            rupiah(item._nominal);
 
-            tdNominal.className =
-                "text-end fw-bold " +
-                (
-                    item._tipe ===
-                    "Pengeluaran"
-                        ? "text-danger"
-                        : "text-success"
-                );
+        tr.appendChild(tdTanggal);
+        tr.appendChild(tdNama);
+        tr.appendChild(tdJenis);
+        tr.appendChild(tdTipe);
+        tr.appendChild(tdNominal);
 
-            tdNominal.textContent =
-                (
-                    item._tipe ===
-                    "Pengeluaran"
-                        ? "- "
-                        : "+ "
-                ) +
-                rupiah(
-                    item._nominal
-                );
+        el.dataPembayaran.appendChild(tr);
 
-            tr.appendChild(
-                tdTanggal
-            );
-
-            tr.appendChild(
-                tdNama
-            );
-
-            tr.appendChild(
-                tdJenis
-            );
-
-            tr.appendChild(
-                tdNominal
-            );
-
-            el.data.appendChild(
-                tr
-            );
-
-        }
-    );
-
+    });
 }
 
-function grafikData() {
+function dataBulanan() {
+
+    const transaksi =
+        semuaTransaksi();
+
+    const pemasukan =
+        new Array(12).fill(0);
+
+    const pengeluaran =
+        new Array(12).fill(0);
 
     const tahun =
-        el.tahun.value;
+        el.tahun?.value === "semua"
+            ? new Date().getFullYear()
+            : Number(el.tahun.value);
 
-    const bulan =
-        el.bulan.value;
+    transaksi.forEach(item => {
 
-    const masuk =
-        pembayaran();
+        const tanggal =
+            parseTanggal(item);
 
-    const keluar =
-        pengeluaran();
+        if (!tanggal) return;
 
-    const labels = [];
-
-    const dataMasuk = [];
-
-    const dataKeluar = [];
-
-    if (
-        bulan !== "semua"
-    ) {
-
-        const namaBulan =
-            BULAN[
-                Number(bulan)
-            ];
-
-        labels.push(
-            namaBulan
-        );
-
-        const masukTotal =
-            masuk
-                .filter(
-                    item => {
-
-                        const d =
-                            tanggal(item);
-
-                        return d &&
-                            d.getMonth() ===
-                                Number(bulan) &&
-                            (
-                                tahun ===
-                                "semua" ||
-                                d.getFullYear() ===
-                                Number(tahun)
-                            );
-
-                    }
-                )
-                .reduce(
-                    (a,b) =>
-                        a + nominal(b),
-                    0
-                );
-
-        const keluarTotal =
-            keluar
-                .filter(
-                    item => {
-
-                        const d =
-                            tanggal(item);
-
-                        return d &&
-                            d.getMonth() ===
-                                Number(bulan) &&
-                            (
-                                tahun ===
-                                "semua" ||
-                                d.getFullYear() ===
-                                Number(tahun)
-                            );
-
-                    }
-                )
-                .reduce(
-                    (a,b) =>
-                        a + nominal(b),
-                    0
-                );
-
-        dataMasuk.push(
-            masukTotal
-        );
-
-        dataKeluar.push(
-            keluarTotal
-        );
-
-    } else {
-
-        for (
-            let i=0;
-            i<12;
-            i++
+        if (
+            el.tahun?.value !== "semua" &&
+            tanggal.getFullYear() !== tahun
         ) {
-
-            labels.push(
-                BULAN[i]
-            );
-
-            const masukTotal =
-                masuk
-                    .filter(
-                        item => {
-
-                            const d =
-                                tanggal(item);
-
-                            return d &&
-                                d.getMonth() === i &&
-                                (
-                                    tahun ===
-                                    "semua" ||
-                                    d.getFullYear() ===
-                                    Number(tahun)
-                                );
-
-                        }
-                    )
-                    .reduce(
-                        (a,b) =>
-                            a + nominal(b),
-                        0
-                    );
-
-            const keluarTotal =
-                keluar
-                    .filter(
-                        item => {
-
-                            const d =
-                                tanggal(item);
-
-                            return d &&
-                                d.getMonth() === i &&
-                                (
-                                    tahun ===
-                                    "semua" ||
-                                    d.getFullYear() ===
-                                    Number(tahun)
-                                );
-
-                        }
-                    )
-                    .reduce(
-                        (a,b) =>
-                            a + nominal(b),
-                        0
-                    );
-
-            dataMasuk.push(
-                masukTotal
-            );
-
-            dataKeluar.push(
-                keluarTotal
-            );
-
+            return;
         }
 
-    }
+        const bulan =
+            tanggal.getMonth();
+
+        if (item._tipe === "Pemasukan") {
+            pemasukan[bulan] += item._nominal;
+        } else {
+            pengeluaran[bulan] += item._nominal;
+        }
+
+    });
 
     return {
-        labels,
-        dataMasuk,
-        dataKeluar
+        pemasukan,
+        pengeluaran
     };
-
 }
 
-function tampilkanGrafik() {
+function buatGrafik() {
 
     if (
-        typeof Chart ===
-        "undefined"
+        typeof Chart === "undefined"
     ) {
         return;
     }
 
     const data =
-        grafikData();
+        dataBulanan();
 
-    if (chart) {
-        chart.destroy();
+    if (grafikKeuangan) {
+        grafikKeuangan.destroy();
     }
 
-    chart =
+    if (grafikKomposisi) {
+        grafikKomposisi.destroy();
+    }
+
+    if (grafikSaldo) {
+        grafikSaldo.destroy();
+    }
+
+    const canvasKeuangan =
+        document.getElementById(
+            "grafikKeuangan"
+        );
+
+    const canvasKomposisi =
+        document.getElementById(
+            "grafikKomposisi"
+        );
+
+    const canvasSaldo =
+        document.getElementById(
+            "grafikSaldo"
+        );
+
+    const filterJenis =
+        el.filterJenis?.value || "semua";
+
+    let pemasukan =
+        data.pemasukan;
+
+    let pengeluaran =
+        data.pengeluaran;
+
+    if (filterJenis !== "semua") {
+
+        pemasukan =
+            new Array(12).fill(0);
+
+        pengeluaran =
+            new Array(12).fill(0);
+
+        transaksiTerfilter()
+        .forEach(item => {
+
+            const tanggal =
+                parseTanggal(item);
+
+            if (!tanggal) return;
+
+            const bulan =
+                tanggal.getMonth();
+
+            if (item._tipe === "Pemasukan") {
+                pemasukan[bulan] += item._nominal;
+            } else {
+                pengeluaran[bulan] += item._nominal;
+            }
+
+        });
+    }
+
+    grafikKeuangan =
         new Chart(
-            el.grafik,
+            canvasKeuangan,
             {
-                type:"bar",
+                type: "bar",
 
-                data:{
-                    labels:data.labels,
+                data: {
+                    labels: BULAN,
 
-                    datasets:[
-
+                    datasets: [
                         {
-                            label:"Pemasukan",
-                            data:data.dataMasuk,
-                            backgroundColor:
-                                "rgba(25,135,84,.75)",
-                            borderColor:
-                                "#198754",
-                            borderWidth:1,
-                            borderRadius:7
+                            label: "Pemasukan",
+                            data: pemasukan,
+                            borderRadius: 8
                         },
-
                         {
-                            label:"Pengeluaran",
-                            data:data.dataKeluar,
-                            backgroundColor:
-                                "rgba(220,53,69,.75)",
-                            borderColor:
-                                "#dc3545",
-                            borderWidth:1,
-                            borderRadius:7
+                            label: "Pengeluaran",
+                            data: pengeluaran,
+                            borderRadius: 8
                         }
-
                     ]
                 },
 
-                options:{
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
 
-                    responsive:true,
-
-                    maintainAspectRatio:false,
-
-                    interaction:{
-                        mode:"index",
-                        intersect:false
+                    interaction: {
+                        mode: "index",
+                        intersect: false
                     },
 
-                    plugins:{
-
-                        legend:{
-                            position:"bottom"
+                    plugins: {
+                        legend: {
+                            position: "bottom"
                         },
 
-                        tooltip:{
-                            callbacks:{
-                                label:
-                                    function(context){
-
-                                        return (
-                                            context.dataset.label +
-                                            ": " +
-                                            rupiah(
-                                                context.raw
-                                            )
-                                        );
-
-                                    }
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return (
+                                        context.dataset.label +
+                                        ": " +
+                                        rupiah(context.raw)
+                                    );
+                                }
                             }
                         }
-
                     },
 
-                    scales:{
+                    scales: {
+                        y: {
+                            beginAtZero: true,
 
-                        y:{
-                            beginAtZero:true,
-
-                            ticks:{
-                                callback:
-                                    function(value){
-
-                                        return "Rp " +
-                                            Number(value)
-                                                .toLocaleString(
-                                                    "id-ID"
-                                                );
-
-                                    }
+                            ticks: {
+                                callback: function(value) {
+                                    return "Rp " +
+                                        Number(value)
+                                        .toLocaleString("id-ID");
+                                }
                             }
                         }
-
                     }
-
                 }
-
             }
         );
 
-    if (
-        el.periode
-    ) {
+    const totalMasuk =
+        pemasukan.reduce(
+            (a,b) => a+b,
+            0
+        );
 
-        if (
-            el.bulan.value !==
-            "semua"
-        ) {
+    const totalKeluar =
+        pengeluaran.reduce(
+            (a,b) => a+b,
+            0
+        );
 
-            el.periode.textContent =
-                BULAN[
-                    Number(
-                        el.bulan.value
-                    )
-                ];
+    grafikKomposisi =
+        new Chart(
+            canvasKomposisi,
+            {
+                type: "doughnut",
 
-        } else {
+                data: {
+                    labels: [
+                        "Pemasukan",
+                        "Pengeluaran"
+                    ],
 
-            el.periode.textContent =
-                el.tahun.value ===
-                "semua"
-                    ? "Semua Tahun"
-                    : "Tahun " +
-                      el.tahun.value;
+                    datasets: [
+                        {
+                            data: [
+                                totalMasuk,
+                                totalKeluar
+                            ]
+                        }
+                    ]
+                },
 
-        }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
 
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        },
+
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return (
+                                        context.label +
+                                        ": " +
+                                        rupiah(context.raw)
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+    const saldo =
+        [];
+
+    let berjalan = 0;
+
+    for (let i=0; i<12; i++) {
+
+        berjalan +=
+            pemasukan[i] -
+            pengeluaran[i];
+
+        saldo.push(jalanberjalanFix(jalanberjalanFixNilai(jalanberjalan)));
     }
 
+    grafikSaldo =
+        new Chart(
+            canvasSaldo,
+            {
+                type: "line",
+
+                data: {
+                    labels: BULAN,
+
+                    datasets: [
+                        {
+                            label: "Saldo",
+                            data: saldo,
+                            tension: .35,
+                            fill: true
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        },
+
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return (
+                                        "Saldo: " +
+                                        rupiah(context.raw)
+                                    );
+                                }
+                            }
+                        }
+                    },
+
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return "Rp " +
+                                        Number(value)
+                                        .toLocaleString("id-ID");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
 }
 
-function tampilkanRekap() {
+/* Fungsi kecil agar saldo grafik aman */
+function jalanberjalanFixNilai(nilai) {
+    return Number(nilai) || 0;
+}
 
-    const data =
-        filterData();
-
-    const masuk =
-        data
-            .filter(
-                item =>
-                    item._tipe ===
-                    "Pemasukan"
-            )
-            .reduce(
-                (a,b) =>
-                    a + b._nominal,
-                0
-            );
-
-    const keluar =
-        data
-            .filter(
-                item =>
-                    item._tipe ===
-                    "Pengeluaran"
-            )
-            .reduce(
-                (a,b) =>
-                    a + b._nominal,
-                0
-            );
-
-    const persen =
-        masuk > 0
-            ? Math.min(
-                100,
-                (
-                    keluar /
-                    masuk
-                ) * 100
-            )
-            : 0;
-
-    el.rekapMasuk.textContent =
-        rupiah(masuk);
-
-    el.rekapKeluar.textContent =
-        rupiah(keluar);
-
-    el.persen.textContent =
-        persen.toFixed(1) +
-        "%";
-
-    el.progress.style.width =
-        persen + "%";
-
+function jalanberjalanFix(nilai) {
+    return Number(nilai) || 0;
 }
 
 function muatPengaturan() {
 
-    try {
+    let pengaturan = {};
 
-        const data =
+    try {
+        pengaturan =
             JSON.parse(
                 localStorage.getItem(
                     "pengaturanAplikasi"
                 )
             ) || {};
+    } catch (e) {}
 
-        if (
-            data.namaPondok
-        ) {
+    if (
+        el.namaPondokHeader &&
+        pengaturan.namaPondok
+    ) {
+        el.namaPondokHeader.textContent =
+            pengaturan.namaPondok;
+    }
 
-            el.nama.textContent =
-                data.namaPondok;
-
-            el.subjudul.textContent =
-                "Rekap keuangan " +
-                data.namaPondok;
-
-        }
-
-    } catch(e) {}
-
+    if (
+        el.subJudulHeader &&
+        pengaturan.namaPondok
+    ) {
+        el.subJudulHeader.textContent =
+            "Rekap keuangan " +
+            pengaturan.namaPondok;
+    }
 }
 
 function muatLogo() {
 
+    if (!el.logo) return;
+
     const defaultLogo =
         "assets/logo-catatan-kas.jpg";
 
-    let logo =
-        null;
+    let logo = null;
 
     try {
-
         logo =
             localStorage.getItem(
                 "logoDashboard"
             );
-
-    } catch(e) {}
+    } catch (e) {}
 
     if (logo) {
-
-        el.logo.src =
-            logo;
-
-    } else {
-
-        el.logo.src =
-            defaultLogo;
-
+        el.logo.src = logo;
     }
 
-    el.logo.onerror =
-        function() {
+    el.logo.onerror = function() {
 
-            try {
+        try {
+            localStorage.removeItem(
+                "logoDashboard"
+            );
+        } catch (e) {}
 
-                localStorage.removeItem(
-                    "logoDashboard"
-                );
-
-            } catch(e) {}
-
-            el.logo.src =
-                defaultLogo;
-
-        };
-
+        el.logo.src = defaultLogo;
+    };
 }
 
-function tema() {
+function sinkronisasiTema() {
 
     try {
 
@@ -2676,124 +2053,283 @@ function tema() {
                 )
             ) || {};
 
-        const pilihan =
+        const tema =
             data.tema || "light";
 
-        let dark =
-            pilihan === "dark";
+        let dark = false;
 
-        if (
-            pilihan === "system"
-        ) {
+        if (tema === "dark") {
+            dark = true;
+        }
 
+        if (tema === "system") {
             dark =
                 window.matchMedia(
                     "(prefers-color-scheme: dark)"
                 ).matches;
-
         }
 
-        document.documentElement
-            .classList.toggle(
-                "dark-mode",
-                dark
-            );
+        document.documentElement.classList.toggle(
+            "dark-mode",
+            dark
+        );
 
-        document.documentElement
-            .setAttribute(
-                "data-theme",
-                dark
-                    ? "dark"
-                    : "light"
-            );
+        document.documentElement.setAttribute(
+            "data-theme",
+            dark ? "dark" : "light"
+        );
 
-        document.body
-            .classList.toggle(
-                "dark-mode",
-                dark
-            );
+        document.body.classList.toggle(
+            "dark-mode",
+            dark
+        );
 
-    } catch(e) {}
-
+    } catch (e) {}
 }
 
-function refresh() {
+function refreshSemua() {
 
-    tema();
-
+    sinkronisasiTema();
     muatPengaturan();
-
     muatLogo();
-
     isiTahun();
-
-    ringkasan();
-
-    tampilkanTabel();
-
-    tampilkanRekap();
-
-    tampilkanGrafik();
-
+    tampilkanRingkasan();
+    tampilkanTransaksi();
+    buatGrafik();
 }
 
-[
-    el.bulan,
-    el.tahun,
-    el.jenis
-].forEach(
-    element => {
+function pasangEvent() {
 
-        if (!element) {
-            return;
-        }
+    [
+        el.bulan,
+        el.tahun,
+        el.filterJenis
+    ].forEach(element => {
+
+        if (!element) return;
 
         element.addEventListener(
             "change",
             function() {
 
-                tampilkanTabel();
-
-                tampilkanRekap();
-
-                tampilkanGrafik();
+                tampilkanTransaksi();
+                buatGrafik();
 
             }
         );
 
+    });
+
+    if (el.btnRefresh) {
+        el.btnRefresh.addEventListener(
+            "click",
+            refreshSemua
+        );
     }
-);
+
+    if (el.btnCetak) {
+        el.btnCetak.addEventListener(
+            "click",
+            function() {
+                window.print();
+            }
+        );
+    }
+
+    if (el.btnPDF) {
+        el.btnPDF.addEventListener(
+            "click",
+            simpanPDF
+        );
+    }
+}
+
+function simpanPDF() {
+
+    if (
+        !window.jspdf ||
+        !window.jspdf.jsPDF
+    ) {
+        alert(
+            "Fitur PDF belum siap. Silakan coba lagi."
+        );
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+
+    const doc =
+        new jsPDF();
+
+    let namaPondok =
+        el.namaPondokHeader?.textContent ||
+        "Catatan Kas";
+
+    doc.setFontSize(18);
+    doc.setFont(undefined, "bold");
+
+    doc.text(
+        "LAPORAN KEUANGAN",
+        14,
+        18
+    );
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, "normal");
+
+    doc.text(
+        namaPondok,
+        14,
+        26
+    );
+
+    doc.text(
+        "Tanggal cetak: " +
+        new Date().toLocaleDateString("id-ID"),
+        14,
+        33
+    );
+
+    const transaksi =
+        transaksiTerfilter();
+
+    const pemasukan =
+        transaksi
+        .filter(x => x._tipe === "Pemasukan")
+        .reduce(
+            (a,b) => a+b._nominal,
+            0
+        );
+
+    const pengeluaran =
+        transaksi
+        .filter(x => x._tipe === "Pengeluaran")
+        .reduce(
+            (a,b) => a+b._nominal,
+            0
+        );
+
+    const saldo =
+        pemasukan -
+        pengeluaran;
+
+    doc.setFont(undefined, "bold");
+    doc.text(
+        "Ringkasan",
+        14,
+        45
+    );
+
+    doc.setFont(undefined, "normal");
+
+    doc.text(
+        "Total Pemasukan: " +
+        rupiah(pemasukan),
+        14,
+        53
+    );
+
+    doc.text(
+        "Total Pengeluaran: " +
+        rupiah(pengeluaran),
+        14,
+        61
+    );
+
+    doc.text(
+        "Saldo: " +
+        rupiah(saldo),
+        14,
+        69
+    );
+
+    doc.setFont(undefined, "bold");
+
+    doc.text(
+        "Daftar Transaksi",
+        14,
+        82
+    );
+
+    doc.setFont(undefined, "normal");
+
+    let y = 90;
+
+    transaksi
+    .slice(0, 28)
+    .forEach((item, index) => {
+
+        const baris =
+            (
+                (index + 1) +
+                ". " +
+                formatTanggal(item) +
+                " | " +
+                namaItem(item) +
+                " | " +
+                item._tipe +
+                " | " +
+                rupiah(item._nominal)
+            );
+
+        const lines =
+            doc.splitTextToSize(
+                baris,
+                180
+            );
+
+        if (y + lines.length * 5 > 285) {
+
+            doc.addPage();
+
+            y = 15;
+        }
+
+        doc.text(
+            lines,
+            14,
+            y
+        );
+
+        y +=
+            lines.length * 5 + 2;
+
+    });
+
+    doc.save(
+        "laporan-keuangan-" +
+        new Date()
+        .toISOString()
+        .slice(0,10) +
+        ".pdf"
+    );
+}
 
 window.addEventListener(
     "storage",
     function(event) {
 
         if (
-            [
-                "pembayaran",
-                "pengeluaran",
-                "pengaturanAplikasi",
-                "logoDashboard"
-            ].includes(
-                event.key
-            )
+            event.key === "pembayaran" ||
+            event.key === "pengeluaran" ||
+            event.key === "pengaturanAplikasi" ||
+            event.key === "logoDashboard"
         ) {
-
-            refresh();
-
+            refreshSemua();
         }
-
     }
 );
 
 window.addEventListener(
     "dataKeuanganBerubah",
-    refresh
+    refreshSemua
 );
 
 window.addEventListener(
     "temaBerubah",
-    refresh
+    function() {
+        sinkronisasiTema();
+    }
 );
 
 try {
@@ -2817,34 +2353,43 @@ try {
                     ) || {};
 
                 if (
-                    data.tema ===
-                    "system"
+                    data.tema === "system"
                 ) {
-
-                    refresh();
-
+                    sinkronisasiTema();
                 }
 
-            } catch(e) {}
+            } catch (e) {}
 
         }
     );
 
-} catch(e) {}
+} catch (e) {}
+
+function init() {
+
+    sinkronisasiTema();
+    muatPengaturan();
+    muatLogo();
+    isiTahun();
+    tampilkanRingkasan();
+    tampilkanTransaksi();
+    buatGrafik();
+    pasangEvent();
+
+}
 
 if (
-    document.readyState ===
-    "loading"
+    document.readyState === "loading"
 ) {
 
     document.addEventListener(
         "DOMContentLoaded",
-        refresh
+        init
     );
 
 } else {
 
-    refresh();
+    init();
 
 }
 
