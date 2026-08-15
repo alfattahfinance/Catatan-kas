@@ -1,6 +1,8 @@
+"js/pengeluaran.js"
+
 // ======================================================
 // CATATAN KAS - PENGELUARAN
-// FIX SIMPAN + RIWAYAT + EDIT + HAPUS
+// Versi perbaikan Firebase untuk WEB + APK
 // ======================================================
 
 import { db, auth } from "../firebase-config.js";
@@ -19,368 +21,383 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-let idEditPengeluaran = null;
-let userSiap = false;
+let userAktif = null;
+let idEdit = null;
 
 const $ = (id) => document.getElementById(id);
 
-function escapeHtml(value) {
+// ======================================================
+// FORMAT RUPIAH
+// ======================================================
 
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+function rupiah(nilai) {
 
-}
+    const angka = Number(nilai) || 0;
 
-function rupiah(value) {
-
-    return "Rp " +
-        Number(value || 0)
-            .toLocaleString("id-ID");
+    return "Rp " + angka.toLocaleString("id-ID");
 
 }
 
-function getJenis() {
+// ======================================================
+// AMBIL FORM
+// ======================================================
 
-    return (
+function ambilKeterangan() {
+
+    const element =
+        $("keterangan") ||
+        $("namaPengeluaran") ||
+        $("deskripsi") ||
+        $("uraian");
+
+    return element
+        ? String(element.value || "").trim()
+        : "";
+
+}
+
+function ambilJenis() {
+
+    const element =
         $("jenisPengeluaran") ||
-        $("jenis")
-    );
+        $("jenis") ||
+        $("kategori");
+
+    return element
+        ? String(element.value || "").trim()
+        : "";
 
 }
 
-function getKeterangan() {
+function ambilNominal() {
 
-    return $("keterangan");
-
-}
-
-function getTanggal() {
-
-    return $("tanggal");
-
-}
-
-function getNominal() {
-
-    return (
+    const element =
+        $("nominalPengeluaran") ||
         $("nominal") ||
-        $("jumlah")
-    );
+        $("jumlah");
 
-}
+    if (!element) return 0;
 
-function getSatuan() {
+    let nilai = element.value;
 
-    return $("satuan");
+    if (typeof nilai === "string") {
 
-}
+        nilai = nilai
+            .replace(/Rp/gi, "")
+            .replace(/\s/g, "")
+            .replace(/\./g, "")
+            .replace(/,/g, ".");
 
-function getTombol() {
+    }
 
-    return (
-        $("btnSimpanPengeluaran") ||
-        document.querySelector(
-            "button[onclick*='simpanPengeluaran']"
-        ) ||
-        document.querySelector(
-            ".btn-simpan"
-        )
-    );
+    return Number(nilai) || 0;
 
 }
 
 // ======================================================
-// LOGIN
+// AUTH
 // ======================================================
 
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, function (user) {
 
-    userSiap = !!user;
+    userAktif = user || null;
+
+    console.log(
+        "PENGELUARAN - STATUS LOGIN:",
+        user ? user.uid : "BELUM LOGIN"
+    );
 
     if (user) {
 
-        console.log(
-            "Pengeluaran: user login",
-            user.uid
-        );
-
-        await muatRiwayatPengeluaran();
+        muatPengeluaran();
 
     }
 
 });
 
 // ======================================================
-// SIMPAN
+// SIMPAN PENGELUARAN
 // ======================================================
 
-window.simpanPengeluaran =
-    async function () {
+window.simpanPengeluaran = async function () {
 
-        const jenisEl =
-            getJenis();
+    console.log("================================");
+    console.log("MULAI SIMPAN PENGELUARAN");
+    console.log("================================");
 
-        const ketEl =
-            getKeterangan();
+    const keterangan =
+        ambilKeterangan();
 
-        const tanggalEl =
-            getTanggal();
+    const jenis =
+        ambilJenis();
 
-        const nominalEl =
-            getNominal();
+    const nominal =
+        ambilNominal();
 
-        const satuanEl =
-            getSatuan();
+    console.log(
+        "Keterangan:",
+        keterangan
+    );
 
-        const tombol =
-            getTombol();
+    console.log(
+        "Jenis:",
+        jenis
+    );
 
-        if (
-            !jenisEl ||
-            !ketEl ||
-            !tanggalEl ||
-            !nominalEl
-        ) {
+    console.log(
+        "Nominal:",
+        nominal
+    );
 
-            alert(
-                "Form pengeluaran tidak ditemukan. Silakan refresh aplikasi."
-            );
+    console.log(
+        "User:",
+        userAktif
+    );
 
-            return;
-        }
+    if (!keterangan) {
 
-        const jenis =
-            String(
-                jenisEl.value || ""
-            ).trim();
+        alert(
+            "Keterangan pengeluaran belum diisi."
+        );
 
-        const keterangan =
-            String(
-                ketEl.value || ""
-            ).trim();
+        return;
 
-        const tanggal =
-            String(
-                tanggalEl.value || ""
-            ).trim();
+    }
 
-        const jumlah =
-            Number(
-                nominalEl.value
-            );
+    if (!nominal || nominal <= 0) {
 
-        const satuan =
-            satuanEl?.value ||
-            "Rupiah";
+        alert(
+            "Nominal pengeluaran belum benar."
+        );
 
-        // VALIDASI
+        return;
 
-        if (!jenis) {
+    }
 
-            alert(
-                "Silakan pilih jenis pengeluaran."
-            );
+    if (!db) {
 
-            jenisEl.focus();
+        alert(
+            "Firebase belum terhubung."
+        );
 
-            return;
-        }
+        console.error(
+            "db tidak ditemukan."
+        );
 
-        if (!keterangan) {
+        return;
 
-            alert(
-                "Silakan isi keterangan."
-            );
+    }
 
-            ketEl.focus();
+    const tombol =
+        $("btnSimpanPengeluaran") ||
+        document.querySelector(
+            "button[onclick*='simpanPengeluaran']"
+        );
 
-            return;
-        }
-
-        if (!tanggal) {
-
-            alert(
-                "Silakan pilih tanggal."
-            );
-
-            tanggalEl.focus();
-
-            return;
-        }
-
-        if (
-            !Number.isFinite(jumlah) ||
-            jumlah <= 0
-        ) {
-
-            alert(
-                "Nominal harus lebih dari 0."
-            );
-
-            nominalEl.focus();
-
-            return;
-        }
-
-        if (!userSiap) {
-
-            alert(
-                "Belum login ke Firebase. Silakan login terlebih dahulu."
-            );
-
-            return;
-        }
+    try {
 
         if (tombol) {
 
-            tombol.disabled =
-                true;
+            tombol.disabled = true;
+
+            tombol.dataset.text =
+                tombol.innerHTML;
 
             tombol.innerHTML =
                 "⏳ Menyimpan...";
 
         }
 
-        try {
+        const dataPengeluaran = {
 
-            const data = {
+            keterangan:
+                keterangan,
 
-                jenis:
-                    jenis,
+            nama:
+                keterangan,
 
-                keterangan:
-                    keterangan,
+            jenis:
+                jenis || "Lainnya",
 
-                tanggal:
-                    tanggal,
+            kategori:
+                jenis || "Lainnya",
 
-                jumlah:
-                    jumlah,
+            nominal:
+                nominal,
 
-                nominal:
-                    jumlah,
+            jumlah:
+                nominal,
 
-                satuan:
-                    satuan,
+            tanggal:
+                serverTimestamp(),
 
-                uid:
-                    auth.currentUser?.uid ||
-                    null
+            createdAt:
+                serverTimestamp(),
 
-            };
+            uid:
+                userAktif
+                    ? userAktif.uid
+                    : null
 
-            // UPDATE
+        };
 
-            if (idEditPengeluaran) {
+        // ==================================================
+        // EDIT
+        // ==================================================
 
-                await updateDoc(
-                    doc(
-                        db,
-                        "expenses",
-                        idEditPengeluaran
-                    ),
-                    data
-                );
+        if (idEdit) {
 
-                alert(
-                    "Pengeluaran berhasil diperbarui."
-                );
+            await updateDoc(
 
-            }
+                doc(
+                    db,
+                    "expenses",
+                    idEdit
+                ),
 
-            // TAMBAH
+                {
 
-            else {
+                    keterangan:
+                        keterangan,
 
-                data.createdAt =
-                    serverTimestamp();
+                    nama:
+                        keterangan,
 
-                await addDoc(
-                    collection(
-                        db,
-                        "expenses"
-                    ),
-                    data
-                );
+                    jenis:
+                        jenis || "Lainnya",
 
-                alert(
-                    "Pengeluaran berhasil disimpan."
-                );
+                    kategori:
+                        jenis || "Lainnya",
 
-            }
+                    nominal:
+                        nominal,
 
-            resetForm();
+                    jumlah:
+                        nominal,
 
-            await muatRiwayatPengeluaran();
+                    updatedAt:
+                        serverTimestamp()
 
-            window.dispatchEvent(
-                new Event(
-                    "dataKeuanganBerubah"
-                )
+                }
+
             );
 
-        }
-
-        catch (error) {
-
-            console.error(
-                "ERROR SIMPAN PENGELUARAN:",
-                error
+            console.log(
+                "PENGELUARAN BERHASIL DIUPDATE:",
+                idEdit
             );
 
             alert(
-                "Gagal menyimpan pengeluaran:\n\n" +
-                (error?.message || error)
+                "Pengeluaran berhasil diperbarui."
+            );
+
+            idEdit = null;
+
+        }
+
+        // ==================================================
+        // DATA BARU
+        // ==================================================
+
+        else {
+
+            const hasil = await addDoc(
+
+                collection(
+                    db,
+                    "expenses"
+                ),
+
+                dataPengeluaran
+
+            );
+
+            console.log(
+                "PENGELUARAN BERHASIL DISIMPAN:",
+                hasil.id
+            );
+
+            alert(
+                "Pengeluaran berhasil disimpan."
             );
 
         }
 
-        finally {
+        kosongkanForm();
 
-            if (tombol) {
+        await muatPengeluaran();
 
-                tombol.disabled =
-                    false;
+        window.dispatchEvent(
+            new Event(
+                "dataKeuanganBerubah"
+            )
+        );
 
-                tombol.innerHTML =
-                    "✓ Simpan Pengeluaran";
+    }
 
-            }
+    catch (error) {
+
+        console.error(
+            "================================"
+        );
+
+        console.error(
+            "GAGAL SIMPAN PENGELUARAN"
+        );
+
+        console.error(error);
+
+        console.error(
+            "================================"
+        );
+
+        alert(
+            "Gagal menyimpan pengeluaran.\n\n" +
+            error.message
+        );
+
+    }
+
+    finally {
+
+        if (tombol) {
+
+            tombol.disabled = false;
+
+            tombol.innerHTML =
+                tombol.dataset.text ||
+                "Simpan Pengeluaran";
 
         }
 
-    };
+    }
+
+};
 
 // ======================================================
-// RIWAYAT
+// MUAT DATA PENGELUARAN
 // ======================================================
 
-async function muatRiwayatPengeluaran() {
+async function muatPengeluaran() {
 
     const container =
-        $("daftarPengeluaran");
+        $("daftarPengeluaran") ||
+        $("riwayatPengeluaran") ||
+        $("listPengeluaran");
 
     if (!container) {
 
-        console.warn(
-            "Elemen #daftarPengeluaran tidak ditemukan."
+        console.log(
+            "Container riwayat pengeluaran tidak ditemukan."
         );
 
         return;
-    }
 
-    container.innerHTML =
-        `<div class="text-center text-muted p-3">
-            Memuat data...
-        </div>`;
+    }
 
     try {
 
-        const snap =
+        const snapshot =
             await getDocs(
                 collection(
                     db,
@@ -390,122 +407,191 @@ async function muatRiwayatPengeluaran() {
 
         const data = [];
 
-        snap.forEach((item) => {
+        snapshot.forEach(
+            function (item) {
 
-            data.push({
-                id: item.id,
-                ...item.data()
-            });
+                data.push({
 
-        });
+                    id: item.id,
 
-        data.sort((a, b) => {
+                    ...item.data()
 
-            const ta =
-                new Date(
-                    a.tanggal || 0
-                ).getTime();
+                });
 
-            const tb =
-                new Date(
-                    b.tanggal || 0
-                ).getTime();
+            }
+        );
 
-            return tb - ta;
+        data.sort(
+            function (a, b) {
 
-        });
+                const waktuA =
+                    a.createdAt?.toDate?.()?.getTime() ||
+                    a.tanggal?.toDate?.()?.getTime() ||
+                    0;
+
+                const waktuB =
+                    b.createdAt?.toDate?.()?.getTime() ||
+                    b.tanggal?.toDate?.()?.getTime() ||
+                    0;
+
+                return waktuB - waktuA;
+
+            }
+        );
 
         if (!data.length) {
 
-            container.innerHTML =
-                `<div class="text-center text-muted p-4">
-                    Belum ada pengeluaran.
-                </div>`;
+            container.innerHTML = `
+
+                <div class="text-center text-muted p-4">
+
+                    <i class="bi bi-wallet2 fs-1"></i>
+
+                    <div class="mt-2">
+
+                        Belum ada pengeluaran.
+
+                    </div>
+
+                </div>
+
+            `;
 
             return;
+
         }
 
-        container.innerHTML =
-            data.map((item) => {
+        container.innerHTML = "";
 
-                const jumlah =
+        data.forEach(
+            function (item) {
+
+                const keterangan =
+                    item.keterangan ||
+                    item.nama ||
+                    item.deskripsi ||
+                    "-";
+
+                const jenis =
+                    item.jenis ||
+                    item.kategori ||
+                    "Lainnya";
+
+                const nominal =
                     Number(
-                        item.jumlah ??
                         item.nominal ??
+                        item.jumlah ??
                         0
                     );
 
-                return `
-                <div class="card mb-2">
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+                card.className =
+                    "card mb-2";
+
+                card.innerHTML = `
 
                     <div class="card-body">
 
-                        <div class="d-flex justify-content-between">
+                        <div
+                            class="d-flex justify-content-between
+                            align-items-start gap-2"
+                        >
 
                             <div>
 
-                                <strong>
-                                    ${escapeHtml(
-                                        item.jenis || "-"
-                                    )}
-                                </strong>
+                                <div class="fw-bold">
 
-                                <div class="text-muted small">
-                                    ${escapeHtml(
-                                        item.keterangan || "-"
-                                    )}
+                                    ${amanHTML(keterangan)}
+
                                 </div>
 
                                 <div class="text-muted small">
-                                    ${escapeHtml(
-                                        item.tanggal || "-"
-                                    )}
+
+                                    ${amanHTML(jenis)}
+
                                 </div>
 
                             </div>
 
-                            <strong class="text-danger">
-                                ${rupiah(jumlah)}
-                            </strong>
+                            <div
+                                class="fw-bold text-danger"
+                            >
+
+                                - ${rupiah(nominal)}
+
+                            </div>
 
                         </div>
 
-                        <div class="mt-2 d-flex gap-2">
+                        <div
+                            class="d-flex gap-2 mt-3"
+                        >
 
                             <button
-                                class="btn btn-sm btn-outline-primary"
-                                onclick="editPengeluaran('${item.id}')">
+                                type="button"
+                                class="btn btn-sm
+                                btn-outline-primary"
+                                onclick="
+                                    editPengeluaran('${item.id}')
+                                "
+                            >
+
+                                <i class="bi bi-pencil"></i>
                                 Edit
+
                             </button>
 
                             <button
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="hapusPengeluaran('${item.id}')">
+                                type="button"
+                                class="btn btn-sm
+                                btn-outline-danger"
+                                onclick="
+                                    hapusPengeluaran('${item.id}')
+                                "
+                            >
+
+                                <i class="bi bi-trash"></i>
                                 Hapus
+
                             </button>
 
                         </div>
 
                     </div>
 
-                </div>
                 `;
 
-            }).join("");
+                container.appendChild(
+                    card
+                );
+
+            }
+        );
 
     }
 
     catch (error) {
 
         console.error(
-            "Gagal memuat pengeluaran:",
+            "Gagal memuat expenses:",
             error
         );
 
-        container.innerHTML =
-            `<div class="text-danger p-3">
-                Gagal memuat data pengeluaran.
-            </div>`;
+        container.innerHTML = `
+
+            <div
+                class="alert alert-danger"
+            >
+
+                Gagal memuat riwayat pengeluaran.
+
+            </div>
+
+        `;
 
     }
 
@@ -515,233 +601,275 @@ async function muatRiwayatPengeluaran() {
 // EDIT
 // ======================================================
 
-window.editPengeluaran =
-    async function (id) {
+window.editPengeluaran = async function (id) {
 
-        try {
+    try {
 
-            const snap =
-                await getDocs(
-                    collection(
-                        db,
-                        "expenses"
-                    )
-                );
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "expenses"
+                )
+            );
 
-            let data = null;
+        let data = null;
 
-            snap.forEach((item) => {
+        snapshot.forEach(
+            function (item) {
 
                 if (item.id === id) {
 
                     data = {
+
                         id: item.id,
+
                         ...item.data()
+
                     };
 
                 }
 
-            });
-
-            if (!data) {
-
-                alert(
-                    "Data pengeluaran tidak ditemukan."
-                );
-
-                return;
             }
+        );
 
-            idEditPengeluaran =
-                id;
-
-            const jenis =
-                getJenis();
-
-            const ket =
-                getKeterangan();
-
-            const tanggal =
-                getTanggal();
-
-            const nominal =
-                getNominal();
-
-            const satuan =
-                getSatuan();
-
-            if (jenis)
-                jenis.value =
-                    data.jenis || "";
-
-            if (ket)
-                ket.value =
-                    data.keterangan || "";
-
-            if (tanggal)
-                tanggal.value =
-                    data.tanggal || "";
-
-            if (nominal)
-                nominal.value =
-                    data.jumlah ??
-                    data.nominal ??
-                    "";
-
-            if (satuan)
-                satuan.value =
-                    data.satuan ||
-                    "Rupiah";
-
-            const tombol =
-                getTombol();
-
-            if (tombol)
-                tombol.innerHTML =
-                    "✓ Simpan Perubahan";
-
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-
-        }
-
-        catch (error) {
-
-            console.error(error);
+        if (!data) {
 
             alert(
-                "Gagal mengambil data pengeluaran."
+                "Data pengeluaran tidak ditemukan."
             );
+
+            return;
 
         }
 
-    };
+        idEdit = id;
+
+        const keterangan =
+            $("keterangan") ||
+            $("namaPengeluaran") ||
+            $("deskripsi") ||
+            $("uraian");
+
+        const jenis =
+            $("jenisPengeluaran") ||
+            $("jenis") ||
+            $("kategori");
+
+        const nominal =
+            $("nominalPengeluaran") ||
+            $("nominal") ||
+            $("jumlah");
+
+        if (keterangan) {
+
+            keterangan.value =
+                data.keterangan ||
+                data.nama ||
+                data.deskripsi ||
+                "";
+
+        }
+
+        if (jenis) {
+
+            jenis.value =
+                data.jenis ||
+                data.kategori ||
+                "Lainnya";
+
+        }
+
+        if (nominal) {
+
+            nominal.value =
+                data.nominal ??
+                data.jumlah ??
+                "";
+
+        }
+
+        const tombol =
+            $("btnSimpanPengeluaran") ||
+            document.querySelector(
+                "button[onclick*='simpanPengeluaran']"
+            );
+
+        if (tombol) {
+
+            tombol.innerHTML =
+                "✓ Simpan Perubahan";
+
+        }
+
+        window.scrollTo({
+
+            top: 0,
+
+            behavior: "smooth"
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Gagal mengambil data pengeluaran."
+        );
+
+    }
+
+};
 
 // ======================================================
 // HAPUS
 // ======================================================
 
-window.hapusPengeluaran =
-    async function (id) {
+window.hapusPengeluaran = async function (id) {
 
-        if (!userSiap) {
+    if (
+        !confirm(
+            "Yakin ingin menghapus pengeluaran ini?"
+        )
+    ) {
 
-            alert(
-                "Silakan login terlebih dahulu."
-            );
+        return;
 
-            return;
-        }
+    }
 
-        if (
-            !confirm(
-                "Hapus pengeluaran ini?"
+    try {
+
+        await deleteDoc(
+
+            doc(
+                db,
+                "expenses",
+                id
             )
-        ) return;
 
-        try {
+        );
 
-            await deleteDoc(
-                doc(
-                    db,
-                    "expenses",
-                    id
-                )
-            );
+        alert(
+            "Pengeluaran berhasil dihapus."
+        );
 
-            alert(
-                "Pengeluaran berhasil dihapus."
-            );
+        await muatPengeluaran();
 
-            await muatRiwayatPengeluaran();
+        window.dispatchEvent(
+            new Event(
+                "dataKeuanganBerubah"
+            )
+        );
 
-            window.dispatchEvent(
-                new Event(
-                    "dataKeuanganBerubah"
-                )
-            );
+    }
 
-        }
+    catch (error) {
 
-        catch (error) {
+        console.error(
+            "Gagal menghapus:",
+            error
+        );
 
-            console.error(error);
+        alert(
+            "Gagal menghapus pengeluaran.\n\n" +
+            error.message
+        );
 
-            alert(
-                "Gagal menghapus pengeluaran:\n\n" +
-                (error?.message || error)
-            );
+    }
 
-        }
-
-    };
+};
 
 // ======================================================
-// RESET
+// KOSONGKAN FORM
 // ======================================================
 
-function resetForm() {
+function kosongkanForm() {
 
-    idEditPengeluaran =
-        null;
+    idEdit = null;
+
+    const keterangan =
+        $("keterangan") ||
+        $("namaPengeluaran") ||
+        $("deskripsi") ||
+        $("uraian");
 
     const jenis =
-        getJenis();
-
-    const ket =
-        getKeterangan();
-
-    const tanggal =
-        getTanggal();
+        $("jenisPengeluaran") ||
+        $("jenis") ||
+        $("kategori");
 
     const nominal =
-        getNominal();
+        $("nominalPengeluaran") ||
+        $("nominal") ||
+        $("jumlah");
 
-    if (jenis)
+    if (keterangan) {
+
+        keterangan.value = "";
+
+    }
+
+    if (jenis) {
+
         jenis.value = "";
 
-    if (ket)
-        ket.value = "";
+    }
 
-    if (tanggal)
-        tanggal.value = "";
+    if (nominal) {
 
-    if (nominal)
         nominal.value = "";
+
+    }
 
 }
 
 // ======================================================
-// PASTIKAN TOMBOL TERHUBUNG
+// CEGAH HTML INJECTION
+// ======================================================
+
+function amanHTML(teks) {
+
+    return String(teks ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+// ======================================================
+// INIT
 // ======================================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
+    function () {
 
         const tombol =
-            getTombol();
+            $("btnSimpanPengeluaran");
 
         if (tombol) {
 
-            tombol.onclick =
-                window.simpanPengeluaran;
+            tombol.addEventListener(
+                "click",
+                function (event) {
+
+                    event.preventDefault();
+
+                    window.simpanPengeluaran();
+
+                }
+            );
 
         }
 
-        if (auth.currentUser) {
-
-            userSiap = true;
-
-            muatRiwayatPengeluaran();
-
-        }
+        console.log(
+            "Catatan Kas: pengeluaran.js aktif."
+        );
 
     }
-);
-
-console.log(
-    "Catatan Kas: pengeluaran.js aktif."
 );
