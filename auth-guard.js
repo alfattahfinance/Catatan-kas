@@ -16,7 +16,7 @@ onAuthStateChanged(auth, (user) => {
 
         // Belum login
         window.location.replace(
-    "/login.html"
+    "login.html"
 );
 
         return;
