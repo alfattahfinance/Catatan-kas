@@ -38,3 +38,25 @@ export const db =
 
 export const auth =
     getAuth(app);
+
+
+/* =====================================================
+   MUAT TEMA GLOBAL SECARA OTOMATIS
+   Halaman yang mengimpor firebase-config.js akan ikut
+   menggunakan background hijau + abu-abu + kuning.
+===================================================== */
+(function loadGlobalTheme() {
+    try {
+        const href = "css/theme.css";
+
+        if (!document.querySelector(`link[data-global-theme="true"]`)) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = href;
+            link.dataset.globalTheme = "true";
+            document.head.appendChild(link);
+        }
+    } catch (error) {
+        console.warn("Tema global gagal dimuat:", error);
+    }
+})();
