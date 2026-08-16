@@ -20,6 +20,30 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
+// ======================================
+// LOGO DASHBOARD
+// ======================================
+
+function muatLogoDashboardSantri() {
+    let logo = "assets/logo-catatan-kas.jpg";
+    try {
+        logo = localStorage.getItem("logoDashboard") || logo;
+    } catch (_) {}
+
+    document.querySelectorAll(
+        ".app-logo,.ck-logo,#logoDashboard,#dashboardLogo,#logoPreviewV2,#logoPreview,#previewLogoDashboard,img[alt='Logo Dashboard'],img[alt='Logo aplikasi'],[data-dashboard-logo]"
+    ).forEach((img) => {
+        if (img && img.tagName === "IMG") {
+            img.src = logo;
+            img.removeAttribute("srcset");
+        }
+    });
+}
+
+window.addEventListener("logoDashboardChanged", muatLogoDashboardSantri);
+window.addEventListener("storage", (event) => {
+    if (event.key === "logoDashboard") muatLogoDashboardSantri();
+});
 
 // ======================================
 // SIMPAN / TAMBAH SANTRI
@@ -49,9 +73,7 @@ window.simpanSantri = async function() {
     try {
         if (idSantri) {
             // Logika Edit (jika diperlukan di kemudian hari)
-            // Untuk saat ini fokus pada penambahan data baru
         } else {
-            // Tambah Baru ke koleksi "santri"
             await addDoc(collection(db, "santri"), {
                 nama,
                 kelas: kelas || "-",
@@ -62,21 +84,17 @@ window.simpanSantri = async function() {
             alert("Santri berhasil ditambahkan!");
         }
 
-        // Reset Form
         if (inputNama) inputNama.value = "";
         if (inputKelas) inputKelas.value = "";
         if (inputWali) inputWali.value = "";
         if (idSantriEl) idSantriEl.value = "";
 
-        // Refresh Daftar Santri
         muatDataSantri();
-
     } catch (error) {
         console.error("Gagal menyimpan santri:", error);
         alert("Gagal menyimpan data santri: " + error.message);
     }
 };
-
 
 // ======================================
 // MUAT DAFTAR SANTRI
@@ -138,15 +156,12 @@ async function muatDataSantri() {
     }
 }
 
-
 // ======================================
 // HAPUS SANTRI
 // ======================================
 
 window.hapusSantri = async function(id) {
-    if (!confirm("Apakah Anda yakin ingin menghapus santri ini?")) {
-        return;
-    }
+    if (!confirm("Apakah Anda yakin ingin menghapus santri ini?")) return;
 
     try {
         await deleteDoc(doc(db, "santri", id));
@@ -158,13 +173,14 @@ window.hapusSantri = async function(id) {
     }
 };
 
+// ======================================
+// INISIALISASI
+// ======================================
 
-// ======================================
-// INISIALISASI SAAT AUTH SIAP
-// ======================================
+document.addEventListener("DOMContentLoaded", () => {
+    muatLogoDashboardSantri();
+});
 
 onAuthStateChanged(auth, user => {
-    if (user) {
-        muatDataSantri();
-    }
+    if (user) muatDataSantri();
 });
