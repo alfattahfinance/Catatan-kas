@@ -5,7 +5,7 @@
 // Simpan + Riwayat Real-time + Edit + Hapus + Refresh
 // ======================================================
 
-import { db, auth } from "../firebase-config.js";
+import { db, auth } from "./firebase-config.js";
 
 import {
     collection,
