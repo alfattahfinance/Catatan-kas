@@ -49,11 +49,29 @@ function logoTersimpan() {
 
 function tampilkanLogo() {
     const logo = logoTersimpan();
-    document.querySelectorAll(
-        "#previewLogoDashboard, #logoPreviewV2, #logoPreview, [data-dashboard-logo]"
-    ).forEach((el) => {
-        el.src = logo;
+    const selector = [
+        "#previewLogoDashboard",
+        "#logoPreviewV2",
+        "#logoPreview",
+        "#logoDashboard",
+        "#dashboardLogo",
+        ".app-logo",
+        ".ck-logo",
+        "img[alt='Logo Dashboard']",
+        "img[alt='Logo aplikasi']",
+        "[data-dashboard-logo]"
+    ].join(",");
+
+    document.querySelectorAll(selector).forEach((el) => {
+        if (el && el.tagName === "IMG") {
+            el.src = logo;
+            el.removeAttribute("srcset");
+        }
     });
+
+    window.dispatchEvent(new CustomEvent("logoDashboardChanged", {
+        detail: { logo }
+    }));
 }
 
 function kompresLogo(file) {
@@ -70,6 +88,10 @@ function kompresLogo(file) {
                 canvas.width = Math.max(1, Math.round(img.width * scale));
                 canvas.height = Math.max(1, Math.round(img.height * scale));
                 const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                    reject(new Error("Perangkat tidak mendukung pemrosesan gambar."));
+                    return;
+                }
                 ctx.fillStyle = "#ffffff";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -82,9 +104,9 @@ function kompresLogo(file) {
 }
 
 async function simpanLogo(file) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-        throw new Error("Silakan pilih file gambar.");
+    if (!file) return false;
+    if (!file.type || !file.type.startsWith("image/")) {
+        throw new Error("Silakan pilih file gambar (JPG, PNG, WEBP, dll.).");
     }
     if (file.size > 10 * 1024 * 1024) {
         throw new Error("Ukuran file terlalu besar. Maksimal 10 MB.");
@@ -96,7 +118,9 @@ async function simpanLogo(file) {
     } catch (error) {
         throw new Error("Logo tidak dapat disimpan. Penyimpanan perangkat mungkin penuh.");
     }
+
     tampilkanLogo();
+    return true;
 }
 
 function resetLogo() {
@@ -167,7 +191,6 @@ function resetSemuaPengaturan() {
     alert("✅ Pengaturan dikembalikan ke awal. Data transaksi tetap aman.");
 }
 
-// Dipanggil halaman lain untuk membaca pengaturan.
 window.CatatanKasSettings = {
     get: bacaPengaturan,
     getLogo: logoTersimpan,
@@ -180,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("simpanPengaturanButton")?.addEventListener("click", simpanPengaturan);
     document.getElementById("resetPengaturanButton")?.addEventListener("click", resetSemuaPengaturan);
+
     document.getElementById("resetLogoButton")?.addEventListener("click", () => {
         resetLogo();
         const input = document.getElementById("logoDashboardInput");
@@ -192,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!file) return;
         try {
             await simpanLogo(file);
-            alert("✅ Logo berhasil dipilih. Tekan Simpan Pengaturan untuk menyimpan pengaturan lainnya.");
+            alert("✅ Logo berhasil dipilih dan disimpan. Logo akan dipakai di halaman yang mendukung logo dashboard.");
         } catch (error) {
             event.target.value = "";
             alert("❌ " + error.message);
@@ -202,6 +226,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("tema")?.addEventListener("change", (event) => {
         terapkanTema(event.target.value);
     });
+});
+
+window.addEventListener("storage", (event) => {
+    if (event.key === LOGO_KEY) tampilkanLogo();
+    if (event.key === SETTINGS_KEY) terapkanTema(bacaPengaturan().tema);
 });
 
 window.matchMedia?.("(prefers-color-scheme: dark)")?.addEventListener?.("change", () => {
