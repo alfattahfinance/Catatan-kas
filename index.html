@@ -1,54 +1,88 @@
+index.html — Catatan Kas Versi Perbaikan
+
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="theme-color" content="#198754">
+    <meta
+        name="theme-color"
+        content="#198754"
+    >
 
     <meta
         name="description"
-        content="Catatan Kas - Dashboard Keuangan Ribath Madrasah Al-Fattah"
+        content="Catatan Kas - Dashboard Keuangan"
     >
 
     <title>Catatan Kas</title>
 
+
     <!-- =====================================================
          TEMA AWAL
-         Mencegah layar putih sebelum halaman tampil
     ====================================================== -->
 
     <script>
-    (function () {
-        try {
-            const data =
-                JSON.parse(
-                    localStorage.getItem("pengaturanAplikasi")
-                ) || {};
 
-            const tema = data.tema || "light";
+        (function () {
 
-            let dark = false;
+            try {
 
-            if (tema === "dark") {
-                dark = true;
-            } else if (tema === "system") {
-                dark =
-                    window.matchMedia(
-                        "(prefers-color-scheme: dark)"
-                    ).matches;
+                const data =
+                    JSON.parse(
+                        localStorage.getItem(
+                            "pengaturanAplikasi"
+                        )
+                    ) || {};
+
+                const tema =
+                    data.tema || "light";
+
+                let dark = false;
+
+                if (tema === "dark") {
+
+                    dark = true;
+
+                }
+
+                else if (tema === "system") {
+
+                    dark =
+                        window.matchMedia(
+                            "(prefers-color-scheme: dark)"
+                        ).matches;
+
+                }
+
+                if (dark) {
+
+                    document.documentElement.classList.add(
+                        "dark-mode"
+                    );
+
+                }
+
             }
 
-            if (dark) {
-                document.documentElement.classList.add("dark-mode");
+            catch (error) {
+
+                console.warn(
+                    "Tema awal tidak dapat dibaca:",
+                    error
+                );
+
             }
 
-        } catch (error) {
-            console.warn("Tema awal tidak dapat dibaca:", error);
-        }
-    })();
+        })();
+
     </script>
 
 
@@ -66,8 +100,15 @@
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     >
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="theme.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="theme.css"
+    >
 
 
     <!-- =====================================================
@@ -143,37 +184,53 @@
 
         html.dark-mode body,
         body.dark-mode {
-            background: #121212 !important;
-            color: #f1f1f1 !important;
-            animation: none !important;
+
+            background:
+                #121212 !important;
+
+            color:
+                #f1f1f1 !important;
+
+            animation:
+                none !important;
         }
 
         html.dark-mode .custom-card,
         body.dark-mode .custom-card {
+
             background:
                 rgba(30,30,30,.96) !important;
 
-            color: #f1f1f1 !important;
+            color:
+                #f1f1f1 !important;
 
-            border-color: #333 !important;
+            border-color:
+                #333 !important;
         }
 
         html.dark-mode .app-header,
         body.dark-mode .app-header {
+
             background:
                 rgba(30,30,30,.97) !important;
 
-            color: #f1f1f1 !important;
+            color:
+                #f1f1f1 !important;
         }
 
         html.dark-mode .app-logo,
         body.dark-mode .app-logo {
-            background: #222 !important;
-            border-color: #444 !important;
+
+            background:
+                #222 !important;
+
+            border-color:
+                #444 !important;
         }
 
         html.dark-mode .menu-btn,
         body.dark-mode .menu-btn {
+
             background:
                 #1e1e1e !important;
 
@@ -186,6 +243,7 @@
 
         html.dark-mode .menu-btn:hover,
         body.dark-mode .menu-btn:hover {
+
             background:
                 #292929 !important;
 
@@ -195,6 +253,7 @@
 
         html.dark-mode .form-select,
         body.dark-mode .form-select {
+
             background-color:
                 #2b2b2b !important;
 
@@ -207,12 +266,14 @@
 
         html.dark-mode .form-label,
         body.dark-mode .form-label {
+
             color:
                 #8fd3b4 !important;
         }
 
         html.dark-mode .summary-title,
         body.dark-mode .summary-title {
+
             color:
                 #8fd3b4 !important;
         }
@@ -221,18 +282,21 @@
         html.dark-mode .text-secondary,
         body.dark-mode .text-muted,
         body.dark-mode .text-secondary {
+
             color:
                 #adb5bd !important;
         }
 
         html.dark-mode .dashboard-footer,
         body.dark-mode .dashboard-footer {
+
             color:
                 #999 !important;
         }
 
         html.dark-mode .ck-bottom,
         body.dark-mode .ck-bottom {
+
             background:
                 rgba(30,30,30,.97) !important;
 
@@ -245,6 +309,7 @@
 
         html.dark-mode .ck-bottom a,
         body.dark-mode .ck-bottom a {
+
             color:
                 #adb5bd !important;
         }
@@ -253,6 +318,7 @@
         html.dark-mode .ck-bottom a.active,
         body.dark-mode .ck-bottom a:hover,
         body.dark-mode .ck-bottom a.active {
+
             color:
                 #51cf66 !important;
         }
@@ -263,14 +329,22 @@
         ====================================================== */
 
         .mobile-container {
+
             width: 100% !important;
+
             max-width: 100% !important;
 
-            padding-left: 20px !important;
-            padding-right: 20px !important;
+            padding-left:
+                20px !important;
 
-            margin-left: auto;
-            margin-right: auto;
+            padding-right:
+                20px !important;
+
+            margin-left:
+                auto;
+
+            margin-right:
+                auto;
         }
 
 
@@ -279,8 +353,12 @@
         ====================================================== */
 
         .custom-card {
-            border: none;
-            border-radius: 18px;
+
+            border:
+                none;
+
+            border-radius:
+                18px;
 
             box-shadow:
                 0 4px 15px
@@ -289,8 +367,11 @@
             background:
                 rgba(255,255,255,.84);
 
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter:
+                blur(8px);
+
+            -webkit-backdrop-filter:
+                blur(8px);
 
             transition:
                 background .25s ease,
@@ -303,25 +384,81 @@
         ====================================================== */
 
         .app-header {
-            border: 0 !important;
-            overflow: hidden;
+
+            border:
+                0 !important;
+
+            overflow:
+                hidden;
 
             background:
                 rgba(255,255,255,.94) !important;
         }
 
+        .logo-wrapper {
+
+            width:
+                68px;
+
+            height:
+                68px;
+
+            min-width:
+                68px;
+
+            border-radius:
+                18px;
+
+            overflow:
+                hidden;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            background:
+                #198754;
+
+            color:
+                #fff;
+
+            font-weight:
+                800;
+
+            font-size:
+                13px;
+
+            text-align:
+                center;
+        }
+
         .app-logo {
-            width: 68px !important;
-            height: 68px !important;
-            min-width: 68px;
 
-            object-fit: contain;
+            width:
+                68px !important;
 
-            border-radius: 18px !important;
+            height:
+                68px !important;
 
-            display: block;
+            min-width:
+                68px;
 
-            background: #fff;
+            object-fit:
+                contain;
+
+            border-radius:
+                18px !important;
+
+            display:
+                block;
+
+            background:
+                #fff;
 
             border:
                 1px solid
@@ -333,12 +470,18 @@
         }
 
         .app-name {
-            font-size: 1.15rem;
-            letter-spacing: -.2px;
+
+            font-size:
+                1.15rem;
+
+            letter-spacing:
+                -.2px;
         }
 
         .app-subtitle {
-            font-size: .82rem;
+
+            font-size:
+                .82rem;
         }
 
 
@@ -346,26 +489,31 @@
            FILTER
         ====================================================== */
 
-        .filter-card {
-            padding: 2px;
-        }
-
         .form-label {
-            color: #245d4b;
+
+            color:
+                #245d4b;
         }
 
         .form-select {
-            border-radius: 12px;
-            min-height: 46px;
+
+            border-radius:
+                12px;
+
+            min-height:
+                46px;
 
             border-color:
                 rgba(0,0,0,.12);
 
-            box-shadow: none;
+            box-shadow:
+                none;
         }
 
         .form-select:focus {
-            border-color: #198754;
+
+            border-color:
+                #198754;
 
             box-shadow:
                 0 0 0 .2rem
@@ -378,9 +526,15 @@
         ====================================================== */
 
         .summary-title {
-            font-size: .95rem;
-            font-weight: 800;
-            color: #245d4b;
+
+            font-size:
+                .95rem;
+
+            font-weight:
+                800;
+
+            color:
+                #245d4b;
         }
 
 
@@ -389,7 +543,9 @@
         ====================================================== */
 
         .saldo-card {
-            border: 0 !important;
+
+            border:
+                0 !important;
 
             background:
                 linear-gradient(
@@ -402,13 +558,20 @@
                 0 8px 22px
                 rgba(25,135,84,.22) !important;
 
-            color: #fff !important;
+            color:
+                #fff !important;
         }
 
-        .saldo-card #totalSaldo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -.5px;
+        #totalSaldo {
+
+            font-size:
+                1.8rem;
+
+            font-weight:
+                800;
+
+            letter-spacing:
+                -.5px;
         }
 
 
@@ -417,7 +580,9 @@
         ====================================================== */
 
         .stat-card {
-            min-height: 110px;
+
+            min-height:
+                110px;
 
             transition:
                 transform .2s ease,
@@ -425,7 +590,9 @@
         }
 
         .stat-card:hover {
-            transform: translateY(-2px);
+
+            transform:
+                translateY(-2px);
 
             box-shadow:
                 0 8px 18px
@@ -433,21 +600,34 @@
         }
 
         .stat-icon {
-            width: 38px;
-            height: 38px;
 
-            border-radius: 12px;
+            width:
+                38px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height:
+                38px;
 
-            margin: 0 auto 8px;
+            border-radius:
+                12px;
 
-            font-size: 1.1rem;
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            margin:
+                0 auto 8px;
+
+            font-size:
+                1.1rem;
         }
 
         .income-icon {
+
             background:
                 rgba(25,135,84,.12);
 
@@ -456,6 +636,7 @@
         }
 
         .expense-icon {
+
             background:
                 rgba(220,53,69,.12);
 
@@ -465,39 +646,74 @@
 
 
         /* =====================================================
+           JUMLAH
+        ====================================================== */
+
+        #totalMasuk,
+        #totalKeluar {
+
+            font-size:
+                1.05rem;
+
+            margin-top:
+                4px;
+        }
+
+
+        /* =====================================================
            MENU
         ====================================================== */
 
         .menu-btn {
-            background: #fff;
+
+            background:
+                #fff;
 
             border:
                 1px solid
                 #d4d8d4;
 
-            border-radius: 16px;
+            border-radius:
+                16px;
 
-            padding: 20px 10px;
+            padding:
+                20px 10px;
 
-            width: 100%;
-            min-height: 112px;
-            height: 100%;
+            width:
+                100%;
 
-            text-align: center;
+            min-height:
+                112px;
 
-            color: #333;
+            height:
+                100%;
 
-            transition: all .25s ease;
+            text-align:
+                center;
 
-            text-decoration: none;
+            color:
+                #333;
 
-            display: flex;
-            flex-direction: column;
+            transition:
+                all .25s ease;
 
-            align-items: center;
-            justify-content: center;
+            text-decoration:
+                none;
 
-            gap: 10px;
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            gap:
+                10px;
 
             box-shadow:
                 0 2px 8px
@@ -505,11 +721,15 @@
         }
 
         .menu-btn:hover {
-            background: #eaf0ed;
 
-            color: #198754;
+            background:
+                #eaf0ed;
 
-            border-color: #198754;
+            color:
+                #198754;
+
+            border-color:
+                #198754;
 
             transform:
                 translateY(-3px);
@@ -520,22 +740,36 @@
         }
 
         .menu-btn:active {
-            transform: translateY(0);
+
+            transform:
+                translateY(0);
         }
 
         .menu-btn i {
-            font-size: 2rem;
-            color: #198754;
+
+            font-size:
+                2rem;
+
+            color:
+                #198754;
         }
 
         .menu-btn.red-icon i {
-            color: #dc3545;
+
+            color:
+                #dc3545;
         }
 
         .menu-btn h6 {
-            margin: 0;
-            font-size: .9rem;
-            font-weight: 600;
+
+            margin:
+                0;
+
+            font-size:
+                .9rem;
+
+            font-weight:
+                600;
         }
 
 
@@ -544,17 +778,24 @@
         ====================================================== */
 
         .settings-btn {
-            min-height: 70px;
 
-            flex-direction: row;
+            min-height:
+                70px;
 
-            gap: 15px;
+            flex-direction:
+                row;
 
-            padding: 15px;
+            gap:
+                15px;
+
+            padding:
+                15px;
         }
 
         .settings-btn i {
-            font-size: 1.5rem;
+
+            font-size:
+                1.5rem;
         }
 
 
@@ -563,11 +804,15 @@
         ====================================================== */
 
         .dashboard-footer {
-            text-align: center;
 
-            font-size: .75rem;
+            text-align:
+                center;
 
-            color: #6c757d;
+            font-size:
+                .75rem;
+
+            color:
+                #6c757d;
 
             padding:
                 4px 0 20px;
@@ -579,13 +824,21 @@
         ====================================================== */
 
         .ck-bottom {
-            position: fixed;
 
-            left: 0;
-            right: 0;
-            bottom: 0;
+            position:
+                fixed;
 
-            z-index: 1050;
+            left:
+                0;
+
+            right:
+                0;
+
+            bottom:
+                0;
+
+            z-index:
+                1050;
 
             background:
                 rgba(255,255,255,.97);
@@ -608,47 +861,72 @@
         }
 
         .ck-bottom-inner {
-            width: 100% !important;
-            max-width: 100% !important;
 
-            margin: 0 auto;
+            width:
+                100% !important;
 
-            display: grid;
+            max-width:
+                100% !important;
+
+            margin:
+                0 auto;
+
+            display:
+                grid;
 
             grid-template-columns:
                 repeat(5,1fr);
 
-            gap: 4px;
+            gap:
+                4px;
         }
 
         .ck-bottom a {
-            text-decoration: none !important;
 
-            color: #6c757d;
+            text-decoration:
+                none !important;
 
-            display: flex;
+            color:
+                #6c757d;
 
-            flex-direction: column;
+            display:
+                flex;
 
-            align-items: center;
-            justify-content: center;
+            flex-direction:
+                column;
 
-            gap: 3px;
+            align-items:
+                center;
 
-            font-size: .68rem;
+            justify-content:
+                center;
 
-            padding: 5px 2px;
+            gap:
+                3px;
 
-            border-radius: 10px;
+            font-size:
+                .68rem;
+
+            padding:
+                5px 2px;
+
+            border-radius:
+                10px;
         }
 
         .ck-bottom a i {
-            font-size: 1.15rem;
+
+            font-size:
+                1.15rem;
         }
 
         .ck-bottom a.active {
-            color: #198754 !important;
-            font-weight: 700;
+
+            color:
+                #198754 !important;
+
+            font-weight:
+                700;
         }
 
 
@@ -659,76 +937,127 @@
         @media (min-width:768px) {
 
             .mobile-container {
-                padding-left: 35px !important;
-                padding-right: 35px !important;
+
+                padding-left:
+                    35px !important;
+
+                padding-right:
+                    35px !important;
             }
 
+            .logo-wrapper,
             .app-logo {
-                width: 78px !important;
-                height: 78px !important;
-                min-width: 78px;
+
+                width:
+                    78px !important;
+
+                height:
+                    78px !important;
+
+                min-width:
+                    78px;
             }
 
             .app-name {
-                font-size: 1.35rem;
+
+                font-size:
+                    1.35rem;
             }
 
             .app-subtitle {
-                font-size: 1rem;
+
+                font-size:
+                    1rem;
             }
 
             .menu-btn {
-                min-height: 125px;
+
+                min-height:
+                    125px;
             }
 
         }
+
 
         @media (min-width:992px) {
 
             .mobile-container {
-                padding-left: 50px !important;
-                padding-right: 50px !important;
+
+                padding-left:
+                    50px !important;
+
+                padding-right:
+                    50px !important;
             }
 
+            .logo-wrapper,
             .app-logo {
-                width: 82px !important;
-                height: 82px !important;
-                min-width: 82px;
+
+                width:
+                    82px !important;
+
+                height:
+                    82px !important;
+
+                min-width:
+                    82px;
             }
 
             .app-name {
-                font-size: 1.5rem;
+
+                font-size:
+                    1.5rem;
             }
 
         }
 
+
         @media (max-width:380px) {
 
             .mobile-container {
-                padding-left: 10px !important;
-                padding-right: 10px !important;
+
+                padding-left:
+                    10px !important;
+
+                padding-right:
+                    10px !important;
             }
 
+            .logo-wrapper,
             .app-logo {
-                width: 56px !important;
-                height: 56px !important;
-                min-width: 56px;
+
+                width:
+                    56px !important;
+
+                height:
+                    56px !important;
+
+                min-width:
+                    56px;
             }
 
             .app-name {
-                font-size: 1rem;
+
+                font-size:
+                    1rem;
             }
 
             .app-subtitle {
-                font-size: .75rem;
+
+                font-size:
+                    .75rem;
             }
 
             .ck-bottom a {
-                font-size: .62rem;
+
+                font-size:
+                    .62rem;
             }
 
             .ck-bottom a i {
-                font-size: 1.05rem;
+
+                font-size:
+                    1.05rem;
             }
 
         }
@@ -745,19 +1074,33 @@
 
 
     <!-- =====================================================
-         HEADER DASHBOARD
+         HEADER
     ====================================================== -->
 
     <div class="card custom-card app-header mb-3">
 
         <div class="card-body d-flex align-items-center gap-3">
 
-            <img
-                id="logoDashboard"
-                class="app-logo"
-                src="logo-catatan-kas.jpg"
-                alt="Logo Catatan Kas"
-            >
+
+            <div class="logo-wrapper">
+
+                <img
+                    id="logoDashboard"
+                    class="app-logo"
+                    src="logo-catatan-kas.jpg"
+                    alt="Logo Catatan Kas"
+                    onerror="this.style.display='none';"
+                >
+
+                <span
+                    id="logoFallback"
+                    style="display:none;"
+                >
+                    CATATAN<br>KAS
+                </span>
+
+            </div>
+
 
             <div class="flex-grow-1">
 
@@ -806,6 +1149,10 @@
                     Semua kategori
                 </option>
 
+                <option value="SPP">
+                    SPP
+                </option>
+
                 <option value="Syahriyyah">
                     Syahriyyah
                 </option>
@@ -816,6 +1163,14 @@
 
                 <option value="Beras">
                     Beras
+                </option>
+
+                <option value="Infaq">
+                    Infaq
+                </option>
+
+                <option value="Lainnya">
+                    Lainnya
                 </option>
 
             </select>
@@ -838,6 +1193,9 @@
 
         <div class="row g-3">
 
+
+            <!-- SALDO -->
+
             <div class="col-12">
 
                 <div class="card saldo-card">
@@ -849,7 +1207,7 @@
                         </small>
 
                         <div id="totalSaldo">
-                            Rp0
+                            Rp 0
                         </div>
 
                     </div>
@@ -858,6 +1216,8 @@
 
             </div>
 
+
+            <!-- PEMASUKAN -->
 
             <div class="col-6">
 
@@ -879,7 +1239,7 @@
                             id="totalMasuk"
                             class="fw-bold text-success"
                         >
-                            Rp0
+                            Rp 0
                         </div>
 
                     </div>
@@ -888,6 +1248,8 @@
 
             </div>
 
+
+            <!-- PENGELUARAN -->
 
             <div class="col-6">
 
@@ -909,7 +1271,7 @@
                             id="totalKeluar"
                             class="fw-bold text-danger"
                         >
-                            Rp0
+                            Rp 0
                         </div>
 
                     </div>
@@ -928,6 +1290,7 @@
     ====================================================== -->
 
     <div class="row g-3 mb-4">
+
 
         <div class="col-6">
 
@@ -1042,6 +1405,7 @@
 
     <div class="ck-bottom-inner">
 
+
         <a
             href="index.html"
             class="active"
@@ -1107,15 +1471,15 @@
 
 <!-- =====================================================
      LOGO DASHBOARD
-     SISTEM INI TERHUBUNG DENGAN pengaturan.html
 ====================================================== -->
 
 <script>
 
 (function () {
 
+
     const LOGO_DEFAULT =
-        src="assets/logo-catatan-kas.jpg"
+        "logo-catatan-kas.jpg";
 
 
     function tampilkanLogoDashboard() {
@@ -1125,13 +1489,21 @@
                 "logoDashboard"
             );
 
+        const fallback =
+            document.getElementById(
+                "logoFallback"
+            );
+
 
         if (!logo) {
+
             return;
+
         }
 
 
-        let savedLogo = null;
+        let savedLogo =
+            null;
 
 
         try {
@@ -1141,10 +1513,12 @@
                     "logoDashboard"
                 );
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.warn(
-                "Gagal membaca logo Dashboard:",
+                "Gagal membaca logo:",
                 error
             );
 
@@ -1152,7 +1526,20 @@
 
 
         const logoYangDipakai =
-            savedLogo || LOGO_DEFAULT;
+            savedLogo ||
+            LOGO_DEFAULT;
+
+
+        logo.style.display =
+            "block";
+
+
+        if (fallback) {
+
+            fallback.style.display =
+                "none";
+
+        }
 
 
         logo.src =
@@ -1163,40 +1550,46 @@
             function () {
 
                 console.warn(
-                    "Logo tersimpan tidak dapat ditampilkan. Menggunakan logo bawaan."
+                    "Logo tidak ditemukan."
                 );
 
 
                 try {
 
-                    localStorage.removeItem(
-                        "logoDashboard"
-                    );
+                    if (savedLogo) {
 
-                } catch (error) {}
+                        localStorage.removeItem(
+                            "logoDashboard"
+                        );
 
-                logo.onerror = null;
+                    }
 
-                logo.src =
-                    LOGO_DEFAULT;
+                }
+
+                catch (error) {}
+
+
+                logo.onerror =
+                    null;
+
+                logo.style.display =
+                    "none";
+
+
+                if (fallback) {
+
+                    fallback.style.display =
+                        "block";
+
+                }
 
             };
 
     }
 
 
-    /*
-     * Jalankan segera.
-     * Tidak menunggu Firebase atau app.js.
-     */
-
     tampilkanLogoDashboard();
 
-
-    /*
-     * Jalankan lagi setelah DOM siap
-     * untuk memastikan elemen logo tersedia.
-     */
 
     document.addEventListener(
         "DOMContentLoaded",
@@ -1204,24 +1597,15 @@
     );
 
 
-    /*
-     * Jika logo diubah dari halaman Pengaturan
-     * lalu kembali ke Dashboard, tampilkan logo terbaru.
-     */
-
     window.addEventListener(
         "pageshow",
         tampilkanLogoDashboard
     );
 
 
-    /*
-     * Fungsi global agar halaman lain
-     * dapat memanggilnya bila diperlukan.
-     */
-
     window.muatLogoDashboard =
         tampilkanLogoDashboard;
+
 
 })();
 
@@ -1235,6 +1619,7 @@
 <script>
 
 (function () {
+
 
     function muatInformasiPondok() {
 
@@ -1285,7 +1670,9 @@
 
             }
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.warn(
                 "Gagal memuat pengaturan:",
@@ -1305,12 +1692,453 @@
         muatInformasiPondok
     );
 
+
     window.addEventListener(
         "pageshow",
         muatInformasiPondok
     );
 
+
 })();
+
+</script>
+
+
+<!-- =====================================================
+     DASHBOARD DATA FIRESTORE
+====================================================== -->
+
+<script type="module">
+
+import {
+    db
+} from "./firebase-config.js";
+
+
+import {
+    collection,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+
+let semuaPembayaran =
+    [];
+
+let semuaPengeluaran =
+    [];
+
+let unsubscribePayments =
+    null;
+
+let unsubscribeExpenses =
+    null;
+
+
+const $ =
+    (id) =>
+        document.getElementById(id);
+
+
+function rupiah(nilai) {
+
+    const angka =
+        Number(nilai) || 0;
+
+    return (
+        "Rp " +
+        angka.toLocaleString(
+            "id-ID"
+        )
+    );
+
+}
+
+
+/* =====================================================
+   AMBIL KATEGORI
+===================================================== */
+
+function kategoriData(item) {
+
+    return String(
+
+        item.kategori ||
+
+        item.jenis ||
+
+        item.category ||
+
+        ""
+
+    ).trim();
+
+}
+
+
+/* =====================================================
+   NOMINAL
+===================================================== */
+
+function nominalData(item) {
+
+    return Number(
+
+        item.nominal ??
+
+        item.jumlah ??
+
+        item.total ??
+
+        item.amount ??
+
+        0
+
+    ) || 0;
+
+}
+
+
+/* =====================================================
+   FILTER
+===================================================== */
+
+function sesuaiFilter(item) {
+
+    const select =
+        $("filterKategori");
+
+
+    if (!select) {
+
+        return true;
+
+    }
+
+
+    const filter =
+        select.value;
+
+
+    if (
+        !filter ||
+        filter === "Semua"
+    ) {
+
+        return true;
+
+    }
+
+
+    return (
+        kategoriData(item)
+            .toLowerCase() ===
+        filter.toLowerCase()
+    );
+
+}
+
+
+/* =====================================================
+   HITUNG DASHBOARD
+===================================================== */
+
+function hitungDashboard() {
+
+    const pembayaran =
+        semuaPembayaran.filter(
+            sesuaiFilter
+        );
+
+
+    const pengeluaran =
+        semuaPengeluaran.filter(
+            sesuaiFilter
+        );
+
+
+    let totalMasuk =
+        0;
+
+
+    let totalKeluar =
+        0;
+
+
+    pembayaran.forEach(
+        function (item) {
+
+            totalMasuk +=
+                nominalData(item);
+
+        }
+    );
+
+
+    pengeluaran.forEach(
+        function (item) {
+
+            totalKeluar +=
+                nominalData(item);
+
+        }
+    );
+
+
+    const saldo =
+        totalMasuk -
+        totalKeluar;
+
+
+    const totalSaldo =
+        $("totalSaldo");
+
+
+    const totalMasukElement =
+        $("totalMasuk");
+
+
+    const totalKeluarElement =
+        $("totalKeluar");
+
+
+    if (totalSaldo) {
+
+        totalSaldo.textContent =
+            rupiah(saldo);
+
+    }
+
+
+    if (totalMasukElement) {
+
+        totalMasukElement.textContent =
+            rupiah(totalMasuk);
+
+    }
+
+
+    if (totalKeluarElement) {
+
+        totalKeluarElement.textContent =
+            rupiah(totalKeluar);
+
+    }
+
+
+    console.log(
+        "Dashboard:",
+        {
+            pembayaran:
+                pembayaran.length,
+
+            pengeluaran:
+                pengeluaran.length,
+
+            totalMasuk,
+
+            totalKeluar,
+
+            saldo
+        }
+    );
+
+}
+
+
+/* =====================================================
+   FIRESTORE PEMASUKAN
+===================================================== */
+
+function dengarkanPembayaran() {
+
+    if (unsubscribePayments) {
+
+        unsubscribePayments();
+
+    }
+
+
+    unsubscribePayments =
+        onSnapshot(
+
+            collection(
+                db,
+                "payments"
+            ),
+
+            function (snapshot) {
+
+                semuaPembayaran =
+                    [];
+
+
+                snapshot.forEach(
+                    function (item) {
+
+                        semuaPembayaran.push(
+                            {
+                                id:
+                                    item.id,
+
+                                ...item.data()
+                            }
+                        );
+
+                    }
+                );
+
+
+                hitungDashboard();
+
+            },
+
+            function (error) {
+
+                console.error(
+                    "Gagal membaca payments:",
+                    error
+                );
+
+            }
+
+        );
+
+}
+
+
+/* =====================================================
+   FIRESTORE PENGELUARAN
+===================================================== */
+
+function dengarkanPengeluaran() {
+
+    if (unsubscribeExpenses) {
+
+        unsubscribeExpenses();
+
+    }
+
+
+    unsubscribeExpenses =
+        onSnapshot(
+
+            collection(
+                db,
+                "expenses"
+            ),
+
+            function (snapshot) {
+
+                semuaPengeluaran =
+                    [];
+
+
+                snapshot.forEach(
+                    function (item) {
+
+                        semuaPengeluaran.push(
+                            {
+                                id:
+                                    item.id,
+
+                                ...item.data()
+                            }
+                        );
+
+                    }
+                );
+
+
+                hitungDashboard();
+
+            },
+
+            function (error) {
+
+                console.error(
+                    "Gagal membaca expenses:",
+                    error
+                );
+
+            }
+
+        );
+
+}
+
+
+/* =====================================================
+   FILTER BERUBAH
+===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const filter =
+            $("filterKategori");
+
+
+        if (filter) {
+
+            filter.addEventListener(
+                "change",
+                hitungDashboard
+            );
+
+        }
+
+
+        hitungDashboard();
+
+
+        dengarkanPembayaran();
+
+        dengarkanPengeluaran();
+
+    }
+);
+
+
+/* =====================================================
+   REFRESH DARI HALAMAN LAIN
+===================================================== */
+
+window.addEventListener(
+    "refreshDashboard",
+    function () {
+
+        hitungDashboard();
+
+    }
+);
+
+
+window.addEventListener(
+    "dataKeuanganBerubah",
+    function () {
+
+        hitungDashboard();
+
+    }
+);
+
+
+window.addEventListener(
+    "storage",
+    function (event) {
+
+        if (
+            event.key ===
+            "catatanKasDataBerubah"
+        ) {
+
+            hitungDashboard();
+
+        }
+
+    }
+);
 
 </script>
 
