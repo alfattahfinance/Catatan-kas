@@ -208,14 +208,13 @@ function ambilTanggal() {
 // ======================================================
 
 function tombolSimpan() {
-
     return (
         $("btnSimpanPengeluaran") ||
+        $("simpanPengeluaran") ||
         document.querySelector(
             "button[onclick*='simpanPengeluaran']"
         )
     );
-
 }
 
 
