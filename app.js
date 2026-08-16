@@ -11,11 +11,6 @@ import {
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-
-// ======================================================
-// VARIABEL
-// ======================================================
-
 let semuaPembayaran = [];
 let semuaPengeluaran = [];
 let semuaSantri = [];
@@ -24,33 +19,49 @@ let unsubscribePayments = null;
 let unsubscribeExpenses = null;
 let unsubscribeSantri = null;
 
-
-// ======================================================
-// HELPER
-// ======================================================
-
 const $ = (id) => document.getElementById(id);
 
+// ======================================================
+// LOGO DASHBOARD - SATU SUMBER UNTUK SEMUA VARIAN HEADER
+// ======================================================
 
-// ======================================================
-// LOGO DASHBOARD - SINKRON DENGAN PENGATURAN
-// ======================================================
+const LOGO_DEFAULT = "assets/logo-catatan-kas.jpg";
+
+function logoDashboardTersimpan() {
+    try {
+        return localStorage.getItem("logoDashboard") || LOGO_DEFAULT;
+    } catch (_) {
+        return LOGO_DEFAULT;
+    }
+}
 
 function muatLogoDashboard() {
-    const logo = localStorage.getItem("logoDashboard");
-    if (!logo) return;
-
-    const kandidat = document.querySelectorAll(
-        ".app-logo, #logoDashboard, #dashboardLogo, #logoPreviewV2, img[alt='Logo Dashboard']"
-    );
+    const logo = logoDashboardTersimpan();
+    const kandidat = document.querySelectorAll([
+        ".app-logo",
+        ".ck-logo",
+        "#logoDashboard",
+        "#dashboardLogo",
+        "#logoPreviewV2",
+        "#logoPreview",
+        "#previewLogoDashboard",
+        "img[alt='Logo Dashboard']",
+        "img[alt='Logo aplikasi']",
+        "[data-dashboard-logo]"
+    ].join(","));
 
     kandidat.forEach((element) => {
         if (element && element.tagName === "IMG") {
             element.src = logo;
+            element.removeAttribute("srcset");
         }
     });
 }
 
+function refreshLogoDanDashboard() {
+    muatLogoDashboard();
+    tampilkanDashboard();
+}
 
 // ======================================================
 // RUPIAH
@@ -61,58 +72,28 @@ function rupiah(nilai) {
     return "Rp" + angka.toLocaleString("id-ID");
 }
 
-
-// ======================================================
-// NOMINAL PEMBAYARAN
-// ======================================================
-
 function ambilNominal(item) {
     const nilai = item?.nominal ?? item?.jumlah ?? item?.nilai ?? 0;
     return Number(nilai) || 0;
 }
-
-
-// ======================================================
-// NOMINAL PENGELUARAN
-// ======================================================
 
 function ambilNominalPengeluaran(item) {
     const nilai = item?.nominal ?? item?.jumlah ?? item?.nilai ?? item?.harga ?? item?.total ?? 0;
     return Number(nilai) || 0;
 }
 
-
-// ======================================================
-// KATEGORI PEMBAYARAN
-// ======================================================
-
 function ambilKategoriPembayaran(item) {
     return String(item?.jenis ?? item?.kategori ?? "").trim();
 }
-
-
-// ======================================================
-// KATEGORI PENGELUARAN
-// ======================================================
 
 function ambilKategoriPengeluaran(item) {
     return String(item?.jenis ?? item?.kategori ?? item?.keterangan ?? "").trim();
 }
 
-
-// ======================================================
-// FILTER KATEGORI
-// ======================================================
-
 function cocokKategori(nilai, filter) {
     if (!filter || filter === "Semua") return true;
     return String(nilai).trim().toLowerCase() === String(filter).trim().toLowerCase();
 }
-
-
-// ======================================================
-// HITUNG DASHBOARD
-// ======================================================
 
 function hitungDashboard() {
     const filterElement = $("filterKategori");
@@ -144,11 +125,6 @@ function hitungDashboard() {
         filter
     };
 }
-
-
-// ======================================================
-// TAMPILKAN DASHBOARD
-// ======================================================
 
 function tampilkanDashboard() {
     const hasil = hitungDashboard();
@@ -183,11 +159,6 @@ function tampilkanDashboard() {
     window.catatanKasDashboard = hasil;
 }
 
-
-// ======================================================
-// FIRESTORE - PEMBAYARAN
-// ======================================================
-
 function mulaiPembayaran() {
     if (unsubscribePayments) unsubscribePayments();
 
@@ -203,11 +174,6 @@ function mulaiPembayaran() {
         }
     );
 }
-
-
-// ======================================================
-// FIRESTORE - PENGELUARAN
-// ======================================================
 
 function mulaiPengeluaran() {
     if (unsubscribeExpenses) unsubscribeExpenses();
@@ -225,11 +191,6 @@ function mulaiPengeluaran() {
     );
 }
 
-
-// ======================================================
-// FIRESTORE - SANTRI
-// ======================================================
-
 function mulaiSantri() {
     if (unsubscribeSantri) unsubscribeSantri();
 
@@ -245,40 +206,27 @@ function mulaiSantri() {
     );
 }
 
-
-// ======================================================
-// REFRESH
-// ======================================================
-
 window.refreshDashboard = function () {
-    tampilkanDashboard();
-    muatLogoDashboard();
+    refreshLogoDanDashboard();
 };
-
-
-// ======================================================
-// EVENT DATA BERUBAH
-// ======================================================
 
 window.addEventListener("dataKeuanganBerubah", function () {
     tampilkanDashboard();
 });
 
 window.addEventListener("refreshDashboard", function () {
-    tampilkanDashboard();
+    refreshLogoDanDashboard();
+});
+
+window.addEventListener("logoDashboardChanged", function () {
+    muatLogoDashboard();
 });
 
 window.addEventListener("storage", function (event) {
     if (event.key === "catatanKasDataBerubah" || event.key === "logoDashboard") {
-        tampilkanDashboard();
-        muatLogoDashboard();
+        refreshLogoDanDashboard();
     }
 });
-
-
-// ======================================================
-// FILTER
-// ======================================================
 
 function pasangFilter() {
     const filter = $("filterKategori");
@@ -288,11 +236,6 @@ function pasangFilter() {
         tampilkanDashboard();
     });
 }
-
-
-// ======================================================
-// INIT
-// ======================================================
 
 function initApp() {
     console.log("================================");
