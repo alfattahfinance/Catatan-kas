@@ -1,363 +1,785 @@
-// ======================================
+// ======================================================
 // CATATAN KAS - APP.JS
-// Versi Final - Dashboard + Firebase
-// ======================================
+// DASHBOARD KEUANGAN
+// FIREBASE FIRESTORE REAL-TIME
+// ======================================================
 
-import {
-    db,
-    auth
-} from "./firebase-config.js";
+import { db } from "./firebase-config.js";
 
 import {
     collection,
-    getDocs
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-import {
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+
+// ======================================================
+// VARIABEL
+// ======================================================
+
+let semuaPembayaran = [];
+let semuaPengeluaran = [];
+let semuaSantri = [];
+
+let unsubscribePayments = null;
+let unsubscribeExpenses = null;
+let unsubscribeSantri = null;
 
 
-// ======================================
-// FORMAT RUPIAH
-// ======================================
+// ======================================================
+// HELPER
+// ======================================================
+
+const $ = (id) => document.getElementById(id);
+
+
+// ======================================================
+// RUPIAH
+// ======================================================
 
 function rupiah(nilai) {
 
-    const angka = Number(nilai) || 0;
+    const angka =
+        Number(nilai) || 0;
 
-    return "Rp " + angka.toLocaleString("id-ID");
-
-}
-
-
-// ======================================
-// VARIABEL GLOBAL
-// ======================================
-
-let totalSantri = 0;
-
-let totalMasuk = 0;
-
-let totalKeluar = 0;
-
-let stokBeras = 0;
-
-
-// ======================================
-// DATA FIREBASE
-// ======================================
-
-let semuaPembayaran = [];
-
-let semuaPengeluaran = [];
-
-
-// ======================================
-// REKAP JENIS
-// ======================================
-
-const pemasukan = {
-
-    SPP: 0,
-    Syahriyyah: 0,
-    Infaq: 0,
-    Kas: 0,
-    Beras: 0,
-    Lainnya: 0
-
-};
-
-
-const pengeluaran = {
-
-    SPP: 0,
-    Syahriyyah: 0,
-    Infaq: 0,
-    Kas: 0,
-    Beras: 0,
-    Lainnya: 0
-
-};
-
-
-// ======================================
-// NORMALISASI JENIS
-// ======================================
-
-function normalisasiJenis(nilai) {
-
-    return String(nilai || "")
-        .trim()
-        .toLowerCase();
-
-}
-
-
-// ======================================
-// RESET DATA
-// ======================================
-
-function resetData() {
-
-    totalMasuk = 0;
-
-    totalKeluar = 0;
-
-    stokBeras = 0;
-
-
-    Object.keys(pemasukan).forEach(
-        key => {
-
-            pemasukan[key] = 0;
-
-        }
-    );
-
-
-    Object.keys(pengeluaran).forEach(
-        key => {
-
-            pengeluaran[key] = 0;
-
-        }
+    return (
+        "Rp" +
+        angka.toLocaleString("id-ID")
     );
 
 }
 
 
-// ======================================
-// BACA TANGGAL FIREBASE
-// Mendukung:
-// Timestamp
-// Date
-// angka timestamp
-// YYYY-MM-DD
-// DD/MM/YYYY
-// DD-MM-YYYY
-// ======================================
+// ======================================================
+// NOMINAL PEMBAYARAN
+// ======================================================
 
-function bacaTanggal(data) {
+function ambilNominal(item) {
 
     const nilai =
-        data?.tanggal ??
-        data?.date ??
-        data?.createdAt ??
-        data?.waktu ??
-        null;
+        item?.nominal ??
+        item?.jumlah ??
+        item?.nilai ??
+        0;
+
+    return Number(nilai) || 0;
+
+}
 
 
-    if (!nilai) {
+// ======================================================
+// NOMINAL PENGELUARAN
+// ======================================================
 
-        return null;
+function ambilNominalPengeluaran(item) {
 
-    }
+    const nilai =
+        item?.nominal ??
+        item?.jumlah ??
+        item?.nilai ??
+        item?.harga ??
+        item?.total ??
+        0;
+
+    return Number(nilai) || 0;
+
+}
 
 
-    // ==================================
-    // FIRESTORE TIMESTAMP
-    // ==================================
+// ======================================================
+// KATEGORI PEMBAYARAN
+// ======================================================
+
+function ambilKategoriPembayaran(item) {
+
+    return String(
+        item?.jenis ??
+        item?.kategori ??
+        ""
+    ).trim();
+
+}
+
+
+// ======================================================
+// KATEGORI PENGELUARAN
+// ======================================================
+
+function ambilKategoriPengeluaran(item) {
+
+    return String(
+        item?.jenis ??
+        item?.kategori ??
+        item?.keterangan ??
+        ""
+    ).trim();
+
+}
+
+
+// ======================================================
+// FILTER KATEGORI
+// ======================================================
+
+function cocokKategori(nilai, filter) {
 
     if (
-        typeof nilai === "object" &&
-        typeof nilai.toDate === "function"
+        !filter ||
+        filter === "Semua"
     ) {
 
-        const tanggal =
-            nilai.toDate();
-
-        return isNaN(tanggal.getTime())
-            ? null
-            : tanggal;
+        return true;
 
     }
 
+    return (
+        String(nilai)
+            .trim()
+            .toLowerCase()
+        ===
+        String(filter)
+            .trim()
+            .toLowerCase()
+    );
 
-    // ==================================
-    // FIRESTORE TIMESTAMP OBJECT
-    // seconds / nanoseconds
-    // ==================================
-
-    if (
-        typeof nilai === "object" &&
-        typeof nilai.seconds === "number"
-    ) {
-
-        const tanggal =
-            new Date(
-                nilai.seconds * 1000
-            );
-
-        return isNaN(tanggal.getTime())
-            ? null
-            : tanggal;
-
-    }
+}
 
 
-    // ==================================
-    // JAVASCRIPT DATE
-    // ==================================
+// ======================================================
+// HITUNG DASHBOARD
+// ======================================================
 
-    if (nilai instanceof Date) {
+function hitungDashboard() {
 
-        return isNaN(nilai.getTime())
-            ? null
-            : nilai;
+    const filterElement =
+        $("filterKategori");
 
-    }
-
-
-    // ==================================
-    // ANGKA TIMESTAMP
-    // ==================================
-
-    if (typeof nilai === "number") {
-
-        const tanggal =
-            new Date(nilai);
-
-        return isNaN(tanggal.getTime())
-            ? null
-            : tanggal;
-
-    }
+    const filter =
+        filterElement
+            ? filterElement.value
+            : "Semua";
 
 
-    // ==================================
-    // STRING
-    // ==================================
+    // --------------------------------------------------
+    // PEMASUKAN
+    // --------------------------------------------------
 
-    if (typeof nilai === "string") {
+    const pembayaranTerfilter =
+        semuaPembayaran.filter(
+            function (item) {
 
-        const teks =
-            nilai.trim();
+                return cocokKategori(
+                    ambilKategoriPembayaran(item),
+                    filter
+                );
+
+            }
+        );
 
 
-        if (!teks) {
+    let totalMasuk = 0;
 
-            return null;
+
+    pembayaranTerfilter.forEach(
+        function (item) {
+
+            totalMasuk +=
+                ambilNominal(item);
 
         }
+    );
 
 
-        // --------------------------------
-        // YYYY-MM-DD
-        // --------------------------------
+    // --------------------------------------------------
+    // PENGELUARAN
+    //
+    // Untuk kategori "Beras", pengeluaran tetap
+    // dihitung jika kategorinya cocok.
+    // --------------------------------------------------
 
-        let cocok =
-            teks.match(
-                /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+    const pengeluaranTerfilter =
+        semuaPengeluaran.filter(
+            function (item) {
+
+                return cocokKategori(
+                    ambilKategoriPengeluaran(item),
+                    filter
+                );
+
+            }
+        );
+
+
+    let totalKeluar = 0;
+
+
+    pengeluaranTerfilter.forEach(
+        function (item) {
+
+            totalKeluar +=
+                ambilNominalPengeluaran(item);
+
+        }
+    );
+
+
+    // --------------------------------------------------
+    // SALDO
+    // --------------------------------------------------
+
+    const saldo =
+        totalMasuk -
+        totalKeluar;
+
+
+    return {
+
+        totalMasuk:
+            totalMasuk,
+
+        totalKeluar:
+            totalKeluar,
+
+        saldo:
+            saldo,
+
+        totalSantri:
+            semuaSantri.length,
+
+        filter:
+            filter
+
+    };
+
+}
+
+
+// ======================================================
+// TAMPILKAN DASHBOARD
+// ======================================================
+
+function tampilkanDashboard() {
+
+    const hasil =
+        hitungDashboard();
+
+
+    // --------------------------------------------------
+    // TOTAL PEMASUKAN
+    // --------------------------------------------------
+
+    const totalMasuk =
+        $("totalMasuk");
+
+    if (totalMasuk) {
+
+        totalMasuk.textContent =
+            rupiah(
+                hasil.totalMasuk
             );
 
-
-        if (cocok) {
-
-            const tahun =
-                Number(cocok[1]);
-
-            const bulan =
-                Number(cocok[2]) - 1;
-
-            const hari =
-                Number(cocok[3]);
+    }
 
 
-            const tanggal =
-                new Date(
-                    tahun,
-                    bulan,
-                    hari
+    // --------------------------------------------------
+    // TOTAL PENGELUARAN
+    // --------------------------------------------------
+
+    const totalKeluar =
+        $("totalKeluar");
+
+    if (totalKeluar) {
+
+        totalKeluar.textContent =
+            rupiah(
+                hasil.totalKeluar
+            );
+
+    }
+
+
+    // --------------------------------------------------
+    // SALDO
+    // --------------------------------------------------
+
+    const totalSaldo =
+        $("totalSaldo");
+
+    if (totalSaldo) {
+
+        totalSaldo.textContent =
+            rupiah(
+                hasil.saldo
+            );
+
+    }
+
+
+    // --------------------------------------------------
+    // JUMLAH SANTRI
+    // --------------------------------------------------
+
+    const totalSantri =
+        $("totalSantri");
+
+    if (totalSantri) {
+
+        totalSantri.textContent =
+            hasil.totalSantri
+                .toLocaleString(
+                    "id-ID"
+                );
+
+    }
+
+
+    // --------------------------------------------------
+    // BEBERAPA ID ALTERNATIF
+    // --------------------------------------------------
+
+    const saldo =
+        $("saldo") ||
+        $("saldoSaatIni");
+
+    if (saldo) {
+
+        saldo.textContent =
+            rupiah(
+                hasil.saldo
+            );
+
+    }
+
+
+    const pemasukan =
+        $("pemasukan") ||
+        $("jumlahPemasukan");
+
+    if (pemasukan) {
+
+        pemasukan.textContent =
+            rupiah(
+                hasil.totalMasuk
+            );
+
+    }
+
+
+    const pengeluaran =
+        $("pengeluaran") ||
+        $("jumlahPengeluaran");
+
+    if (pengeluaran) {
+
+        pengeluaran.textContent =
+            rupiah(
+                hasil.totalKeluar
+            );
+
+    }
+
+
+    // --------------------------------------------------
+    // SIMPAN CACHE DASHBOARD
+    // --------------------------------------------------
+
+    try {
+
+        localStorage.setItem(
+            "catatanKasDashboard",
+            JSON.stringify(hasil)
+        );
+
+    }
+
+    catch (error) {
+
+        console.warn(
+            "Gagal menyimpan cache dashboard:",
+            error
+        );
+
+    }
+
+
+    // --------------------------------------------------
+    // GLOBAL
+    // --------------------------------------------------
+
+    window.catatanKasDashboard =
+        hasil;
+
+
+    console.log(
+        "Dashboard:",
+        hasil
+    );
+
+}
+
+
+// ======================================================
+// FIRESTORE - PEMBAYARAN
+// ======================================================
+
+function mulaiPembayaran() {
+
+    if (unsubscribePayments) {
+
+        unsubscribePayments();
+
+        unsubscribePayments =
+            null;
+
+    }
+
+
+    unsubscribePayments =
+        onSnapshot(
+
+            collection(
+                db,
+                "payments"
+            ),
+
+            function (snapshot) {
+
+                semuaPembayaran =
+                    snapshot.docs.map(
+                        function (item) {
+
+                            return {
+
+                                id:
+                                    item.id,
+
+                                ...item.data()
+
+                            };
+
+                        }
+                    );
+
+
+                console.log(
+                    "Payments:",
+                    semuaPembayaran.length
                 );
 
 
-            if (
-                tanggal.getFullYear() === tahun &&
-                tanggal.getMonth() === bulan &&
-                tanggal.getDate() === hari
-            ) {
+                tampilkanDashboard();
 
-                return tanggal;
+
+                window.dispatchEvent(
+                    new CustomEvent(
+                        "dataKeuanganBerubah",
+                        {
+                            detail: {
+                                tipe:
+                                    "pembayaran"
+                            }
+                        }
+                    )
+                );
+
+            },
+
+            function (error) {
+
+                console.error(
+                    "Gagal membaca payments:",
+                    error
+                );
 
             }
 
-        }
+        );
+
+}
 
 
-        // --------------------------------
-        // DD/MM/YYYY
-        // --------------------------------
+// ======================================================
+// FIRESTORE - PENGELUARAN
+// ======================================================
 
-        cocok =
-            teks.match(
-                /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
-            );
+function mulaiPengeluaran() {
 
+    if (unsubscribeExpenses) {
 
-        if (cocok) {
+        unsubscribeExpenses();
 
-            const hari =
-                Number(cocok[1]);
+        unsubscribeExpenses =
+            null;
 
-            const bulan =
-                Number(cocok[2]) - 1;
-
-            const tahun =
-                Number(cocok[3]);
+    }
 
 
-            const tanggal =
-                new Date(
-                    tahun,
-                    bulan,
-                    hari
+    unsubscribeExpenses =
+        onSnapshot(
+
+            collection(
+                db,
+                "expenses"
+            ),
+
+            function (snapshot) {
+
+                semuaPengeluaran =
+                    snapshot.docs.map(
+                        function (item) {
+
+                            return {
+
+                                id:
+                                    item.id,
+
+                                ...item.data()
+
+                            };
+
+                        }
+                    );
+
+
+                console.log(
+                    "Expenses:",
+                    semuaPengeluaran.length
                 );
 
 
-            if (
-                tanggal.getFullYear() === tahun &&
-                tanggal.getMonth() === bulan &&
-                tanggal.getDate() === hari
-            ) {
+                tampilkanDashboard();
 
-                return tanggal;
+
+                window.dispatchEvent(
+                    new CustomEvent(
+                        "dataKeuanganBerubah",
+                        {
+                            detail: {
+                                tipe:
+                                    "pengeluaran"
+                            }
+                        }
+                    )
+                );
+
+            },
+
+            function (error) {
+
+                console.error(
+                    "Gagal membaca expenses:",
+                    error
+                );
 
             }
 
-        }
+        );
+
+}
 
 
-        // --------------------------------
-        // DD-MM-YYYY
-        // --------------------------------
+// ======================================================
+// FIRESTORE - SANTRI
+// ======================================================
 
-        cocok =
-            teks.match(
-                /^(\d{1,2})-(\d{1,2})-(\d{4})$/
-            );
+function mulaiSantri() {
 
+    if (unsubscribeSantri) {
 
-        if (cocok) {
+        unsubscribeSantri();
 
-            const hari =
-                Number(cocok[1]);
+        unsubscribeSantri =
+            null;
 
-            const bulan =
-                Number(cocok[2]) - 1;
-
-            const tahun =
-                Number(cocok[3]);
+    }
 
 
-            const tanggal =
-                new Date(
-                    tahun,
-                    bulan,
-                    hari
+    unsubscribeSantri =
+        onSnapshot(
+
+            collection(
+                db,
+                "santri"
+            ),
+
+            function (snapshot) {
+
+                semuaSantri =
+                    snapshot.docs.map(
+                        function (item) {
+
+                            return {
+
+                                id:
+                                    item.id,
+
+                                ...item.data()
+
+                            };
+
+                        }
+                    );
+
+
+                console.log(
+                    "Santri:",
+                    semuaSantri.length
                 );
 
 
-            if (
-                tanggal.getFullYear() === tahun &&
-                tanggal.getMonth() ===
+                tampilkanDashboard();
+
+            },
+
+            function (error) {
+
+                console.error(
+                    "Gagal membaca santri:",
+                    error
+                );
+
+            }
+
+        );
+
+}
+
+
+// ======================================================
+// REFRESH
+// ======================================================
+
+window.refreshDashboard =
+    function () {
+
+        tampilkanDashboard();
+
+    };
+
+
+// ======================================================
+// EVENT DATA BERUBAH
+// ======================================================
+
+window.addEventListener(
+    "dataKeuanganBerubah",
+    function () {
+
+        tampilkanDashboard();
+
+    }
+);
+
+
+window.addEventListener(
+    "refreshDashboard",
+    function () {
+
+        tampilkanDashboard();
+
+    }
+);
+
+
+// ======================================================
+// STORAGE
+// ======================================================
+
+window.addEventListener(
+    "storage",
+    function (event) {
+
+        if (
+            event.key ===
+            "catatanKasDataBerubah"
+        ) {
+
+            tampilkanDashboard();
+
+        }
+
+    }
+);
+
+
+// ======================================================
+// FILTER
+// ======================================================
+
+function pasangFilter() {
+
+    const filter =
+        $("filterKategori");
+
+
+    if (!filter) {
+
+        return;
+
+    }
+
+
+    filter.addEventListener(
+        "change",
+        function () {
+
+            tampilkanDashboard();
+
+        }
+    );
+
+}
+
+
+// ======================================================
+// INIT
+// ======================================================
+
+function initApp() {
+
+    console.log(
+        "================================"
+    );
+
+    console.log(
+        "CATATAN KAS APP.JS AKTIF"
+    );
+
+    console.log(
+        "================================"
+    );
+
+
+    pasangFilter();
+
+
+    // Tampilkan Rp0 dahulu
+    tampilkanDashboard();
+
+
+    // Jalankan Firebase
+    mulaiPembayaran();
+
+    mulaiPengeluaran();
+
+    mulaiSantri();
+
+}
+
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initApp
+    );
+
+}
+
+else {
+
+    initApp();
+
+}
