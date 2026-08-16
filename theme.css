@@ -1,4 +1,67 @@
 /* =====================================================
+   GLOBAL MODERN ANIMATED BACKGROUND
+   Mode normal: 3 warna lembut bergerak perlahan
+===================================================== */
+
+html,
+body {
+    min-height: 100%;
+}
+
+body:not(.dark-mode) {
+    background:
+        radial-gradient(circle at 15% 20%, rgba(184, 242, 230, .78), transparent 34%),
+        radial-gradient(circle at 85% 25%, rgba(190, 220, 255, .72), transparent 36%),
+        radial-gradient(circle at 55% 90%, rgba(224, 205, 255, .70), transparent 38%),
+        linear-gradient(135deg, #f3fff9 0%, #eef6ff 50%, #f8f1ff 100%) !important;
+    background-size: 180% 180%, 180% 180%, 180% 180%, 220% 220% !important;
+    animation: ckModernGradient 18s ease-in-out infinite alternate !important;
+    background-attachment: fixed !important;
+}
+
+@keyframes ckModernGradient {
+    0% {
+        background-position: 0% 35%, 100% 20%, 45% 100%, 0% 50%;
+    }
+    50% {
+        background-position: 35% 65%, 65% 55%, 75% 45%, 50% 50%;
+    }
+    100% {
+        background-position: 100% 20%, 0% 75%, 25% 10%, 100% 50%;
+    }
+}
+
+/* Lapisan lembut agar efek terasa modern tetapi tidak mengganggu teks */
+body:not(.dark-mode)::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+}
+
+/* Kartu sedikit transparan supaya latar belakang terlihat */
+body:not(.dark-mode) .card,
+body:not(.dark-mode) .custom-card,
+body:not(.dark-mode) .card-kas,
+body:not(.dark-mode) .ck-topbar {
+    background: rgba(255,255,255,.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Hormati pengaturan perangkat untuk mengurangi animasi */
+@media (prefers-reduced-motion: reduce) {
+    body:not(.dark-mode) {
+        animation: none !important;
+        background-position: 50% 50% !important;
+    }
+}
+
+/* =====================================================
    GLOBAL DARK MODE
 ===================================================== */
 
