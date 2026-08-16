@@ -1,26 +1,31 @@
 // ======================================================
 // CATATAN KAS - PEMBAYARAN
-// FINAL - WEB + APK
-// Firebase Firestore
-// Simpan + Riwayat Real-time + Edit + Hapus + Refresh
+// FIREBASE FIRESTORE
+// SIMPAN + EDIT + HAPUS + REAL-TIME
 // ======================================================
 
-import { db, auth } from "./firebase-config.js";
+import {
+    db,
+    auth
+} from "../firebase-config.js";
 
 import {
+
     collection,
     addDoc,
-    getDocs,
     getDoc,
     updateDoc,
     deleteDoc,
     doc,
     onSnapshot,
     serverTimestamp
+
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 import {
+
     onAuthStateChanged
+
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 
@@ -28,22 +33,39 @@ import {
 // VARIABEL
 // ======================================================
 
-let userAktif = null;
-let idEdit = null;
-let unsubscribePembayaran = null;
+let userAktif =
+    null;
 
-const $ = (id) => document.getElementById(id);
+let idEdit =
+    null;
+
+let unsubscribePembayaran =
+    null;
 
 
 // ======================================================
-// FORMAT RUPIAH
+// HELPER
+// ======================================================
+
+const $ =
+    (id) =>
+        document.getElementById(id);
+
+
+// ======================================================
+// RUPIAH
 // ======================================================
 
 function rupiah(nilai) {
 
-    const angka = Number(nilai) || 0;
-
-    return "Rp " + angka.toLocaleString("id-ID");
+    return (
+        "Rp " +
+        (
+            Number(nilai) || 0
+        ).toLocaleString(
+            "id-ID"
+        )
+    );
 
 }
 
@@ -54,84 +76,158 @@ function rupiah(nilai) {
 
 function amanHTML(teks) {
 
-    return String(teks ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        teks ?? ""
+    )
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
 
 
 // ======================================================
-// AMBIL INPUT NAMA
+// NAMA
 // ======================================================
 
 function ambilNama() {
 
     const element =
+
         $("namaSantriPemasukan") ||
+
         $("namaSantri") ||
+
         $("santri") ||
+
         $("nama") ||
+
         $("keterangan");
 
+
     return element
-        ? String(element.value || "").trim()
+
+        ? String(
+            element.value || ""
+        ).trim()
+
         : "";
 
 }
 
 
 // ======================================================
-// AMBIL JENIS
+// JENIS
 // ======================================================
 
 function ambilJenis() {
 
     const element =
+
         $("jenis") ||
+
         $("jenisPembayaran") ||
+
         $("kategori");
 
+
     return element
-        ? String(element.value || "").trim()
+
+        ? String(
+            element.value || ""
+        ).trim()
+
         : "";
 
 }
 
 
 // ======================================================
-// AMBIL NOMINAL
+// NOMINAL
 // ======================================================
 
 function ambilNominal() {
 
     const element =
+
         $("nominal") ||
+
         $("nominalPembayaran") ||
+
         $("jumlah");
 
+
     if (!element) {
+
         return 0;
-    }
-
-    let nilai = element.value;
-
-    if (typeof nilai === "string") {
-
-        nilai = nilai
-            .replace(/Rp/gi, "")
-            .replace(/\s/g, "")
-            .replace(/\./g, "")
-            .replace(/,/g, "");
 
     }
 
-    const angka = Number(nilai);
 
-    return Number.isFinite(angka)
+    let nilai =
+        element.value;
+
+
+    if (
+        typeof nilai ===
+        "string"
+    ) {
+
+        nilai =
+            nilai
+
+                .replace(
+                    /Rp/gi,
+                    ""
+                )
+
+                .replace(
+                    /\s/g,
+                    ""
+                )
+
+                .replace(
+                    /\./g,
+                    ""
+                )
+
+                .replace(
+                    /,/g,
+                    ""
+                );
+
+    }
+
+
+    const angka =
+        Number(nilai);
+
+
+    return Number.isFinite(
+        angka
+    )
         ? angka
         : 0;
 
@@ -139,19 +235,29 @@ function ambilNominal() {
 
 
 // ======================================================
-// AMBIL TANGGAL
+// TANGGAL
 // ======================================================
 
 function ambilTanggal() {
 
     const element =
+
         $("tanggalPembayaran") ||
+
         $("tanggal") ||
+
         $("tglPembayaran");
 
-    if (!element || !element.value) {
+
+    if (
+        !element ||
+        !element.value
+    ) {
+
         return null;
+
     }
+
 
     return element.value;
 
@@ -159,269 +265,219 @@ function ambilTanggal() {
 
 
 // ======================================================
-// TOMBOL
+// TOMBOL SIMPAN
 // ======================================================
 
 function tombolSimpan() {
 
     return (
+
         $("btnSimpanPembayaran") ||
+
+        $("simpanPembayaran") ||
+
         document.querySelector(
             "button[onclick*='simpanPembayaran']"
         )
+
     );
 
 }
 
 
 // ======================================================
-// EVENT UNTUK DASHBOARD
+// REFRESH DASHBOARD
 // ======================================================
 
 function refreshDashboard() {
 
     try {
 
-        const waktu = Date.now();
-
         localStorage.setItem(
             "catatanKasDataBerubah",
-            String(waktu)
+            String(
+                Date.now()
+            )
         );
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.warn(
-            "LocalStorage tidak tersedia:",
             error
         );
 
     }
+
 
     window.dispatchEvent(
         new CustomEvent(
             "dataKeuanganBerubah",
             {
                 detail: {
-                    tipe: "pembayaran",
-                    waktu: Date.now()
+                    tipe:
+                        "pembayaran",
+                    waktu:
+                        Date.now()
                 }
             }
         )
     );
 
+
     window.dispatchEvent(
-        new Event("refreshDashboard")
+        new Event(
+            "refreshDashboard"
+        )
     );
 
 }
 
 
 // ======================================================
-// SIMPAN PEMBAYARAN
+// SIMPAN
 // ======================================================
 
-window.simpanPembayaran = async function () {
+window.simpanPembayaran =
+    async function () {
 
-    console.log(
-        "=== MULAI SIMPAN PEMBAYARAN ==="
-    );
+        const nama =
+            ambilNama();
 
-    const nama =
-        ambilNama();
+        const jenis =
+            ambilJenis();
 
-    const jenis =
-        ambilJenis();
+        const nominal =
+            ambilNominal();
 
-    const nominal =
-        ambilNominal();
+        const tanggal =
+            ambilTanggal();
 
-    const tanggal =
-        ambilTanggal();
 
-    console.log("Nama:", nama);
-    console.log("Jenis:", jenis);
-    console.log("Nominal:", nominal);
-    console.log("Tanggal:", tanggal);
-    console.log("User:", userAktif);
-
-
-    // --------------------------------------------------
-    // VALIDASI
-    // --------------------------------------------------
-
-    if (!nama) {
-
-        alert(
-            "Nama santri / keterangan belum diisi."
-        );
-
-        return;
-
-    }
-
-    if (!jenis) {
-
-        alert(
-            "Jenis pembayaran belum dipilih."
-        );
-
-        return;
-
-    }
-
-    if (!nominal || nominal <= 0) {
-
-        alert(
-            "Nominal pembayaran belum benar."
-        );
-
-        return;
-
-    }
-
-
-    const tombol =
-        tombolSimpan();
-
-
-    try {
-
-        if (tombol) {
-
-            tombol.disabled = true;
-
-            tombol.dataset.text =
-                tombol.innerHTML;
-
-            tombol.innerHTML =
-                "⏳ Menyimpan...";
-
-        }
-
-
-        // ------------------------------------------------
-        // DATA FIRESTORE
-        // ------------------------------------------------
-
-        const dataPembayaran = {
-
-            nama:
-                nama,
-
-            namaSantri:
-                nama,
-
-            nama_santri:
-                nama,
-
-            keterangan:
-                nama,
-
-            jenis:
-                jenis,
-
-            kategori:
-                jenis,
-
-            nominal:
-                nominal,
-
-            jumlah:
-                nominal,
-
-            satuan:
-                "Rupiah",
-
-            tanggal:
-                tanggal || null,
-
-            createdAt:
-                serverTimestamp(),
-
-            updatedAt:
-                serverTimestamp(),
-
-            uid:
-                userAktif
-                    ? userAktif.uid
-                    : null
-
-        };
-
-
-        // ------------------------------------------------
-        // EDIT
-        // ------------------------------------------------
-
-        if (idEdit) {
-
-            await updateDoc(
-
-                doc(
-                    db,
-                    "payments",
-                    idEdit
-                ),
-
-                {
-
-                    nama:
-                        nama,
-
-                    namaSantri:
-                        nama,
-
-                    nama_santri:
-                        nama,
-
-                    keterangan:
-                        nama,
-
-                    jenis:
-                        jenis,
-
-                    kategori:
-                        jenis,
-
-                    nominal:
-                        nominal,
-
-                    jumlah:
-                        nominal,
-
-                    satuan:
-                        "Rupiah",
-
-                    tanggal:
-                        tanggal || null,
-
-                    updatedAt:
-                        serverTimestamp()
-
-                }
-
-            );
-
-            console.log(
-                "PEMBAYARAN DIUPDATE:",
-                idEdit
-            );
+        if (!nama) {
 
             alert(
-                "Pembayaran berhasil diperbarui."
+                "Nama santri / keterangan belum diisi."
             );
+
+            return;
 
         }
 
 
-        // ------------------------------------------------
-        // DATA BARU
-        // ------------------------------------------------
+        if (!jenis) {
 
-        else {
+            alert(
+                "Jenis pembayaran belum dipilih."
+            );
 
-            const hasil =
+            return;
+
+        }
+
+
+        if (
+            !nominal ||
+            nominal <= 0
+        ) {
+
+            alert(
+                "Nominal pembayaran belum benar."
+            );
+
+            return;
+
+        }
+
+
+        const tombol =
+            tombolSimpan();
+
+
+        try {
+
+            if (tombol) {
+
+                tombol.disabled =
+                    true;
+
+                tombol.dataset.text =
+                    tombol.innerHTML;
+
+                tombol.innerHTML =
+                    "⏳ Menyimpan...";
+
+            }
+
+
+            // ==========================================
+            // EDIT
+            // ==========================================
+
+            if (idEdit) {
+
+                await updateDoc(
+
+                    doc(
+                        db,
+                        "payments",
+                        idEdit
+                    ),
+
+                    {
+
+                        nama:
+                            nama,
+
+                        namaSantri:
+                            nama,
+
+                        nama_santri:
+                            nama,
+
+                        keterangan:
+                            nama,
+
+                        jenis:
+                            jenis,
+
+                        kategori:
+                            jenis,
+
+                        nominal:
+                            nominal,
+
+                        jumlah:
+                            nominal,
+
+                        satuan:
+                            "Rupiah",
+
+                        tanggal:
+                            tanggal || null,
+
+                        updatedAt:
+                            serverTimestamp()
+
+                    }
+
+                );
+
+
+                alert(
+                    "Pembayaran berhasil diperbarui."
+                );
+
+            }
+
+
+            // ==========================================
+            // BARU
+            // ==========================================
+
+            else {
+
                 await addDoc(
 
                     collection(
@@ -429,75 +485,120 @@ window.simpanPembayaran = async function () {
                         "payments"
                     ),
 
-                    dataPembayaran
+                    {
+
+                        nama:
+                            nama,
+
+                        namaSantri:
+                            nama,
+
+                        nama_santri:
+                            nama,
+
+                        keterangan:
+                            nama,
+
+                        jenis:
+                            jenis,
+
+                        kategori:
+                            jenis,
+
+                        nominal:
+                            nominal,
+
+                        jumlah:
+                            nominal,
+
+                        satuan:
+                            "Rupiah",
+
+                        tanggal:
+                            tanggal || null,
+
+                        createdAt:
+                            serverTimestamp(),
+
+                        updatedAt:
+                            serverTimestamp(),
+
+                        uid:
+                            userAktif
+                                ? userAktif.uid
+                                : null
+
+                    }
 
                 );
 
-            console.log(
-                "PEMBAYARAN TERSIMPAN:",
-                hasil.id
+
+                alert(
+                    "Pembayaran berhasil disimpan."
+                );
+
+            }
+
+
+            kosongkanForm();
+
+            idEdit =
+                null;
+
+
+            refreshDashboard();
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Gagal menyimpan pembayaran:",
+                error
             );
+
 
             alert(
-                "Pembayaran berhasil disimpan."
+                "Gagal menyimpan pembayaran.\n\n" +
+                (
+                    error.message ||
+                    error
+                )
             );
 
         }
 
+        finally {
 
-        // ------------------------------------------------
-        // RESET
-        // ------------------------------------------------
+            if (tombol) {
 
-        kosongkanForm();
+                tombol.disabled =
+                    false;
 
-        idEdit = null;
+                tombol.innerHTML =
+                    "Simpan Pembayaran";
 
-        refreshDashboard();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "GAGAL SIMPAN PEMBAYARAN:",
-            error
-        );
-
-        alert(
-            "Gagal menyimpan pembayaran.\n\n" +
-            (error.message || error)
-        );
-
-    }
-
-    finally {
-
-        if (tombol) {
-
-            tombol.disabled = false;
-
-            tombol.innerHTML =
-                tombol.dataset.text ||
-                "Simpan Pembayaran";
+            }
 
         }
 
-    }
-
-};
+    };
 
 
 // ======================================================
-// MUAT RIWAYAT REAL-TIME
+// MUAT RIWAYAT
 // ======================================================
 
 function muatPembayaran() {
 
     const container =
+
         $("daftarPembayaran") ||
+
         $("riwayatPembayaran") ||
+
         $("listPembayaran") ||
+
         $("riwayat");
 
 
@@ -512,8 +613,9 @@ function muatPembayaran() {
     }
 
 
-    // Hentikan listener sebelumnya
-    if (unsubscribePembayaran) {
+    if (
+        unsubscribePembayaran
+    ) {
 
         unsubscribePembayaran();
 
@@ -521,21 +623,6 @@ function muatPembayaran() {
             null;
 
     }
-
-
-    container.innerHTML = `
-
-        <div class="text-center text-muted p-4">
-
-            <div class="spinner-border spinner-border-sm"></div>
-
-            <div class="mt-2">
-                Memuat riwayat pembayaran...
-            </div>
-
-        </div>
-
-    `;
 
 
     unsubscribePembayaran =
@@ -548,7 +635,8 @@ function muatPembayaran() {
 
             function (snapshot) {
 
-                const data = [];
+                const data =
+                    [];
 
 
                 snapshot.forEach(
@@ -567,31 +655,20 @@ function muatPembayaran() {
                 );
 
 
-                // ----------------------------------------
-                // SORT TERBARU
-                // ----------------------------------------
-
                 data.sort(
-                    function (a, b) {
-
-                        const waktuA =
-                            waktuData(a);
-
-                        const waktuB =
-                            waktuData(b);
+                    function (
+                        a,
+                        b
+                    ) {
 
                         return (
-                            waktuB -
-                            waktuA
+                            waktuData(b) -
+                            waktuData(a)
                         );
 
                     }
                 );
 
-
-                // ----------------------------------------
-                // KOSONG
-                // ----------------------------------------
 
                 if (!data.length) {
 
@@ -614,31 +691,37 @@ function muatPembayaran() {
                 }
 
 
-                // ----------------------------------------
-                // RENDER
-                // ----------------------------------------
-
-                container.innerHTML = "";
+                container.innerHTML =
+                    "";
 
 
                 data.forEach(
                     function (item) {
 
                         const nama =
+
                             item.namaSantri ||
+
                             item.nama_santri ||
+
                             item.nama ||
+
                             item.keterangan ||
+
                             "-";
 
 
                         const jenis =
+
                             item.jenis ||
+
                             item.kategori ||
+
                             "-";
 
 
                         const nominal =
+
                             Number(
                                 item.nominal ??
                                 item.jumlah ??
@@ -667,44 +750,32 @@ function muatPembayaran() {
 
                             <div class="card-body">
 
-                                <div
-                                    class="d-flex
-                                    justify-content-between
-                                    align-items-start
-                                    gap-2"
-                                >
+                                <div class="d-flex justify-content-between align-items-start gap-2">
 
                                     <div>
 
                                         <div class="fw-bold">
-
                                             ${amanHTML(nama)}
-
                                         </div>
 
                                         <div class="text-muted small">
-
                                             ${amanHTML(jenis)}
-
                                         </div>
 
                                         ${
                                             tanggal
-                                            ? `
-                                            <div class="text-muted small mt-1">
-                                                <i class="bi bi-calendar3"></i>
-                                                ${amanHTML(tanggal)}
-                                            </div>
-                                            `
-                                            : ""
+                                                ? `
+                                                    <div class="text-muted small mt-1">
+                                                        <i class="bi bi-calendar3"></i>
+                                                        ${amanHTML(tanggal)}
+                                                    </div>
+                                                  `
+                                                : ""
                                         }
 
                                     </div>
 
-
-                                    <div
-                                        class="fw-bold text-success"
-                                    >
+                                    <div class="fw-bold text-success">
 
                                         + ${rupiah(nominal)}
 
@@ -712,16 +783,11 @@ function muatPembayaran() {
 
                                 </div>
 
-
-                                <div
-                                    class="d-flex
-                                    gap-2
-                                    mt-3"
-                                >
+                                <div class="d-flex gap-2 mt-3">
 
                                     <button
                                         type="button"
-                                        class="btn btn-sm btn-outline-primary"
+                                        class="btn btn-sm btn-outline-primary flex-fill"
                                         data-action="edit"
                                         data-id="${item.id}"
                                     >
@@ -731,10 +797,9 @@ function muatPembayaran() {
 
                                     </button>
 
-
                                     <button
                                         type="button"
-                                        class="btn btn-sm btn-outline-danger"
+                                        class="btn btn-sm btn-outline-danger flex-fill"
                                         data-action="delete"
                                         data-id="${item.id}"
                                     >
@@ -763,9 +828,10 @@ function muatPembayaran() {
             function (error) {
 
                 console.error(
-                    "Gagal memuat payments:",
+                    "Gagal memuat pembayaran:",
                     error
                 );
+
 
                 container.innerHTML = `
 
@@ -789,29 +855,18 @@ function muatPembayaran() {
 
 
 // ======================================================
-// WAKTU DATA
+// WAKTU
 // ======================================================
 
 function waktuData(data) {
 
     if (
         data.createdAt &&
-        typeof data.createdAt.toDate === "function"
+        typeof data.createdAt.toDate ===
+        "function"
     ) {
 
         return data.createdAt
-            .toDate()
-            .getTime();
-
-    }
-
-
-    if (
-        data.updatedAt &&
-        typeof data.updatedAt.toDate === "function"
-    ) {
-
-        return data.updatedAt
             .toDate()
             .getTime();
 
@@ -825,7 +880,10 @@ function waktuData(data) {
                 data.tanggal
             ).getTime();
 
-        if (!Number.isNaN(waktu)) {
+
+        if (
+            !Number.isNaN(waktu)
+        ) {
 
             return waktu;
 
@@ -840,19 +898,21 @@ function waktuData(data) {
 
 
 // ======================================================
-// FORMAT TANGGAL
+// TANGGAL
 // ======================================================
 
 function formatTanggal(nilai) {
 
     if (!nilai) {
+
         return "";
+
     }
 
 
     if (
-        nilai &&
-        typeof nilai.toDate === "function"
+        typeof nilai.toDate ===
+        "function"
     ) {
 
         return nilai
@@ -879,281 +939,333 @@ function formatTanggal(nilai) {
     }
 
 
-    return tanggal.toLocaleDateString(
-        "id-ID"
-    );
+    return tanggal
+        .toLocaleDateString(
+            "id-ID"
+        );
 
 }
 
 
 // ======================================================
-// EDIT PEMBAYARAN
+// EDIT
 // ======================================================
 
-window.editPembayaran = async function (id) {
+window.editPembayaran =
+    async function (id) {
 
-    try {
+        try {
 
-        const ref =
-            doc(
-                db,
-                "payments",
-                id
+            const ref =
+                doc(
+                    db,
+                    "payments",
+                    id
+                );
+
+
+            const snapshot =
+                await getDoc(ref);
+
+
+            if (
+                !snapshot.exists()
+            ) {
+
+                alert(
+                    "Data pembayaran tidak ditemukan."
+                );
+
+                return;
+
+            }
+
+
+            const data =
+                snapshot.data();
+
+
+            idEdit =
+                id;
+
+
+            const nama =
+
+                $("namaSantriPemasukan") ||
+
+                $("namaSantri") ||
+
+                $("santri") ||
+
+                $("nama") ||
+
+                $("keterangan");
+
+
+            const jenis =
+
+                $("jenis") ||
+
+                $("jenisPembayaran") ||
+
+                $("kategori");
+
+
+            const nominal =
+
+                $("nominal") ||
+
+                $("nominalPembayaran") ||
+
+                $("jumlah");
+
+
+            const tanggal =
+
+                $("tanggalPembayaran") ||
+
+                $("tanggal") ||
+
+                $("tglPembayaran");
+
+
+            if (nama) {
+
+                nama.value =
+
+                    data.namaSantri ||
+
+                    data.nama_santri ||
+
+                    data.nama ||
+
+                    data.keterangan ||
+
+                    "";
+
+            }
+
+
+            if (jenis) {
+
+                jenis.value =
+
+                    data.jenis ||
+
+                    data.kategori ||
+
+                    "";
+
+            }
+
+
+            if (nominal) {
+
+                nominal.value =
+
+                    data.nominal ??
+
+                    data.jumlah ??
+
+                    "";
+
+            }
+
+
+            if (
+                tanggal &&
+                typeof data.tanggal ===
+                "string"
+            ) {
+
+                tanggal.value =
+                    data.tanggal;
+
+            }
+
+
+            const tombol =
+                tombolSimpan();
+
+
+            if (tombol) {
+
+                tombol.innerHTML =
+                    "✓ Simpan Perubahan";
+
+            }
+
+
+            window.scrollTo(
+                {
+                    top: 0,
+                    behavior:
+                        "smooth"
+                }
             );
 
+        }
 
-        const snapshot =
-            await getDoc(ref);
+        catch (error) {
 
-
-        if (!snapshot.exists()) {
+            console.error(
+                error
+            );
 
             alert(
-                "Data pembayaran tidak ditemukan."
+                "Gagal mengambil data pembayaran.\n\n" +
+                (
+                    error.message ||
+                    error
+                )
             );
+
+        }
+
+    };
+
+
+// ======================================================
+// HAPUS
+// ======================================================
+
+window.hapusPembayaran =
+    async function (id) {
+
+        const yakin =
+            window.confirm(
+                "Yakin ingin menghapus pembayaran ini?"
+            );
+
+
+        if (!yakin) {
 
             return;
 
         }
 
 
-        const data =
-            snapshot.data();
+        try {
+
+            await deleteDoc(
+
+                doc(
+                    db,
+                    "payments",
+                    id
+                )
+
+            );
 
 
-        idEdit =
-            id;
+            alert(
+                "Pembayaran berhasil dihapus."
+            );
 
 
-        const nama =
-            $("namaSantriPemasukan") ||
-            $("namaSantri") ||
-            $("santri") ||
-            $("nama") ||
-            $("keterangan");
-
-
-        const jenis =
-            $("jenis") ||
-            $("jenisPembayaran") ||
-            $("kategori");
-
-
-        const nominal =
-            $("nominal") ||
-            $("nominalPembayaran") ||
-            $("jumlah");
-
-
-        const tanggal =
-            $("tanggalPembayaran") ||
-            $("tanggal") ||
-            $("tglPembayaran");
-
-
-        if (nama) {
-
-            nama.value =
-                data.namaSantri ||
-                data.nama_santri ||
-                data.nama ||
-                data.keterangan ||
-                "";
+            refreshDashboard();
 
         }
 
+        catch (error) {
 
-        if (jenis) {
-
-            jenis.value =
-                data.jenis ||
-                data.kategori ||
-                "";
-
-        }
+            console.error(
+                "Gagal menghapus:",
+                error
+            );
 
 
-        if (nominal) {
-
-            nominal.value =
-                data.nominal ??
-                data.jumlah ??
-                "";
+            alert(
+                "Gagal menghapus pembayaran.\n\n" +
+                (
+                    error.message ||
+                    error
+                )
+            );
 
         }
 
-
-        if (
-            tanggal &&
-            typeof data.tanggal === "string"
-        ) {
-
-            tanggal.value =
-                data.tanggal;
-
-        }
-
-
-        const tombol =
-            tombolSimpan();
-
-
-        if (tombol) {
-
-            tombol.innerHTML =
-                "✓ Simpan Perubahan";
-
-        }
-
-
-        window.scrollTo({
-
-            top: 0,
-
-            behavior: "smooth"
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Gagal edit pembayaran:",
-            error
-        );
-
-        alert(
-            "Gagal mengambil data pembayaran.\n\n" +
-            (error.message || error)
-        );
-
-    }
-
-};
+    };
 
 
 // ======================================================
-// HAPUS PEMBAYARAN
-// ======================================================
-
-window.hapusPembayaran = async function (id) {
-
-    if (
-        !confirm(
-            "Yakin ingin menghapus pembayaran ini?"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    try {
-
-        await deleteDoc(
-
-            doc(
-                db,
-                "payments",
-                id
-            )
-
-        );
-
-
-        console.log(
-            "PEMBAYARAN DIHAPUS:",
-            id
-        );
-
-
-        alert(
-            "Pembayaran berhasil dihapus."
-        );
-
-
-        refreshDashboard();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Gagal menghapus pembayaran:",
-            error
-        );
-
-        alert(
-            "Gagal menghapus pembayaran.\n\n" +
-            (error.message || error)
-        );
-
-    }
-
-};
-
-
-// ======================================================
-// RESET FORM
+// RESET
 // ======================================================
 
 function kosongkanForm() {
 
-    idEdit = null;
+    idEdit =
+        null;
 
 
     const nama =
+
         $("namaSantriPemasukan") ||
+
         $("namaSantri") ||
+
         $("santri") ||
+
         $("nama") ||
+
         $("keterangan");
 
 
     const jenis =
+
         $("jenis") ||
+
         $("jenisPembayaran") ||
+
         $("kategori");
 
 
     const nominal =
+
         $("nominal") ||
+
         $("nominalPembayaran") ||
+
         $("jumlah");
 
 
     const tanggal =
+
         $("tanggalPembayaran") ||
+
         $("tanggal") ||
+
         $("tglPembayaran");
 
 
     if (nama) {
 
-        nama.value = "";
+        nama.value =
+            "";
 
     }
 
 
     if (jenis) {
 
-        jenis.value = "";
+        jenis.value =
+            "";
 
     }
 
 
     if (nominal) {
 
-        nominal.value = "";
+        nominal.value =
+            "";
 
     }
 
 
     if (tanggal) {
 
-        tanggal.value = "";
+        tanggal.value =
+            "";
 
     }
 
@@ -1176,50 +1288,57 @@ function kosongkanForm() {
 // PILIH PEMBAYARAN
 // ======================================================
 
-window.pilihPembayaran = function () {
+window.pilihPembayaran =
+    function () {
 
-    const jenis =
-        $("jenis");
+        const jenis =
+            $("jenis");
 
-    const nominal =
-        $("nominal");
-
-
-    if (!jenis || !nominal) {
-
-        return;
-
-    }
+        const nominal =
+            $("nominal");
 
 
-    if (
-        jenis.value === "SPP"
-    ) {
+        if (
+            !jenis ||
+            !nominal
+        ) {
 
-        nominal.value =
-            "50000";
+            return;
 
-    }
+        }
 
-    else if (
-        jenis.value === "Syahriyyah"
-    ) {
 
-        nominal.value =
-            "80000";
+        if (
+            jenis.value ===
+            "SPP"
+        ) {
 
-    }
+            nominal.value =
+                "50000";
 
-    else if (
-        jenis.value === "Kas"
-    ) {
+        }
 
-        nominal.value =
-            "30000";
+        else if (
+            jenis.value ===
+            "Syahriyyah"
+        ) {
 
-    }
+            nominal.value =
+                "80000";
 
-};
+        }
+
+        else if (
+            jenis.value ===
+            "Kas"
+        ) {
+
+            nominal.value =
+                "30000";
+
+        }
+
+    };
 
 
 // ======================================================
@@ -1259,7 +1378,8 @@ document.addEventListener(
 
 
         if (
-            action === "edit"
+            action ===
+            "edit"
         ) {
 
             window.editPembayaran(
@@ -1270,7 +1390,8 @@ document.addEventListener(
 
 
         if (
-            action === "delete"
+            action ===
+            "delete"
         ) {
 
             window.hapusPembayaran(
@@ -1284,51 +1405,62 @@ document.addEventListener(
 
 
 // ======================================================
-// TOMBOL SIMPAN
+// INIT
 // ======================================================
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+function initPembayaran() {
 
-        const tombol =
-            tombolSimpan();
+    const tombol =
+        tombolSimpan();
 
 
-        if (tombol) {
+    if (tombol) {
 
-            tombol.addEventListener(
-                "click",
-                function (event) {
+        tombol.addEventListener(
+            "click",
+            function (event) {
 
-                    event.preventDefault();
+                event.preventDefault();
 
-                    window.simpanPembayaran();
+                window.simpanPembayaran();
 
-                }
-            );
-
-        }
-
-
-        // Muat langsung.
-        // TIDAK MENUNGGU LOGIN.
-
-        muatPembayaran();
-
-
-        console.log(
-            "Catatan Kas: pembayaran.js aktif."
+            }
         );
 
     }
-);
+
+
+    muatPembayaran();
+
+
+    console.log(
+        "Catatan Kas: pembayaran.js aktif."
+    );
+
+}
+
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initPembayaran
+    );
+
+}
+
+else {
+
+    initPembayaran();
+
+}
 
 
 // ======================================================
 // AUTH
-// HANYA UNTUK MENYIMPAN UID.
-// BUKAN SYARAT FIRESTORE.
 // ======================================================
 
 try {
@@ -1340,8 +1472,9 @@ try {
             userAktif =
                 user || null;
 
+
             console.log(
-                "PEMBAYARAN - USER:",
+                "User:",
                 user
                     ? user.uid
                     : "TIDAK LOGIN"
@@ -1360,19 +1493,3 @@ catch (error) {
     );
 
 }
-
-
-// ======================================================
-// REFRESH SAAT DATA BERUBAH
-// ======================================================
-
-window.addEventListener(
-    "dataKeuanganBerubah",
-    function () {
-
-        console.log(
-            "Pembayaran: data keuangan berubah."
-        );
-
-    }
-);
