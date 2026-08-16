@@ -1,569 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Pengaturan | Catatan Kas</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/theme.css">
-
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #d8e2dc 0%, #fefae0 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 15s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .mobile-container {
-            max-width: 600px;
-            margin: auto;
-            padding-bottom: 100px;
-        }
-
-        .custom-card {
-            border: none;
-            border-radius: 18px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
-            background: rgba(255, 255, 255, .90);
-            backdrop-filter: blur(6px);
-        }
-
-        .setting-item {
-            border: none;
-            border-bottom: 1px solid #eee;
-            padding: 15px 0;
-        }
-
-        .setting-item:last-child {
-            border-bottom: none;
-        }
-
-        .back-btn {
-            text-decoration: none;
-            color: #198754;
-            font-weight: 600;
-        }
-
-        .account-email {
-            word-break: break-word;
-        }
-
-        /* HEADER */
-        .ck-topbar {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: rgba(255,255,255,.92);
-            border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 14px rgba(0,0,0,.05);
-        }
-
-        .ck-logo {
-            width: 64px;
-            height: 64px;
-            object-fit: contain;
-            border-radius: 16px;
-            background: white;
-            border: 1px solid #eee;
-        }
-
-        .ck-title {
-            margin: 0;
-            color: #198754;
-            font-weight: 800;
-            font-size: 1.15rem;
-        }
-
-        .ck-subtitle {
-            color: #6c757d;
-            font-size: .82rem;
-        }
-
-        /* LOGO */
-        .logo-preview {
-            width: 110px;
-            height: 110px;
-            object-fit: contain;
-            border-radius: 22px;
-            border: 1px solid #ddd;
-            background: white;
-            padding: 5px;
-        }
-
-        /* BOTTOM NAV */
-        .ck-bottom {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1050;
-    background: rgba(255, 255, 255, .97);
-    border-top: 1px solid #dee2e6;
-    box-shadow: 0 -3px 15px rgba(0, 0, 0, .08);
-    padding: 6px 15px; /* Sesuaikan padding kiri-kanan */
-    backdrop-filter: blur(8px);
-}
-
-.ck-bottom-inner {
-    width: 100% !important;
-    max-width: 100% !important; /* Diubah dari pembatas sebelumnya agar full */
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-}
-
-
-        .ck-bottom a {
-            text-decoration: none;
-            color: #6c757d;
-            text-align: center;
-            font-size: .68rem;
-            font-weight: 600;
-            padding: 4px 2px;
-        }
-
-        .ck-bottom a i {
-            display: block;
-            font-size: 1.25rem;
-            margin-bottom: 2px;
-        }
-
-        .ck-bottom a:hover {
-            color: #198754;
-        }
-
-        .ck-bottom a.active {
-            color: #198754;
-            font-weight: 800;
-        }
-
-        /* DARK MODE */
-        body.dark-mode {
-            background: #121212 !important;
-            animation: none !important;
-            color: #eee;
-        }
-
-        body.dark-mode .custom-card,
-        body.dark-mode .ck-topbar,
-        body.dark-mode .ck-bottom {
-            background: #1e1e1e !important;
-            color: #eee;
-        }
-
-        body.dark-mode .text-muted {
-            color: #aaa !important;
-        }
-
-        body.dark-mode .setting-item {
-            border-color: #333;
-        }
-
-        body.dark-mode .form-control,
-        body.dark-mode .form-select {
-            background: #2a2a2a;
-            color: #fff;
-            border-color: #444;
-        }
-
-        body.dark-mode .form-control::placeholder {
-            color: #aaa;
-        }
-
-        body.dark-mode .ck-bottom a {
-            color: #aaa;
-        }
-
-        body.dark-mode .ck-bottom a:hover {
-            color: #63d99a;
-        }
-
-        @media (max-width: 380px) {
-            .mobile-container {
-                padding-left: 10px !important;
-                padding-right: 10px !important;
-            }
-            .ck-logo {
-                width: 56px;
-                height: 56px;
-            }
-            .ck-title {
-                font-size: 1rem;
-            }
-            .ck-subtitle {
-                font-size: .75rem;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#198754">
+<title>Pengaturan | Keuangan</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="theme.css">
+<style>
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;background:linear-gradient(135deg,#d8e2dc,#fefae0);padding-bottom:95px}
+.mobile-container{max-width:600px;margin:auto;padding:18px 12px}
+.custom-card{border:0;border-radius:18px;box-shadow:0 4px 14px rgba(0,0,0,.07);background:rgba(255,255,255,.94);margin-bottom:18px}
+.setting-item{padding:12px 0;border-bottom:1px solid #eee}.setting-item:last-child{border-bottom:0}
+.ck-topbar{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.94);border-radius:18px;padding:14px;margin-bottom:20px;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.ck-logo{width:64px;height:64px;object-fit:contain;border-radius:16px;background:#fff;border:1px solid #eee}.ck-title{margin:0;color:#198754;font-weight:800;font-size:1.15rem}.ck-subtitle{color:#6c757d;font-size:.82rem}
+.logo-preview{width:120px;height:120px;object-fit:contain;border-radius:22px;border:1px solid #ddd;background:#fff;padding:5px;display:block}
+.ck-bottom{position:fixed;left:0;right:0;bottom:0;z-index:1050;background:rgba(255,255,255,.97);border-top:1px solid #dee2e6;box-shadow:0 -3px 15px rgba(0,0,0,.08);padding:6px 8px;backdrop-filter:blur(8px)}
+.ck-bottom-inner{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;max-width:600px;margin:auto}.ck-bottom a{text-decoration:none;color:#6c757d;text-align:center;font-size:.68rem;font-weight:600;padding:4px 2px}.ck-bottom a i{display:block;font-size:1.25rem;margin-bottom:2px}.ck-bottom a.active{color:#198754;font-weight:800}
+body.dark-mode{background:#121212!important;color:#eee}body.dark-mode .custom-card,body.dark-mode .ck-topbar,body.dark-mode .ck-bottom{background:#1e1e1e!important;color:#eee}body.dark-mode .text-muted{color:#aaa!important}body.dark-mode .setting-item{border-color:#333}body.dark-mode .form-control,body.dark-mode .form-select{background:#2a2a2a;color:#fff;border-color:#444}
+.status{font-size:.9rem;min-height:22px}
+</style>
+<script>
+(function(){try{const d=JSON.parse(localStorage.getItem('pengaturanAplikasi')||'{}');let dark=d.tema==='dark';if(d.tema==='system')dark=matchMedia('(prefers-color-scheme: dark)').matches;if(dark)document.documentElement.classList.add('dark-mode')}catch(e){}})();
+</script>
 </head>
-
 <body>
-
-<div class="container-fluid mobile-container py-4">
-
-    <!-- HEADER LOGO -->
-    <div class="ck-topbar">
-        <img
-            id="logoPreviewV2"
-            src="assets/logo-catatan-kas.jpg"
-            class="ck-logo"
-            alt="Logo Catatan Kas">
-        <div>
-            <p class="ck-title">Catatan Kas</p>
-            <span class="ck-subtitle">Pengaturan aplikasi</span>
-        </div>
-    </div>
-
-    <!-- JUDUL -->
-    <div class="d-flex align-items-center mb-4">
-        <a href="index.html" class="back-btn me-3">
-            <i class="bi bi-arrow-left fs-4"></i>
-        </a>
-        <div>
-            <h4 class="fw-bold mb-0">Pengaturan Aplikasi</h4>
-            <small class="text-muted">Atur tampilan dan informasi aplikasi</small>
-        </div>
-    </div>
-
-    <!-- AKUN -->
-    <div class="card custom-card mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3">
-                <i class="bi bi-person-circle text-success"></i> Akun
-            </h5>
-
-            <div class="setting-item">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <i class="bi bi-envelope-fill fs-3 text-success"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <small class="text-muted d-block">Akun yang sedang digunakan</small>
-                        <strong id="emailAkun" class="account-email">Memuat akun...</strong>
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-grid mt-3">
-                <button id="tombolLoginLogout" class="btn btn-outline-danger">
-                    <i class="bi bi-box-arrow-right"></i> Keluar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- INFORMASI PONDOK -->
-    <div class="card custom-card mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3">
-                <i class="bi bi-building text-success"></i> Informasi Pondok
-            </h5>
-
-            <div class="setting-item">
-                <label class="form-label fw-semibold">Nama Pondok</label>
-                <input type="text" class="form-control" id="namaPondok" placeholder="Nama pondok">
-            </div>
-
-            <div class="setting-item">
-                <label class="form-label fw-semibold">Keterangan Dashboard</label>
-                <input type="text" class="form-control" id="subJudul" placeholder="Dashboard Keuangan Pondok">
-            </div>
-        </div>
-    </div>
-
-    <!-- KEUANGAN -->
-    <div class="card custom-card mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3">
-                <i class="bi bi-cash-coin text-success"></i> Pengaturan Keuangan
-            </h5>
-
-            <div class="setting-item">
-                <label class="form-label fw-semibold">Mata Uang</label>
-                <select class="form-select" id="mataUang">
-                    <option value="Rupiah">Rupiah (Rp)</option>
-                    <option value="USD">Dollar ($)</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAMPILAN -->
-    <div class="card custom-card mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3">
-                <i class="bi bi-palette text-success"></i> Tampilan
-            </h5>
-
-            <div class="setting-item">
-                <label class="form-label fw-semibold">Tema Aplikasi</label>
-                <select class="form-select" id="tema">
-                    <option value="light">☀️ Terang</option>
-                    <option value="dark">🌙 Gelap</option>
-                    <option value="system">📱 Ikuti Sistem HP</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <!-- LOGO DASHBOARD -->
-    <div class="card custom-card mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3">
-                <i class="bi bi-image text-success"></i> Logo Dashboard
-            </h5>
-
-            <div class="setting-item">
-                <small class="text-muted d-block mb-3">
-                    Logo bawaan Catatan Kas. Kamu dapat menggantinya kapan saja.
-                </small>
-
-                <img
-                    id="previewLogoDashboard"
-                    src="assets/logo-catatan-kas.jpg"
-                    alt="Logo Dashboard"
-                    class="logo-preview mb-3">
-
-                <input type="file" id="logoDashboardInput" class="form-control" accept="image/*">
-
-                <button type="button" class="btn btn-outline-secondary mt-2" id="resetLogoButton">
-                    <i class="bi bi-arrow-counterclockwise"></i> Gunakan Logo Bawaan
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOMBOL AKSI -->
-    <div class="d-grid gap-2 mb-4">
-        <button class="btn btn-success btn-lg" id="simpanPengaturanButton">
-            <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
-            <span id="btnText"><i class="bi bi-save"></i> Simpan Pengaturan</span>
-        </button>
-
-        <button class="btn btn-outline-danger" id="resetPengaturanButton">
-            <i class="bi bi-arrow-counterclockwise"></i> Kembalikan Pengaturan Awal
-        </button>
-    </div>
-
+<main class="mobile-container">
+<div class="ck-topbar">
+<img id="logoPreviewV2" class="ck-logo" src="assets/logo-catatan-kas.jpg" alt="Logo aplikasi">
+<div><p class="ck-title" id="judulAplikasi">Keuangan</p><span class="ck-subtitle">Pengaturan aplikasi</span></div>
+</div>
+<div class="d-flex align-items-center mb-4">
+<a href="index.html" class="text-success text-decoration-none me-3"><i class="bi bi-arrow-left fs-4"></i></a>
+<div><h4 class="fw-bold mb-0">Pengaturan Aplikasi</h4><small class="text-muted">Atur informasi, mata uang, tema, dan logo</small></div>
 </div>
 
-<!-- BOTTOM NAVIGATION -->
-<div class="ck-bottom">
-    <div class="ck-bottom-inner">
-        <a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
-        <a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
-        <a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
-        <a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
-        <a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
-    </div>
+<section class="card custom-card"><div class="card-body">
+<h5 class="fw-bold mb-3"><i class="bi bi-person-circle text-success"></i> Akun</h5>
+<div class="setting-item"><small class="text-muted d-block">Akun yang sedang digunakan</small><strong id="emailAkun">Memuat akun...</strong></div>
+<div class="d-grid mt-3"><button id="tombolLoginLogout" class="btn btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Keluar</button></div>
+</div></section>
+
+<section class="card custom-card"><div class="card-body">
+<h5 class="fw-bold mb-3"><i class="bi bi-building text-success"></i> Informasi</h5>
+<div class="setting-item"><label for="namaPondok" class="form-label fw-semibold">Nama Pondok</label><input id="namaPondok" class="form-control" type="text" placeholder="Nama pondok"></div>
+<div class="setting-item"><label for="subJudul" class="form-label fw-semibold">Keterangan Dashboard</label><input id="subJudul" class="form-control" type="text" placeholder="Dashboard Keuangan Pondok"></div>
+</div></section>
+
+<section class="card custom-card"><div class="card-body">
+<h5 class="fw-bold mb-3"><i class="bi bi-cash-coin text-success"></i> Keuangan</h5>
+<div class="setting-item"><label for="mataUang" class="form-label fw-semibold">Mata Uang</label><select id="mataUang" class="form-select"><option value="Rupiah">Rupiah (Rp)</option><option value="USD">Dollar ($)</option></select></div>
+</div></section>
+
+<section class="card custom-card"><div class="card-body">
+<h5 class="fw-bold mb-3"><i class="bi bi-palette text-success"></i> Tampilan</h5>
+<div class="setting-item"><label for="tema" class="form-label fw-semibold">Tema Aplikasi</label><select id="tema" class="form-select"><option value="light">☀️ Terang</option><option value="dark">🌙 Gelap</option><option value="system">📱 Ikuti Sistem HP</option></select></div>
+</div></section>
+
+<section class="card custom-card"><div class="card-body">
+<h5 class="fw-bold mb-3"><i class="bi bi-image text-success"></i> Logo Dashboard</h5>
+<p class="text-muted small">Logo dapat diganti kapan saja. Gambar otomatis diperkecil agar tidak memenuhi penyimpanan aplikasi.</p>
+<img id="previewLogoDashboard" class="logo-preview mb-3" src="assets/logo-catatan-kas.jpg" alt="Preview logo">
+<input id="logoDashboardInput" class="form-control" type="file" accept="image/*">
+<div class="d-grid gap-2 mt-2"><button id="resetLogoButton" type="button" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i> Gunakan Logo Bawaan</button></div>
+</div></section>
+
+<div class="d-grid gap-2 mb-4">
+<button id="simpanPengaturanButton" class="btn btn-success btn-lg"><span id="loadingSpinner" class="spinner-border spinner-border-sm d-none"></span><span id="btnText"><i class="bi bi-save"></i> Simpan Pengaturan</span></button>
+<button id="resetPengaturanButton" class="btn btn-outline-danger"><i class="bi bi-arrow-counterclockwise"></i> Kembalikan Pengaturan Awal</button>
+<div id="statusPengaturan" class="status text-center text-success"></div>
 </div>
+</main>
 
-<!-- SCRIPT PENGATURAN -->
-<script>
-const pengaturanDefault = {
-    namaPondok: "Ribath Madrasah Al-Fattah",
-    subJudul: "Dashboard Keuangan Pondok",
-    mataUang: "Rupiah",
-    tema: "light"
-};
+<nav class="ck-bottom"><div class="ck-bottom-inner">
+<a href="index.html"><i class="bi bi-house-fill"></i>Beranda</a>
+<a href="santri.html"><i class="bi bi-people-fill"></i>Santri</a>
+<a href="pembayaran.html"><i class="bi bi-cash-stack"></i>Bayar</a>
+<a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a>
+<a href="laporan.html"><i class="bi bi-bar-chart-fill"></i>Laporan</a>
+</div></nav>
 
-function ambilPengaturan() {
-    try {
-        return JSON.parse(localStorage.getItem("pengaturanAplikasi")) || { ...pengaturanDefault };
-    } catch (error) {
-        console.error("Pengaturan rusak:", error);
-        return { ...pengaturanDefault };
-    }
-}
-
-function muatPengaturan() {
-    const data = ambilPengaturan();
-    document.getElementById("namaPondok").value = data.namaPondok || pengaturanDefault.namaPondok;
-    document.getElementById("subJudul").value = data.subJudul || pengaturanDefault.subJudul;
-    document.getElementById("mataUang").value = data.mataUang || pengaturanDefault.mataUang;
-    document.getElementById("tema").value = data.tema || pengaturanDefault.tema;
-    terapkanTema(data.tema || "light");
-}
-
-function simpanPengaturan() {
-    const btn = document.getElementById("simpanPengaturanButton");
-    const spinner = document.getElementById("loadingSpinner");
-    const btnText = document.getElementById("btnText");
-
-    const data = {
-        namaPondok: document.getElementById("namaPondok").value.trim(),
-        subJudul: document.getElementById("subJudul").value.trim(),
-        mataUang: document.getElementById("mataUang").value,
-        tema: document.getElementById("tema").value
-    };
-
-    if (!data.namaPondok) {
-        alert("Nama pondok belum diisi.");
-        return;
-    }
-
-    // Aktifkan animasi loading
-    btn.disabled = true;
-    spinner.classList.remove("d-none");
-    btnText.innerHTML = " Menyimpan...";
-
-    setTimeout(() => {
-        localStorage.setItem("pengaturanAplikasi", JSON.stringify(data));
-        terapkanTema(data.tema);
-
-        // Kembalikan tombol seperti semula setelah tersimpan
-        btn.disabled = false;
-        spinner.classList.add("d-none");
-        btnText.innerHTML = '<i class="bi bi-save"></i> Simpan Pengaturan';
-
-        alert("✅ Pengaturan berhasil disimpan!");
-    }, 600);
-}
-
-function terapkanTema(tema) {
-    let gunakanGelap = false;
-    if (tema === "dark") {
-        gunakanGelap = true;
-    } else if (tema === "system") {
-        gunakanGelap = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-    document.body.classList.toggle("dark-mode", gunakanGelap);
-}
-
-function resetPengaturan() {
-    if (!confirm("Apakah kamu yakin ingin mengembalikan pengaturan awal?")) return;
-    localStorage.setItem("pengaturanAplikasi", JSON.stringify(pengaturanDefault));
-    muatPengaturan();
-    alert("✅ Pengaturan dikembalikan ke awal.");
-}
-
-document.getElementById("simpanPengaturanButton").addEventListener("click", simpanPengaturan);
-document.getElementById("resetPengaturanButton").addEventListener("click", resetPengaturan);
-document.getElementById("tema").addEventListener("change", function () {
-    terapkanTema(this.value);
-});
-</script>
-
-<!-- LOGO DASHBOARD -->
-<script>
-const LOGO_DEFAULT = "assets/logo-catatan-kas.jpg";
-
-function muatLogoDashboard() {
-    const saved = localStorage.getItem("logoDashboard");
-    const preview = document.getElementById("previewLogoDashboard");
-    const headerLogo = document.getElementById("logoPreviewV2");
-    const logo = saved || LOGO_DEFAULT;
-
-    if (preview) preview.src = logo;
-    if (headerLogo) headerLogo.src = logo;
-}
-
-function simpanLogoDashboard(file) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-        alert("Silakan pilih file gambar.");
-        return;
-    }
-    if (file.size > 3 * 1024 * 1024) {
-        alert("Ukuran logo maksimal 3 MB.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function (event) {
-        localStorage.setItem("logoDashboard", event.target.result);
-        muatLogoDashboard();
-        alert("✅ Logo Dashboard berhasil diganti.");
-    };
-    reader.onerror = function () {
-        alert("Gagal membaca file logo.");
-    };
-    reader.readAsDataURL(file);
-}
-
-function resetLogoDashboard() {
-    if (!confirm("Gunakan kembali logo bawaan Catatan Kas?")) return;
-    localStorage.removeItem("logoDashboard");
-    muatLogoDashboard();
-    alert("✅ Logo Dashboard dikembalikan.");
-}
-
-document.getElementById("logoDashboardInput").addEventListener("change", function () {
-    simpanLogoDashboard(this.files?.[0]);
-});
-
-document.getElementById("resetLogoButton").addEventListener("click", resetLogoDashboard);
-</script>
-
-<!-- FIREBASE LOGIN / LOGOUT -->
 <script type="module">
-import { auth } from "./js/firebase-config.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import { auth } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js';
 
-const emailAkun = document.getElementById("emailAkun");
-const tombolLoginLogout = document.getElementById("tombolLoginLogout");
-
-onAuthStateChanged(auth, function (user) {
-    if (user) {
-        if (emailAkun) emailAkun.textContent = user.email || "Akun Firebase";
-        if (tombolLoginLogout) {
-            tombolLoginLogout.innerHTML = '<i class="bi bi-box-arrow-right"></i> Keluar';
-            tombolLoginLogout.className = "btn btn-outline-danger w-100";
-            tombolLoginLogout.onclick = logout;
-        }
-    } else {
-        if (emailAkun) emailAkun.textContent = "Belum login";
-        if (tombolLoginLogout) {
-            tombolLoginLogout.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Login';
-            tombolLoginLogout.className = "btn btn-success w-100";
-            tombolLoginLogout.onclick = function () {
-                window.location.replace("login.html");
-            };
-        }
-    }
+onAuthStateChanged(auth,(user)=>{
+  const email=document.getElementById('emailAkun');
+  if(email) email.textContent=user?.email||'Tidak login';
 });
 
-async function logout() {
-    if (!confirm("Apakah kamu yakin ingin keluar?")) return;
-    try {
-        await signOut(auth);
-        window.location.replace("login.html");
-    } catch (error) {
-        console.error("Logout gagal:", error);
-        alert("Logout gagal. Silakan coba lagi.");
-    }
-}
-</script>
-
-<!-- THEME.JS & INIT -->
-<script src="js/theme.js"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    muatPengaturan();
-    muatLogoDashboard();
+document.getElementById('tombolLoginLogout')?.addEventListener('click',async()=>{
+  if(!confirm('Keluar dari akun ini?')) return;
+  try{await signOut(auth);window.location.href='login.html';}
+  catch(e){alert('Gagal keluar: '+(e.message||e));}
 });
 </script>
-
+<script src="js/pengaturan.js"></script>
 </body>
 </html>
