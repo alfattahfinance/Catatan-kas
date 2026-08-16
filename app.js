@@ -33,19 +33,32 @@ const $ = (id) => document.getElementById(id);
 
 
 // ======================================================
+// LOGO DASHBOARD - SINKRON DENGAN PENGATURAN
+// ======================================================
+
+function muatLogoDashboard() {
+    const logo = localStorage.getItem("logoDashboard");
+    if (!logo) return;
+
+    const kandidat = document.querySelectorAll(
+        ".app-logo, #logoDashboard, #dashboardLogo, #logoPreviewV2, img[alt='Logo Dashboard']"
+    );
+
+    kandidat.forEach((element) => {
+        if (element && element.tagName === "IMG") {
+            element.src = logo;
+        }
+    });
+}
+
+
+// ======================================================
 // RUPIAH
 // ======================================================
 
 function rupiah(nilai) {
-
-    const angka =
-        Number(nilai) || 0;
-
-    return (
-        "Rp" +
-        angka.toLocaleString("id-ID")
-    );
-
+    const angka = Number(nilai) || 0;
+    return "Rp" + angka.toLocaleString("id-ID");
 }
 
 
@@ -54,15 +67,8 @@ function rupiah(nilai) {
 // ======================================================
 
 function ambilNominal(item) {
-
-    const nilai =
-        item?.nominal ??
-        item?.jumlah ??
-        item?.nilai ??
-        0;
-
+    const nilai = item?.nominal ?? item?.jumlah ?? item?.nilai ?? 0;
     return Number(nilai) || 0;
-
 }
 
 
@@ -71,17 +77,8 @@ function ambilNominal(item) {
 // ======================================================
 
 function ambilNominalPengeluaran(item) {
-
-    const nilai =
-        item?.nominal ??
-        item?.jumlah ??
-        item?.nilai ??
-        item?.harga ??
-        item?.total ??
-        0;
-
+    const nilai = item?.nominal ?? item?.jumlah ?? item?.nilai ?? item?.harga ?? item?.total ?? 0;
     return Number(nilai) || 0;
-
 }
 
 
@@ -90,13 +87,7 @@ function ambilNominalPengeluaran(item) {
 // ======================================================
 
 function ambilKategoriPembayaran(item) {
-
-    return String(
-        item?.jenis ??
-        item?.kategori ??
-        ""
-    ).trim();
-
+    return String(item?.jenis ?? item?.kategori ?? "").trim();
 }
 
 
@@ -105,14 +96,7 @@ function ambilKategoriPembayaran(item) {
 // ======================================================
 
 function ambilKategoriPengeluaran(item) {
-
-    return String(
-        item?.jenis ??
-        item?.kategori ??
-        item?.keterangan ??
-        ""
-    ).trim();
-
+    return String(item?.jenis ?? item?.kategori ?? item?.keterangan ?? "").trim();
 }
 
 
@@ -121,26 +105,8 @@ function ambilKategoriPengeluaran(item) {
 // ======================================================
 
 function cocokKategori(nilai, filter) {
-
-    if (
-        !filter ||
-        filter === "Semua"
-    ) {
-
-        return true;
-
-    }
-
-    return (
-        String(nilai)
-            .trim()
-            .toLowerCase()
-        ===
-        String(filter)
-            .trim()
-            .toLowerCase()
-    );
-
+    if (!filter || filter === "Semua") return true;
+    return String(nilai).trim().toLowerCase() === String(filter).trim().toLowerCase();
 }
 
 
@@ -149,107 +115,34 @@ function cocokKategori(nilai, filter) {
 // ======================================================
 
 function hitungDashboard() {
+    const filterElement = $("filterKategori");
+    const filter = filterElement ? filterElement.value : "Semua";
 
-    const filterElement =
-        $("filterKategori");
-
-    const filter =
-        filterElement
-            ? filterElement.value
-            : "Semua";
-
-
-    // --------------------------------------------------
-    // PEMASUKAN
-    // --------------------------------------------------
-
-    const pembayaranTerfilter =
-        semuaPembayaran.filter(
-            function (item) {
-
-                return cocokKategori(
-                    ambilKategoriPembayaran(item),
-                    filter
-                );
-
-            }
-        );
-
+    const pembayaranTerfilter = semuaPembayaran.filter((item) =>
+        cocokKategori(ambilKategoriPembayaran(item), filter)
+    );
 
     let totalMasuk = 0;
+    pembayaranTerfilter.forEach((item) => {
+        totalMasuk += ambilNominal(item);
+    });
 
-
-    pembayaranTerfilter.forEach(
-        function (item) {
-
-            totalMasuk +=
-                ambilNominal(item);
-
-        }
+    const pengeluaranTerfilter = semuaPengeluaran.filter((item) =>
+        cocokKategori(ambilKategoriPengeluaran(item), filter)
     );
-
-
-    // --------------------------------------------------
-    // PENGELUARAN
-    //
-    // Untuk kategori "Beras", pengeluaran tetap
-    // dihitung jika kategorinya cocok.
-    // --------------------------------------------------
-
-    const pengeluaranTerfilter =
-        semuaPengeluaran.filter(
-            function (item) {
-
-                return cocokKategori(
-                    ambilKategoriPengeluaran(item),
-                    filter
-                );
-
-            }
-        );
-
 
     let totalKeluar = 0;
-
-
-    pengeluaranTerfilter.forEach(
-        function (item) {
-
-            totalKeluar +=
-                ambilNominalPengeluaran(item);
-
-        }
-    );
-
-
-    // --------------------------------------------------
-    // SALDO
-    // --------------------------------------------------
-
-    const saldo =
-        totalMasuk -
-        totalKeluar;
-
+    pengeluaranTerfilter.forEach((item) => {
+        totalKeluar += ambilNominalPengeluaran(item);
+    });
 
     return {
-
-        totalMasuk:
-            totalMasuk,
-
-        totalKeluar:
-            totalKeluar,
-
-        saldo:
-            saldo,
-
-        totalSantri:
-            semuaSantri.length,
-
-        filter:
-            filter
-
+        totalMasuk,
+        totalKeluar,
+        saldo: totalMasuk - totalKeluar,
+        totalSantri: semuaSantri.length,
+        filter
     };
-
 }
 
 
@@ -258,162 +151,36 @@ function hitungDashboard() {
 // ======================================================
 
 function tampilkanDashboard() {
+    const hasil = hitungDashboard();
 
-    const hasil =
-        hitungDashboard();
+    const totalMasuk = $("totalMasuk");
+    if (totalMasuk) totalMasuk.textContent = rupiah(hasil.totalMasuk);
 
+    const totalKeluar = $("totalKeluar");
+    if (totalKeluar) totalKeluar.textContent = rupiah(hasil.totalKeluar);
 
-    // --------------------------------------------------
-    // TOTAL PEMASUKAN
-    // --------------------------------------------------
+    const totalSaldo = $("totalSaldo");
+    if (totalSaldo) totalSaldo.textContent = rupiah(hasil.saldo);
 
-    const totalMasuk =
-        $("totalMasuk");
+    const totalSantri = $("totalSantri");
+    if (totalSantri) totalSantri.textContent = hasil.totalSantri.toLocaleString("id-ID");
 
-    if (totalMasuk) {
+    const saldo = $("saldo") || $("saldoSaatIni");
+    if (saldo) saldo.textContent = rupiah(hasil.saldo);
 
-        totalMasuk.textContent =
-            rupiah(
-                hasil.totalMasuk
-            );
+    const pemasukan = $("pemasukan") || $("jumlahPemasukan");
+    if (pemasukan) pemasukan.textContent = rupiah(hasil.totalMasuk);
 
-    }
-
-
-    // --------------------------------------------------
-    // TOTAL PENGELUARAN
-    // --------------------------------------------------
-
-    const totalKeluar =
-        $("totalKeluar");
-
-    if (totalKeluar) {
-
-        totalKeluar.textContent =
-            rupiah(
-                hasil.totalKeluar
-            );
-
-    }
-
-
-    // --------------------------------------------------
-    // SALDO
-    // --------------------------------------------------
-
-    const totalSaldo =
-        $("totalSaldo");
-
-    if (totalSaldo) {
-
-        totalSaldo.textContent =
-            rupiah(
-                hasil.saldo
-            );
-
-    }
-
-
-    // --------------------------------------------------
-    // JUMLAH SANTRI
-    // --------------------------------------------------
-
-    const totalSantri =
-        $("totalSantri");
-
-    if (totalSantri) {
-
-        totalSantri.textContent =
-            hasil.totalSantri
-                .toLocaleString(
-                    "id-ID"
-                );
-
-    }
-
-
-    // --------------------------------------------------
-    // BEBERAPA ID ALTERNATIF
-    // --------------------------------------------------
-
-    const saldo =
-        $("saldo") ||
-        $("saldoSaatIni");
-
-    if (saldo) {
-
-        saldo.textContent =
-            rupiah(
-                hasil.saldo
-            );
-
-    }
-
-
-    const pemasukan =
-        $("pemasukan") ||
-        $("jumlahPemasukan");
-
-    if (pemasukan) {
-
-        pemasukan.textContent =
-            rupiah(
-                hasil.totalMasuk
-            );
-
-    }
-
-
-    const pengeluaran =
-        $("pengeluaran") ||
-        $("jumlahPengeluaran");
-
-    if (pengeluaran) {
-
-        pengeluaran.textContent =
-            rupiah(
-                hasil.totalKeluar
-            );
-
-    }
-
-
-    // --------------------------------------------------
-    // SIMPAN CACHE DASHBOARD
-    // --------------------------------------------------
+    const pengeluaran = $("pengeluaran") || $("jumlahPengeluaran");
+    if (pengeluaran) pengeluaran.textContent = rupiah(hasil.totalKeluar);
 
     try {
-
-        localStorage.setItem(
-            "catatanKasDashboard",
-            JSON.stringify(hasil)
-        );
-
+        localStorage.setItem("catatanKasDashboard", JSON.stringify(hasil));
+    } catch (error) {
+        console.warn("Gagal menyimpan cache dashboard:", error);
     }
 
-    catch (error) {
-
-        console.warn(
-            "Gagal menyimpan cache dashboard:",
-            error
-        );
-
-    }
-
-
-    // --------------------------------------------------
-    // GLOBAL
-    // --------------------------------------------------
-
-    window.catatanKasDashboard =
-        hasil;
-
-
-    console.log(
-        "Dashboard:",
-        hasil
-    );
-
+    window.catatanKasDashboard = hasil;
 }
 
 
@@ -422,78 +189,19 @@ function tampilkanDashboard() {
 // ======================================================
 
 function mulaiPembayaran() {
+    if (unsubscribePayments) unsubscribePayments();
 
-    if (unsubscribePayments) {
-
-        unsubscribePayments();
-
-        unsubscribePayments =
-            null;
-
-    }
-
-
-    unsubscribePayments =
-        onSnapshot(
-
-            collection(
-                db,
-                "payments"
-            ),
-
-            function (snapshot) {
-
-                semuaPembayaran =
-                    snapshot.docs.map(
-                        function (item) {
-
-                            return {
-
-                                id:
-                                    item.id,
-
-                                ...item.data()
-
-                            };
-
-                        }
-                    );
-
-
-                console.log(
-                    "Payments:",
-                    semuaPembayaran.length
-                );
-
-
-                tampilkanDashboard();
-
-
-                window.dispatchEvent(
-                    new CustomEvent(
-                        "dataKeuanganBerubah",
-                        {
-                            detail: {
-                                tipe:
-                                    "pembayaran"
-                            }
-                        }
-                    )
-                );
-
-            },
-
-            function (error) {
-
-                console.error(
-                    "Gagal membaca payments:",
-                    error
-                );
-
-            }
-
-        );
-
+    unsubscribePayments = onSnapshot(
+        collection(db, "payments"),
+        function (snapshot) {
+            semuaPembayaran = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+            tampilkanDashboard();
+            window.dispatchEvent(new CustomEvent("dataKeuanganBerubah", { detail: { tipe: "pembayaran" } }));
+        },
+        function (error) {
+            console.error("Gagal membaca payments:", error);
+        }
+    );
 }
 
 
@@ -502,78 +210,19 @@ function mulaiPembayaran() {
 // ======================================================
 
 function mulaiPengeluaran() {
+    if (unsubscribeExpenses) unsubscribeExpenses();
 
-    if (unsubscribeExpenses) {
-
-        unsubscribeExpenses();
-
-        unsubscribeExpenses =
-            null;
-
-    }
-
-
-    unsubscribeExpenses =
-        onSnapshot(
-
-            collection(
-                db,
-                "expenses"
-            ),
-
-            function (snapshot) {
-
-                semuaPengeluaran =
-                    snapshot.docs.map(
-                        function (item) {
-
-                            return {
-
-                                id:
-                                    item.id,
-
-                                ...item.data()
-
-                            };
-
-                        }
-                    );
-
-
-                console.log(
-                    "Expenses:",
-                    semuaPengeluaran.length
-                );
-
-
-                tampilkanDashboard();
-
-
-                window.dispatchEvent(
-                    new CustomEvent(
-                        "dataKeuanganBerubah",
-                        {
-                            detail: {
-                                tipe:
-                                    "pengeluaran"
-                            }
-                        }
-                    )
-                );
-
-            },
-
-            function (error) {
-
-                console.error(
-                    "Gagal membaca expenses:",
-                    error
-                );
-
-            }
-
-        );
-
+    unsubscribeExpenses = onSnapshot(
+        collection(db, "expenses"),
+        function (snapshot) {
+            semuaPengeluaran = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+            tampilkanDashboard();
+            window.dispatchEvent(new CustomEvent("dataKeuanganBerubah", { detail: { tipe: "pengeluaran" } }));
+        },
+        function (error) {
+            console.error("Gagal membaca expenses:", error);
+        }
+    );
 }
 
 
@@ -582,65 +231,18 @@ function mulaiPengeluaran() {
 // ======================================================
 
 function mulaiSantri() {
+    if (unsubscribeSantri) unsubscribeSantri();
 
-    if (unsubscribeSantri) {
-
-        unsubscribeSantri();
-
-        unsubscribeSantri =
-            null;
-
-    }
-
-
-    unsubscribeSantri =
-        onSnapshot(
-
-            collection(
-                db,
-                "santri"
-            ),
-
-            function (snapshot) {
-
-                semuaSantri =
-                    snapshot.docs.map(
-                        function (item) {
-
-                            return {
-
-                                id:
-                                    item.id,
-
-                                ...item.data()
-
-                            };
-
-                        }
-                    );
-
-
-                console.log(
-                    "Santri:",
-                    semuaSantri.length
-                );
-
-
-                tampilkanDashboard();
-
-            },
-
-            function (error) {
-
-                console.error(
-                    "Gagal membaca santri:",
-                    error
-                );
-
-            }
-
-        );
-
+    unsubscribeSantri = onSnapshot(
+        collection(db, "santri"),
+        function (snapshot) {
+            semuaSantri = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+            tampilkanDashboard();
+        },
+        function (error) {
+            console.error("Gagal membaca santri:", error);
+        }
+    );
 }
 
 
@@ -648,57 +250,30 @@ function mulaiSantri() {
 // REFRESH
 // ======================================================
 
-window.refreshDashboard =
-    function () {
-
-        tampilkanDashboard();
-
-    };
+window.refreshDashboard = function () {
+    tampilkanDashboard();
+    muatLogoDashboard();
+};
 
 
 // ======================================================
 // EVENT DATA BERUBAH
 // ======================================================
 
-window.addEventListener(
-    "dataKeuanganBerubah",
-    function () {
+window.addEventListener("dataKeuanganBerubah", function () {
+    tampilkanDashboard();
+});
 
+window.addEventListener("refreshDashboard", function () {
+    tampilkanDashboard();
+});
+
+window.addEventListener("storage", function (event) {
+    if (event.key === "catatanKasDataBerubah" || event.key === "logoDashboard") {
         tampilkanDashboard();
-
+        muatLogoDashboard();
     }
-);
-
-
-window.addEventListener(
-    "refreshDashboard",
-    function () {
-
-        tampilkanDashboard();
-
-    }
-);
-
-
-// ======================================================
-// STORAGE
-// ======================================================
-
-window.addEventListener(
-    "storage",
-    function (event) {
-
-        if (
-            event.key ===
-            "catatanKasDataBerubah"
-        ) {
-
-            tampilkanDashboard();
-
-        }
-
-    }
-);
+});
 
 
 // ======================================================
@@ -706,27 +281,12 @@ window.addEventListener(
 // ======================================================
 
 function pasangFilter() {
+    const filter = $("filterKategori");
+    if (!filter) return;
 
-    const filter =
-        $("filterKategori");
-
-
-    if (!filter) {
-
-        return;
-
-    }
-
-
-    filter.addEventListener(
-        "change",
-        function () {
-
-            tampilkanDashboard();
-
-        }
-    );
-
+    filter.addEventListener("change", function () {
+        tampilkanDashboard();
+    });
 }
 
 
@@ -735,51 +295,21 @@ function pasangFilter() {
 // ======================================================
 
 function initApp() {
-
-    console.log(
-        "================================"
-    );
-
-    console.log(
-        "CATATAN KAS APP.JS AKTIF"
-    );
-
-    console.log(
-        "================================"
-    );
-
+    console.log("================================");
+    console.log("CATATAN KAS APP.JS AKTIF");
+    console.log("================================");
 
     pasangFilter();
-
-
-    // Tampilkan Rp0 dahulu
+    muatLogoDashboard();
     tampilkanDashboard();
 
-
-    // Jalankan Firebase
     mulaiPembayaran();
-
     mulaiPengeluaran();
-
     mulaiSantri();
-
 }
 
-
-if (
-    document.readyState ===
-    "loading"
-) {
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        initApp
-    );
-
-}
-
-else {
-
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initApp);
+} else {
     initApp();
-
 }
