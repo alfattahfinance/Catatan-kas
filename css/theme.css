@@ -1,0 +1,57 @@
+/* Tema global halaman Santri dan halaman lain yang memuat css/theme.css */
+html, body { min-height: 100%; }
+
+body:not(.dark-mode) {
+    background:
+        radial-gradient(circle at 10% 18%, rgba(34,166,103,.38), transparent 32%),
+        radial-gradient(circle at 88% 20%, rgba(255,218,72,.40), transparent 34%),
+        radial-gradient(circle at 50% 88%, rgba(133,145,139,.30), transparent 38%),
+        linear-gradient(135deg, #dceee2 0%, #e7e9e6 48%, #f8efbf 100%) !important;
+    background-size: 180% 180%,180% 180%,180% 180%,220% 220% !important;
+    background-attachment: fixed !important;
+    animation: ckGreenGrayYellow 18s ease-in-out infinite alternate !important;
+}
+
+@keyframes ckGreenGrayYellow {
+    0% { background-position:0% 30%,100% 20%,45% 100%,0% 50%; }
+    50% { background-position:45% 70%,55% 55%,80% 35%,55% 50%; }
+    100% { background-position:100% 15%,0% 80%,20% 10%,100% 50%; }
+}
+
+body:not(.dark-mode)::before {
+    content:"";
+    position:fixed;
+    inset:-20%;
+    pointer-events:none;
+    z-index:-1;
+    background:
+        radial-gradient(circle at 28% 28%,rgba(255,235,100,.18),transparent 24%),
+        radial-gradient(circle at 72% 72%,rgba(34,166,103,.14),transparent 28%),
+        radial-gradient(circle at 52% 50%,rgba(120,130,128,.10),transparent 30%);
+    background-size:160% 160%;
+    animation:ckAmbientLight 24s ease-in-out infinite alternate;
+}
+
+@keyframes ckAmbientLight {
+    0% { transform:translate3d(-2%,-1%,0) scale(1); }
+    50% { transform:translate3d(2%,2%,0) scale(1.04); }
+    100% { transform:translate3d(-1%,3%,0) scale(1.02); }
+}
+
+body:not(.dark-mode) .custom-card,
+body:not(.dark-mode) .ck-topbar {
+    background:rgba(255,255,255,.84) !important;
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+}
+
+html.dark-mode body,
+body.dark-mode {
+    background:#121716 !important;
+    color:#f1f1f1 !important;
+    animation:none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body:not(.dark-mode), body:not(.dark-mode)::before { animation:none !important; }
+}
