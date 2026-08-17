@@ -1,22 +1,17 @@
-const CACHE_NAME = "catatan-kas-v4";
+const CACHE_NAME = "catatan-kas-v5";
 const BASE = self.registration.scope;
 
 const urlsToCache = [
     BASE,
     BASE + "index.html",
     BASE + "manifest.json",
-
-    // CSS
     BASE + "css/style.css",
-    BASE + "css/theme.css?v=20260816",
-
-    // JavaScript
+    BASE + "css/theme.css?v=20260817",
+    BASE + "theme.css?v=20260817",
     BASE + "js/app.js",
     BASE + "js/theme.js",
     BASE + "js/auth-guard.js",
     BASE + "js/firebase-config.js",
-
-    // Logo
     BASE + "assets/logo-catatan-kas.png"
 ];
 
@@ -47,14 +42,14 @@ self.addEventListener("fetch", event => {
     if (event.request.method !== "GET") return;
 
     const url = new URL(event.request.url);
-    const isTheme = url.pathname.endsWith("/css/theme.css");
+    const isTheme = url.pathname.endsWith("/css/theme.css") ||
+        url.pathname.endsWith("/theme.css");
     const isPage = event.request.mode === "navigate" ||
         url.pathname.endsWith(".html");
 
-    // Theme and HTML must not stay stuck on an old cached version.
     if (isTheme || isPage) {
         event.respondWith(
-            fetch(event.request)
+            fetch(event.request, { cache: "no-cache" })
                 .then(networkResponse => {
                     if (networkResponse && networkResponse.status === 200) {
                         const clone = networkResponse.clone();
