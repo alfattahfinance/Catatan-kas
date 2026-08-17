@@ -4,7 +4,7 @@
     const SETTINGS_KEY = "pengaturanAplikasi";
     const THEME_KEY = "themeMode";
     const LOGO_KEY = "logoDashboard";
-    const LOGO_DEFAULT = "assets/logo-catatan-kas.jpg";
+    const LOGO_DEFAULT = "logo-catatan-kas.jpg";
 
     function getSettings() {
         try {
@@ -27,12 +27,10 @@
     function getSavedTheme() {
         const settings = getSettings();
         if (["dark", "light", "system"].includes(settings.tema)) return settings.tema;
-
         try {
             const saved = localStorage.getItem(THEME_KEY);
             if (["dark", "light", "system"].includes(saved)) return saved;
         } catch (_) {}
-
         return "light";
     }
 
@@ -49,7 +47,6 @@
 
     function applyTheme(theme, simpan = true) {
         if (!["dark", "light", "system"].includes(theme)) theme = "light";
-
         const resolvedTheme = resolveTheme(theme);
         const isDark = resolvedTheme === "dark";
         const html = document.documentElement;
@@ -76,11 +73,16 @@
 
     // =====================================================
     // LOGO DASHBOARD GLOBAL
+    // Satu sumber logo untuk seluruh halaman aplikasi.
     // =====================================================
 
     function getLogo() {
         try {
-            return localStorage.getItem(LOGO_KEY) || LOGO_DEFAULT;
+            const saved = localStorage.getItem(LOGO_KEY);
+            if (!saved || saved === "assets/logo-catatan-kas.jpg" || saved === "assets/logo-catatan-kas.png") {
+                return LOGO_DEFAULT;
+            }
+            return saved;
         } catch (_) {
             return LOGO_DEFAULT;
         }
@@ -91,6 +93,8 @@
         const selector = [
             ".app-logo",
             ".ck-logo",
+            ".logo",
+            "#logo",
             "#logoDashboard",
             "#dashboardLogo",
             "#logoPreviewV2",
@@ -98,6 +102,7 @@
             "#previewLogoDashboard",
             "img[alt='Logo Dashboard']",
             "img[alt='Logo aplikasi']",
+            "img[alt='Logo Catatan Kas']",
             "[data-dashboard-logo]"
         ].join(",");
 
@@ -105,6 +110,7 @@
             if (img && img.tagName === "IMG") {
                 img.src = logo;
                 img.removeAttribute("srcset");
+                img.removeAttribute("data-src");
             }
         });
     }
@@ -113,8 +119,10 @@
         applyLogo();
         window.addEventListener("logoDashboardChanged", applyLogo);
         window.addEventListener("storage", (event) => {
-            if (event.key === LOGO_KEY) applyLogo();
+            if (event.key === LOGO_KEY || event.key === SETTINGS_KEY) applyLogo();
         });
+        window.addEventListener("pageshow", applyLogo);
+        window.addEventListener("focus", applyLogo);
     }
 
     function toggleTheme() {
