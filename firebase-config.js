@@ -1,15 +1,18 @@
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-import {
-    getFirestore
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-
-import {
-    getAuth
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-
+/*
+ * KONFIGURASI FIREBASE
+ *
+ * apiKey adalah Web API Key milik project Firebase "syahriyyah-app".
+ * API key Firebase memang boleh berada di aplikasi client.
+ * Jika Firebase Console menghapus / mengganti / membatasi key ini,
+ * login dan pendaftaran akan gagal dengan auth/invalid-api-key.
+ *
+ * Untuk memperbaikinya: Firebase Console > Project settings > Your apps
+ * > Web app > SDK setup and configuration, lalu salin apiKey terbaru.
+ */
 const firebaseConfig = {
     apiKey: "AIzaSyAPJ7VUeTKThInfZweMt33c_kUwcVSLS0",
     authDomain: "syahriyyah-app.firebaseapp.com",
@@ -18,6 +21,9 @@ const firebaseConfig = {
     messagingSenderId: "110837276336",
     appId: "1:110837276336:web:35ba5e32b4a4027aa6e575"
 };
+
+// Ekspor config agar mudah diperiksa / diperbarui saat migrasi Firebase.
+export { firebaseConfig };
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
@@ -29,7 +35,7 @@ export const auth = getAuth(app);
         if (!document.querySelector('link[data-global-theme="true"]')) {
             const link = document.createElement("link");
             link.rel = "stylesheet";
-            link.href = "css/theme.css?v=20260816";
+            link.href = "css/theme.css?v=20260817";
             link.dataset.globalTheme = "true";
             document.head.appendChild(link);
         }
@@ -39,8 +45,8 @@ export const auth = getAuth(app);
 })();
 
 /* ======================================================
-   PERBAIKAN LOGO LAPORAN
-   Laporan harus memakai logoDashboard yang sama dengan dashboard.
+   LOGO LAPORAN
+   Laporan memakai logoDashboard yang sama dengan dashboard.
    ====================================================== */
 (function loadReportLogo() {
     const DEFAULT_LOGO = "logo-catatan-kas.jpg";
