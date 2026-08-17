@@ -28,6 +28,19 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "App version: $VERSION"
 
+      - name: Check runner tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Java:"
+          java -version
+          echo "Gradle:"
+          gradle --version
+          echo "Android SDK:"
+          echo "ANDROID_HOME=${ANDROID_HOME:-}"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-}"
+          command -v sdkmanager || true
+
       - name: Decode permanent keystore
         shell: bash
         env:
@@ -41,21 +54,48 @@ jobs:
             -alias '${{ secrets.KEY_ALIAS }}' >/dev/null
           echo "Permanent keystore OK."
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: gradle
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK
+      - name: Prepare Android SDK without external action
+        shell: bash
         run: |
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-35"
-          sdkmanager "build-tools;35.0.0"
+          set -euo pipefail
+
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+          if [ -z "$SDK" ]; then
+            for candidate in \
+              "$HOME/Android/Sdk" \
+              "/usr/local/lib/android/sdk" \
+              "/opt/android-sdk"; do
+              if [ -d "$candidate" ]; then SDK="$candidate"; break; fi
+            done
+          fi
+
+          if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then
+            echo "Android SDK tidak ditemukan di runner."
+            exit 1
+          fi
+
+          export ANDROID_SDK_ROOT="$SDK"
+          export ANDROID_HOME="$SDK"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$SDK/tools/bin" >> "$GITHUB_PATH"
+
+          SDKMANAGER=""
+          if [ -x "$SDK/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          elif command -v sdkmanager >/dev/null 2>&1; then
+            SDKMANAGER="$(command -v sdkmanager)"
+          fi
+
+          if [ -n "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+            "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          else
+            echo "sdkmanager tidak ditemukan."
+            exit 1
+          fi
 
       - name: Create Android project folders
         run: |
@@ -272,7 +312,6 @@ jobs:
                       }
                   });
 
-                  // Wajib untuk membuat input type=file dapat membuka pemilih gambar di APK.
                   webView.setWebChromeClient(new WebChromeClient() {
                       @Override
                       public boolean onShowFileChooser(
@@ -281,12 +320,10 @@ jobs:
                               FileChooserParams params) {
                           if (filePathCallback != null) filePathCallback.onReceiveValue(null);
                           filePathCallback = callback;
-
                           Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                           intent.addCategory(Intent.CATEGORY_OPENABLE);
                           intent.setType("image/*");
                           intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-
                           try {
                               startActivityForResult(intent, FILE_CHOOSER_REQUEST);
                               return true;
@@ -304,12 +341,10 @@ jobs:
               protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                   super.onActivityResult(requestCode, resultCode, data);
                   if (requestCode != FILE_CHOOSER_REQUEST || filePathCallback == null) return;
-
                   Uri[] results = null;
                   if (resultCode == RESULT_OK && data != null && data.getData() != null) {
                       results = new Uri[]{data.getData()};
                   }
-
                   filePathCallback.onReceiveValue(results);
                   filePathCallback = null;
               }
@@ -322,11 +357,6 @@ jobs:
           }
           JAVA
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10'
-
       - name: Build signed release APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -335,8 +365,9 @@ jobs:
         run: |
           set -euo pipefail
           gradle --no-daemon clean
-          gradle --no-daemon :app:assembleRelease
+          gradle --no-daemon :app:assembleRelease --stacktrace
           cp app/build/outputs/apk/release/app-release.apk "Keuangan-v${{ steps.version.outputs.version }}.apk"
+          ls -lh "Keuangan-v${{ steps.version.outputs.version }}.apk"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -345,12 +376,9 @@ jobs:
           path: Keuangan-v${{ steps.version.outputs.version }}.apk
           if-no-files-found: error
 
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Keuangan v${{ steps.version.outputs.version }}
-          generate_release_notes: true
-          files: Keuangan-v${{ steps.version.outputs.version }}.apk
+      - name: Build summary
+        run: |
+          echo "BUILD KEUANGAN SELESAI"
+          echo "Nama aplikasi : Keuangan"
+          echo "Version       : ${{ steps.version.outputs.version }}"
+          echo "Package       : com.catatankas.app"
