@@ -32,11 +32,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "Java:"
           java -version
-          echo "Gradle:"
           gradle --version
-          echo "Android SDK:"
           echo "ANDROID_HOME=${ANDROID_HOME:-}"
           echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-}"
           command -v sdkmanager || true
@@ -58,22 +55,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
           if [ -z "$SDK" ]; then
-            for candidate in \
-              "$HOME/Android/Sdk" \
-              "/usr/local/lib/android/sdk" \
-              "/opt/android-sdk"; do
+            for candidate in "$HOME/Android/Sdk" "/usr/local/lib/android/sdk" "/opt/android-sdk"; do
               if [ -d "$candidate" ]; then SDK="$candidate"; break; fi
             done
           fi
-
           if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then
             echo "Android SDK tidak ditemukan di runner."
             exit 1
           fi
-
           export ANDROID_SDK_ROOT="$SDK"
           export ANDROID_HOME="$SDK"
           echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
@@ -81,14 +72,12 @@ jobs:
           echo "$SDK/platform-tools" >> "$GITHUB_PATH"
           echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
           echo "$SDK/tools/bin" >> "$GITHUB_PATH"
-
           SDKMANAGER=""
           if [ -x "$SDK/cmdline-tools/latest/bin/sdkmanager" ]; then
             SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
           elif command -v sdkmanager >/dev/null 2>&1; then
             SDKMANAGER="$(command -v sdkmanager)"
           fi
-
           if [ -n "$SDKMANAGER" ]; then
             yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
             "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
@@ -106,10 +95,10 @@ jobs:
 
       - name: Copy web files
         run: |
+          set -euo pipefail
           find . -maxdepth 1 -type f -name "*.html" -exec cp {} app/src/main/assets/ \;
           find . -maxdepth 1 -type f -name "*.js" -exec cp {} app/src/main/assets/ \;
           find . -maxdepth 1 -type f -name "*.css" -exec cp {} app/src/main/assets/ \;
-
           if [ -d "js" ]; then cp -r js app/src/main/assets/; fi
           if [ -d "Js" ]; then cp -r Js app/src/main/assets/; fi
           if [ -d "css" ]; then cp -r css app/src/main/assets/; fi
@@ -117,10 +106,22 @@ jobs:
           if [ -d "images" ]; then cp -r images app/src/main/assets/; fi
           if [ -d "img" ]; then cp -r img app/src/main/assets/; fi
 
-          mkdir -p app/src/main/assets/assets
+          # Semua halaman HTML memakai path relatif logo-catatan-kas.jpg.
+          # Karena index.html dibuka dari /assets/, logo harus berada tepat
+          # di app/src/main/assets/, bukan di app/src/main/assets/assets/.
           if [ -f "logo-catatan-kas.jpg" ]; then
-            cp logo-catatan-kas.jpg app/src/main/assets/assets/logo-catatan-kas.jpg
+            cp logo-catatan-kas.jpg app/src/main/assets/logo-catatan-kas.jpg
           fi
+          if [ -f "icon-192.png" ]; then
+            cp icon-192.png app/src/main/assets/icon-192.png
+          fi
+          if [ -f "icon-512.png" ]; then
+            cp icon-512.png app/src/main/assets/icon-512.png
+          fi
+
+          # Pastikan logo benar-benar tersedia sebelum APK dibuat.
+          test -f app/src/main/assets/logo-catatan-kas.jpg
+          echo "Logo APK:" app/src/main/assets/logo-catatan-kas.jpg
 
       - name: Set version inside update checker
         env:
@@ -184,16 +185,13 @@ jobs:
           print(parts[0]*10000 + parts[1]*100 + parts[2])
           PY
           )
-
           cat > app/build.gradle <<GRADLE
           plugins {
               id 'com.android.application'
           }
-
           android {
               namespace 'com.catatankas.app'
               compileSdk 35
-
               defaultConfig {
                   applicationId 'com.catatankas.app'
                   minSdk 24
@@ -201,7 +199,6 @@ jobs:
                   versionCode ${VERSION_CODE}
                   versionName '${APP_VERSION}'
               }
-
               signingConfigs {
                   release {
                       storeFile file('../keuangan-release.jks')
@@ -210,7 +207,6 @@ jobs:
                       keyPassword System.getenv('KEY_PASSWORD')
                   }
               }
-
               buildTypes {
                   release {
                       minifyEnabled false
@@ -218,7 +214,6 @@ jobs:
                   }
               }
           }
-
           dependencies {
               implementation 'androidx.webkit:webkit:1.16.0'
           }
@@ -291,19 +286,16 @@ jobs:
                   super.onCreate(savedInstanceState);
                   webView = new WebView(this);
                   setContentView(webView);
-
                   WebSettings settings = webView.getSettings();
                   settings.setJavaScriptEnabled(true);
                   settings.setDomStorageEnabled(true);
                   settings.setDatabaseEnabled(true);
                   settings.setAllowFileAccess(false);
                   settings.setAllowContentAccess(true);
-
                   final WebViewAssetLoader assetLoader =
                           new WebViewAssetLoader.Builder()
                                   .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
                                   .build();
-
                   webView.setWebViewClient(new WebViewClient() {
                       @Override
                       public WebResourceResponse shouldInterceptRequest(
@@ -311,13 +303,10 @@ jobs:
                           return assetLoader.shouldInterceptRequest(request.getUrl());
                       }
                   });
-
                   webView.setWebChromeClient(new WebChromeClient() {
                       @Override
                       public boolean onShowFileChooser(
-                              WebView view,
-                              ValueCallback<Uri[]> callback,
-                              FileChooserParams params) {
+                              WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
                           if (filePathCallback != null) filePathCallback.onReceiveValue(null);
                           filePathCallback = callback;
                           Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -333,7 +322,6 @@ jobs:
                           }
                       }
                   });
-
                   webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
               }
 
