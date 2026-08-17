@@ -1,18 +1,24 @@
-const CACHE_NAME = "catatan-kas-v5";
+const CACHE_NAME = "catatan-kas-v6";
 const BASE = self.registration.scope;
+const LOGO_FALLBACK = BASE + "logo-catatan-kas.jpg";
 
 const urlsToCache = [
     BASE,
     BASE + "index.html",
+    BASE + "laporan.html",
+    BASE + "santri.html",
     BASE + "manifest.json",
     BASE + "css/style.css",
     BASE + "css/theme.css?v=20260817",
+    BASE + "style.css",
     BASE + "theme.css?v=20260817",
     BASE + "js/app.js",
     BASE + "js/theme.js",
     BASE + "js/auth-guard.js",
     BASE + "js/firebase-config.js",
-    BASE + "assets/logo-catatan-kas.png"
+    BASE + "assets/logo-catatan-kas.png",
+    BASE + "logo-catatan-kas.jpg",
+    BASE + "icon-192.png"
 ];
 
 self.addEventListener("install", event => {
@@ -46,6 +52,8 @@ self.addEventListener("fetch", event => {
         url.pathname.endsWith("/theme.css");
     const isPage = event.request.mode === "navigate" ||
         url.pathname.endsWith(".html");
+    const isImage = event.request.destination === "image" ||
+        /\.(png|jpe?g|webp|gif|svg)$/i.test(url.pathname);
 
     if (isTheme || isPage) {
         event.respondWith(
@@ -60,6 +68,28 @@ self.addEventListener("fetch", event => {
                     return networkResponse;
                 })
                 .catch(() => caches.match(event.request))
+        );
+        return;
+    }
+
+    if (isImage) {
+        event.respondWith(
+            caches.match(event.request)
+                .then(cachedResponse => {
+                    if (cachedResponse) return cachedResponse;
+                    return fetch(event.request)
+                        .then(networkResponse => {
+                            if (networkResponse && networkResponse.status === 200) {
+                                const clone = networkResponse.clone();
+                                caches.open(CACHE_NAME).then(cache => {
+                                    cache.put(event.request, clone);
+                                });
+                                return networkResponse;
+                            }
+                            return caches.match(LOGO_FALLBACK);
+                        })
+                        .catch(() => caches.match(LOGO_FALLBACK));
+                })
         );
         return;
     }
