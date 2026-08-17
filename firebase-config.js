@@ -5,24 +5,20 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-aut
 /*
  * KONFIGURASI FIREBASE
  *
- * apiKey adalah Web API Key milik project Firebase "syahriyyah-app".
- * API key Firebase memang boleh berada di aplikasi client.
- * Jika Firebase Console menghapus / mengganti / membatasi key ini,
- * login dan pendaftaran akan gagal dengan auth/invalid-api-key.
- *
- * Untuk memperbaikinya: Firebase Console > Project settings > Your apps
- * > Web app > SDK setup and configuration, lalu salin apiKey terbaru.
+ * Web App resmi untuk project Firebase "syahriyyah-app".
+ * Konfigurasi ini berasal dari Firebase Console > Project settings >
+ * Your apps > Web app > SDK setup and configuration.
  */
 const firebaseConfig = {
-    apiKey: "AIzaSyAPJ7VUeTKThInfZweMt33c_kUwcVSLS0",
+    apiKey: "AIzaSyAPJ7VUeTKThInfZweMt33c_kUwcVSLSn0",
     authDomain: "syahriyyah-app.firebaseapp.com",
     projectId: "syahriyyah-app",
     storageBucket: "syahriyyah-app.firebasestorage.app",
     messagingSenderId: "110837276336",
-    appId: "1:110837276336:web:35ba5e32b4a4027aa6e575"
+    appId: "1:110837276336:web:94c9ba4e612c6af0a6e575",
+    measurementId: "G-L1VPS2KZWL"
 };
 
-// Ekspor config agar mudah diperiksa / diperbarui saat migrasi Firebase.
 export { firebaseConfig };
 
 const app = initializeApp(firebaseConfig);
