@@ -12,7 +12,15 @@ html:not(.dark-mode) body::before{content:"";position:fixed;inset:-20%;pointer-e
 html:not(.dark-mode) body .custom-card,html:not(.dark-mode) body .ck-topbar,html:not(.dark-mode) body .topbar,html:not(.dark-mode) body .filter-card,html:not(.dark-mode) body .stat,html:not(.dark-mode) body .chart-card,html:not(.dark-mode) body .table-card,html:not(.dark-mode) body .card,html:not(.dark-mode) body .card-kas{background:rgba(255,255,255,.84)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 html.dark-mode,html.dark-mode body,body.dark-mode{background:#121716!important;color:#f1f1f1!important;animation:none!important}
 html.dark-mode body .custom-card,html.dark-mode body .ck-topbar,html.dark-mode body .topbar,html.dark-mode body .filter-card,html.dark-mode body .stat,html.dark-mode body .chart-card,html.dark-mode body .table-card,html.dark-mode body .card,html.dark-mode body .card-kas{background:#1e2522!important;color:#f1f1f1!important}
-@media(prefers-reduced-motion:reduce){html:not(.dark-mode) body,html:not(.dark-mode) body::before{animation:none!important}}
+
+/* =====================================================
+   FIX KARTU TOTAL SALDO DASHBOARD
+   Jangan biarkan aturan .custom-card global menimpa kartu saldo.
+===================================================== */
+html:not(.dark-mode) body .saldo-card{background:linear-gradient(135deg,#6f9270 0%,#b79a4a 100%)!important;color:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 8px 22px rgba(92,113,82,.24)!important}
+html:not(.dark-mode) body .saldo-card #totalSaldo{color:#fff!important;font-weight:800!important;visibility:visible!important;opacity:1!important;display:block!important}
+html.dark-mode body .saldo-card,body.dark-mode .saldo-card{background:linear-gradient(135deg,#41624b 0%,#8b7539 100%)!important;color:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 8px 22px rgba(0,0,0,.35)!important}
+html.dark-mode body .saldo-card #totalSaldo,body.dark-mode .saldo-card #totalSaldo{color:#fff!important;font-weight:800!important;visibility:visible!important;opacity:1!important;display:block!important}
 
 /* =====================================================
    FIX LOGO HALAMAN LAPORAN
