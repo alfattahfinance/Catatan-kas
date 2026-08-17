@@ -25,11 +25,15 @@ const $ = (id) => document.getElementById(id);
 // LOGO DASHBOARD - SATU SUMBER UNTUK SEMUA VARIAN HEADER
 // ======================================================
 
-const LOGO_DEFAULT = "assets/logo-catatan-kas.jpg";
+const LOGO_DEFAULT = "logo-catatan-kas.jpg";
 
 function logoDashboardTersimpan() {
     try {
-        return localStorage.getItem("logoDashboard") || LOGO_DEFAULT;
+        const logo = localStorage.getItem("logoDashboard");
+        if (!logo || logo === "assets/logo-catatan-kas.jpg" || logo === "assets/logo-catatan-kas.png") {
+            return LOGO_DEFAULT;
+        }
+        return logo;
     } catch (_) {
         return LOGO_DEFAULT;
     }
