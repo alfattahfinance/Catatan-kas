@@ -40,3 +40,24 @@ html:not(.dark-mode) body #totalSaldo{color:#fff!important;font-weight:800!impor
 html.dark-mode body .custom-card:has(#totalSaldo),html.dark-mode body .card:has(#totalSaldo),html.dark-mode body .card-kas:has(#totalSaldo),body.dark-mode .custom-card:has(#totalSaldo),body.dark-mode .card:has(#totalSaldo),body.dark-mode .card-kas:has(#totalSaldo){background:linear-gradient(135deg,#41624b 0%,#8b7539 100%)!important;color:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 8px 22px rgba(0,0,0,.35)!important}
 html.dark-mode body .custom-card:has(#totalSaldo) *,html.dark-mode body .card:has(#totalSaldo) *,html.dark-mode body .card-kas:has(#totalSaldo) *,body.dark-mode .custom-card:has(#totalSaldo) *,body.dark-mode .card:has(#totalSaldo) *,body.dark-mode .card-kas:has(#totalSaldo) *{color:#fff!important}
 html.dark-mode body #totalSaldo,body.dark-mode #totalSaldo{color:#fff!important;font-weight:800!important;visibility:visible!important;opacity:1!important;display:block!important}
+
+/* =====================================================
+   KARTU TIDAK LAGI PUTIH — SAGE + SOFT GOLD
+   Dibuat cukup kontras supaya batas antar kartu jelas.
+===================================================== */
+html:not(.dark-mode) body .custom-card,html:not(.dark-mode) body .stat,html:not(.dark-mode) body .chart-card,html:not(.dark-mode) body .table-card,html:not(.dark-mode) body .card,html:not(.dark-mode) body .card-kas{background:linear-gradient(145deg,#e8f0e4 0%,#f3eedf 100%)!important;border:1px solid rgba(111,146,112,.34)!important;box-shadow:0 5px 18px rgba(77,99,73,.13)!important}
+html:not(.dark-mode) body .custom-card:nth-of-type(3n+1),html:not(.dark-mode) body .stat:nth-of-type(3n+1),html:not(.dark-mode) body .card-kas:nth-of-type(3n+1){background:linear-gradient(145deg,#dbe9dc 0%,#f0ead9 100%)!important}
+html:not(.dark-mode) body .custom-card:nth-of-type(3n+2),html:not(.dark-mode) body .stat:nth-of-type(3n+2),html:not(.dark-mode) body .card-kas:nth-of-type(3n+2){background:linear-gradient(145deg,#e7eadb 0%,#eee3c9 100%)!important}
+html:not(.dark-mode) body .custom-card:nth-of-type(3n),html:not(.dark-mode) body .stat:nth-of-type(3n),html:not(.dark-mode) body .card-kas:nth-of-type(3n){background:linear-gradient(145deg,#dfeadf 0%,#f3ead2 100%)!important}
+html.dark-mode body .custom-card,html.dark-mode body .stat,html.dark-mode body .chart-card,html.dark-mode body .table-card,html.dark-mode body .card,html.dark-mode body .card-kas,body.dark-mode .custom-card,body.dark-mode .stat,body.dark-mode .chart-card,body.dark-mode .table-card,body.dark-mode .card,body.dark-mode .card-kas{background:linear-gradient(145deg,#27372f 0%,#3b3526 100%)!important;border:1px solid rgba(183,154,74,.28)!important;box-shadow:0 6px 20px rgba(0,0,0,.28)!important;color:#f1f1f1!important}
+
+/* Kartu pemasukan/pengeluaran agar langsung terbaca */
+html:not(.dark-mode) body .stat-income,html:not(.dark-mode) body .income-card{background:linear-gradient(145deg,#d9eadb 0%,#eef2df 100%)!important;border-left:5px solid #5d9a71!important}
+html:not(.dark-mode) body .stat-expense,html:not(.dark-mode) body .expense-card{background:linear-gradient(145deg,#f0ddd5 0%,#f3eadb 100%)!important;border-left:5px solid #c85a63!important}
+
+/* Form/filter card juga diberi warna lembut */
+html:not(.dark-mode) body .filter-card{background:linear-gradient(145deg,#e4ecdf 0%,#f1ead8 100%)!important;border:1px solid rgba(111,146,112,.3)!important}
+
+/* Hover halus */
+html:not(.dark-mode) body .custom-card,html:not(.dark-mode) body .stat,html:not(.dark-mode) body .card,html:not(.dark-mode) body .card-kas{transition:transform .25s ease,box-shadow .25s ease,background .25s ease!important}
+html:not(.dark-mode) body .custom-card:hover,html:not(.dark-mode) body .stat:hover,html:not(.dark-mode) body .card:hover,html:not(.dark-mode) body .card-kas:hover{transform:translateY(-2px);box-shadow:0 9px 24px rgba(77,99,73,.18)!important}
