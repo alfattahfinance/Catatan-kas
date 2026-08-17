@@ -24,7 +24,7 @@ html.dark-mode{--card:rgba(27,33,31,.94);--text:#eef4f0;--muted:#a7b2ac;--line:#
 </head>
 <body>
 <main class="wrap">
-<header class="topbar"><img id="laporanLogo" class="logo" src="icon-192.png" alt="Logo Dashboard"><div><h1 id="laporanNama">Catatan Kas</h1><div id="laporanSub" class="sub">Laporan Keuangan</div></div></header>
+<header class="topbar"><img id="laporanLogo" class="logo" src="logo-catatan-kas.jpg" alt="Logo Catatan Kas"><div><h1 id="laporanNama">Catatan Kas</h1><div id="laporanSub" class="sub">Laporan Keuangan</div></div></header>
 <section class="hero"><div class="label" id="heroLabel">Saldo • Semua jenis</div><div class="balance" id="saldoUtama">Rp 0</div><div class="hint">Pemasukan dikurangi pengeluaran sesuai filter</div></section>
 <section class="filter-card"><div class="filter-grid"><div><label class="form-label" for="jenisFilter">Jenis / kategori</label><select id="jenisFilter" class="form-select"><option value="Semua">Semua jenis</option><option>Syahriyyah</option><option>Kas</option><option>Beras</option><option>SPP</option><option>Infaq</option><option>Lainnya</option></select></div><div><label class="form-label" for="bulanFilter">Bulan statistik</label><input id="bulanFilter" class="form-control" type="month"></div></div></section>
 <h2 class="section-title">Pemasukan & Pengeluaran</h2>
@@ -44,12 +44,14 @@ html.dark-mode{--card:rgba(27,33,31,.94);--text:#eef4f0;--muted:#a7b2ac;--line:#
 import {db} from './firebase-config.js';
 import {collection,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
 const $=id=>document.getElementById(id), rp=n=>'Rp '+(Number(n)||0).toLocaleString('id-ID');
+const DEFAULT_LOGO='logo-catatan-kas.jpg';
 let payments=[],expenses=[],chart=null;
 const now=new Date();
 function keyMonth(d){return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:''}
 $('bulanFilter').value=keyMonth(now);
 function settings(){try{return JSON.parse(localStorage.getItem('pengaturanAplikasi')||'{}')}catch(e){return{}}}
-function applySettings(){const s=settings();$('laporanNama').textContent=s.namaPondok||s.namaAplikasi||'Catatan Kas';$('laporanSub').textContent=s.keteranganDashboard||'Laporan Keuangan';$('laporanLogo').src=s.logoDashboard||'icon-192.png';}
+function setLogo(candidates){const img=$('laporanLogo');if(!img)return;const list=[...(candidates||[]),DEFAULT_LOGO,'icon-192.png'].filter(Boolean);let i=0;img.onerror=()=>{i++;if(i<list.length)img.src=list[i];};img.src=list[0];}
+function applySettings(){const s=settings();$('laporanNama').textContent=s.namaPondok||s.namaAplikasi||'Catatan Kas';$('laporanSub').textContent=s.keteranganDashboard||'Laporan Keuangan';setLogo([s.logoDashboard,s.logo,s.logoUrl]);}
 function amount(x){return Number(x?.nominal??x?.jumlah??x?.nilai??x?.harga??x?.total??0)||0}
 function kind(x){return String(x?.jenis??x?.kategori??'Lainnya').trim()||'Lainnya'}
 function name(x){return String(x?.keterangan??x?.nama??x?.namaSantri??x?.deskripsi??'-')}
@@ -73,9 +75,10 @@ function render(){
 function renderChart(pm,em,yy,mm){const days=new Date(yy,mm,0).getDate(),labels=Array.from({length:days},(_,i)=>String(i+1)),ins=labels.map((_,i)=>sum(pm.filter(x=>dateOf(x)?.getDate()===i+1))),outs=labels.map((_,i)=>sum(em.filter(x=>dateOf(x)?.getDate()===i+1)));const dark=document.documentElement.classList.contains('dark-mode');const ctx=$('statChart').getContext('2d');if(chart)chart.destroy();chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Pemasukan',data:ins,borderColor:'#198754',backgroundColor:'rgba(25,135,84,.10)',fill:true,tension:.38,pointRadius:2,borderWidth:2},{label:'Pengeluaran',data:outs,borderColor:'#dc5b58',backgroundColor:'rgba(220,91,88,.07)',fill:true,tension:.38,pointRadius:2,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{boxWidth:9,font:{size:9},color:dark?'#dce5df':'#66736d'}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+rp(c.raw)}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:9},color:dark?'#a7b2ac':'#728078'}},y:{beginAtZero:true,grid:{color:dark?'rgba(255,255,255,.06)':'rgba(31,72,55,.06)'},ticks:{font:{size:9},color:dark?'#a7b2ac':'#728078',callback:v=>rp(v)}}}}})}
 function renderTable(pm,em){const rows=[...pm.map(x=>({...x,_type:'Pemasukan',_amount:amount(x)})),...em.map(x=>({...x,_type:'Pengeluaran',_amount:amount(x)}))].sort((a,b)=>(dateOf(b)?.getTime()||0)-(dateOf(a)?.getTime()||0)).slice(0,60);if(!rows.length){$('txBody').innerHTML='<tr><td colspan="4" class="empty">Belum ada transaksi untuk filter ini.</td></tr>';return}$('txBody').innerHTML=rows.map(x=>{const d=dateOf(x);return `<tr><td>${d?d.toLocaleDateString('id-ID'):'-'}</td><td>${x._type==='Pemasukan'?'<span class="in">Pemasukan</span>':'<span class="out">Pengeluaran</span>'}</td><td>${escapeHtml(name(x))}</td><td class="text-end ${x._type==='Pemasukan'?'in':'out'}">${x._type==='Pemasukan'?'+':'-'}${rp(x._amount).replace('Rp ','Rp')}</td></tr>`}).join('')}
 function escapeHtml(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]))}
-$('jenisFilter').addEventListener('change',render);$('bulanFilter').addEventListener('change',render);window.addEventListener('storage',e=>{if(e.key==='pengaturanAplikasi'||e.key==='logoDashboard'){applySettings();render()}});window.addEventListener('dataKeuanganBerubah',()=>render());window.addEventListener('refreshDashboard',()=>render());
+$('jenisFilter').addEventListener('change',render);$('bulanFilter').addEventListener('change',render);window.addEventListener('storage',e=>{if(e.key==='pengaturanAplikasi'||e.key==='logoDashboard'){applySettings();render()}});window.addEventListener('dataKeuanganBerubah',()=>render());window.addEventListener('refreshDashboard',()=>render());window.addEventListener('logoDashboardBerubah',applySettings);
 applySettings();
 onSnapshot(collection(db,'payments'),s=>{payments=s.docs.map(d=>({id:d.id,...d.data()}));render()},e=>console.error(e));
 onSnapshot(collection(db,'expenses'),s=>{expenses=s.docs.map(d=>({id:d.id,...d.data()}));render()},e=>console.error(e));
 </script>
-</body></html>
+</body>
+</html>
