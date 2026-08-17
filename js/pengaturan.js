@@ -9,7 +9,8 @@ const PENGATURAN_DEFAULT = {
     tema: "light"
 };
 
-const LOGO_DEFAULT = "assets/logo-catatan-kas.jpg";
+// Logo bawaan berada di root repository.
+const LOGO_DEFAULT = "logo-catatan-kas.jpg";
 const SETTINGS_KEY = "pengaturanAplikasi";
 const LOGO_KEY = "logoDashboard";
 
@@ -44,7 +45,14 @@ function terapkanTema(tema) {
 }
 
 function logoTersimpan() {
-    return localStorage.getItem(LOGO_KEY) || LOGO_DEFAULT;
+    const logo = localStorage.getItem(LOGO_KEY);
+
+    // Path lama assets/logo-catatan-kas.* sudah tidak dipakai.
+    if (!logo || logo === "assets/logo-catatan-kas.jpg" || logo === "assets/logo-catatan-kas.png") {
+        return LOGO_DEFAULT;
+    }
+
+    return logo;
 }
 
 function tampilkanLogo() {
