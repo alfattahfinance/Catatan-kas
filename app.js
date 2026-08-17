@@ -241,6 +241,32 @@ function pasangFilter() {
     });
 }
 
+// ======================================================
+// TOMBOL DASHBOARD EXCEL
+// Membuka laporan rekap perorang langsung dari dashboard APK.
+// ======================================================
+function pasangTombolDashboardExcel() {
+    if (!document.body) return;
+    if (document.getElementById("btnDashboardExcelCatatanKas")) return;
+
+    const menuUtama = document.querySelector(".row.g-3.mb-4");
+    if (!menuUtama) return;
+
+    const kolom = document.createElement("div");
+    kolom.className = "col-12";
+    kolom.innerHTML = `
+        <a href="dashboard-excel.html" id="btnDashboardExcelCatatanKas" class="menu-btn" style="background:linear-gradient(135deg,#164c3d,#198754);color:#fff;border-color:#164c3d;">
+            <i class="bi bi-file-earmark-spreadsheet" style="color:#fff;"></i>
+            <h6>Dashboard Excel</h6>
+            <small style="font-size:.68rem;opacity:.86;">Rekap pembayaran perorang</small>
+        </a>
+    `;
+
+    const pengaturan = menuUtama.querySelector("a[href='pengaturan.html']")?.closest(".col-12");
+    if (pengaturan) menuUtama.insertBefore(kolom, pengaturan);
+    else menuUtama.appendChild(kolom);
+}
+
 function initApp() {
     console.log("================================");
     console.log("CATATAN KAS APP.JS AKTIF");
@@ -249,6 +275,7 @@ function initApp() {
     pasangFilter();
     muatLogoDashboard();
     tampilkanDashboard();
+    pasangTombolDashboardExcel();
 
     mulaiPembayaran();
     mulaiPengeluaran();
