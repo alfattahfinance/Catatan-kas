@@ -13,3 +13,10 @@ html:not(.dark-mode) body .custom-card,html:not(.dark-mode) body .ck-topbar,html
 html.dark-mode,html.dark-mode body,body.dark-mode{background:#121716!important;color:#f1f1f1!important;animation:none!important}
 html.dark-mode body .custom-card,html.dark-mode body .ck-topbar,html.dark-mode body .topbar,html.dark-mode body .filter-card,html.dark-mode body .stat,html.dark-mode body .chart-card,html.dark-mode body .table-card,html.dark-mode body .card,html.dark-mode body .card-kas{background:#1e2522!important;color:#f1f1f1!important}
 @media(prefers-reduced-motion:reduce){html:not(.dark-mode) body,html:not(.dark-mode) body::before{animation:none!important}}
+
+/* =====================================================
+   FIX LOGO HALAMAN LAPORAN
+   Gunakan ikon aplikasi yang sama dengan dashboard.
+   Tidak mengubah data, filter, grafik, atau fungsi laporan.
+===================================================== */
+#laporanLogo{content:url('./icon-192.png')!important;object-fit:cover!important;background:#fff!important}
