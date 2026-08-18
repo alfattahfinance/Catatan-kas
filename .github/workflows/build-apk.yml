@@ -11,8 +11,10 @@ on:
       - '*.json'
       - 'js/**'
       - 'css/**'
-      - 'theme.js'
-      - 'logo-sync.js'
+      - 'assets/**'
+      - 'images/**'
+      - 'img/**'
+      - 'UpdatableMainActivity.java'
       - 'MainActivity.java'
       - '.github/workflows/build-apk.yml'
 
@@ -21,7 +23,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Keuangan APK
+    name: Build Keuangan APK (Updatable)
     runs-on: ubuntu-latest
 
     steps:
@@ -62,7 +64,6 @@ jobs:
           PY
           )
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "App version: $VERSION"
 
       - name: Prepare Android project
         shell: bash
@@ -70,10 +71,7 @@ jobs:
           APP_VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          mkdir -p app/src/main/java/com/catatankas/app
-          mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/drawable
-          mkdir -p app/src/main/assets
+          mkdir -p app/src/main/java/com/catatankas/app app/src/main/res/values app/src/main/res/drawable app/src/main/assets
 
           find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) -exec cp {} app/src/main/assets/ \;
           for dir in js Js css assets images img; do
@@ -88,7 +86,7 @@ jobs:
           elif [ -f "icon-192.png" ]; then
             cp "icon-192.png" app/src/main/res/drawable/ic_keuangan.png
           else
-            echo "Ikon APK tidak ditemukan."
+            echo 'Ikon APK tidak ditemukan.'
             exit 1
           fi
 
@@ -164,10 +162,9 @@ jobs:
                   android:icon="@drawable/ic_keuangan"
                   android:roundIcon="@drawable/ic_keuangan"
                   android:theme="@style/AppTheme"
-                  android:resizeableActivity="true"
-                  android:usesCleartextTraffic="true">
+                  android:resizeableActivity="true">
                   <activity
-                      android:name=".MainActivity"
+                      android:name=".UpdatableMainActivity"
                       android:exported="true"
                       android:screenOrientation="unspecified"
                       android:resizeableActivity="true"
@@ -194,131 +191,19 @@ jobs:
           </resources>
           XML
 
-          cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
-          package com.catatankas.app;
+          cp UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
 
-          import android.annotation.SuppressLint;
-          import android.app.Activity;
-          import android.content.Intent;
-          import android.net.Uri;
-          import android.os.Bundle;
-          import android.view.ViewGroup;
-          import android.webkit.ValueCallback;
-          import android.webkit.WebChromeClient;
-          import android.webkit.WebResourceRequest;
-          import android.webkit.WebResourceResponse;
-          import android.webkit.WebSettings;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-
-          import androidx.webkit.WebViewAssetLoader;
-
-          public class MainActivity extends Activity {
-              private static final int FILE_CHOOSER_REQUEST = 4101;
-              private WebView webView;
-              private ValueCallback<Uri[]> filePathCallback;
-
-              @SuppressLint("SetJavaScriptEnabled")
-              @Override protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  webView = new WebView(this);
-                  webView.setLayoutParams(new ViewGroup.LayoutParams(
-                          ViewGroup.LayoutParams.MATCH_PARENT,
-                          ViewGroup.LayoutParams.MATCH_PARENT));
-                  setContentView(webView);
-
-                  WebSettings settings = webView.getSettings();
-                  settings.setJavaScriptEnabled(true);
-                  settings.setDomStorageEnabled(true);
-                  settings.setDatabaseEnabled(true);
-                  settings.setAllowFileAccess(false);
-                  settings.setAllowContentAccess(true);
-                  settings.setJavaScriptCanOpenWindowsAutomatically(true);
-                  settings.setUseWideViewPort(false);
-                  settings.setLoadWithOverviewMode(false);
-                  settings.setSupportZoom(false);
-                  settings.setBuiltInZoomControls(false);
-                  settings.setDisplayZoomControls(false);
-                  settings.setMediaPlaybackRequiresUserGesture(false);
-
-                  final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
-                          .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                          .build();
-
-                  webView.setWebViewClient(new WebViewClient() {
-                      @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                          WebResourceResponse local = assetLoader.shouldInterceptRequest(request.getUrl());
-                          return local != null ? local : super.shouldInterceptRequest(view, request);
-                      }
-                  });
-
-                  webView.setWebChromeClient(new WebChromeClient() {
-                      @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
-                          if (filePathCallback != null) filePathCallback.onReceiveValue(null);
-                          filePathCallback = callback;
-                          Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                          intent.addCategory(Intent.CATEGORY_OPENABLE);
-                          intent.setType("image/*");
-                          intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-                          try {
-                              startActivityForResult(intent, FILE_CHOOSER_REQUEST);
-                              return true;
-                          } catch (Exception e) {
-                              filePathCallback = null;
-                              return false;
-                          }
-                      }
-                  });
-
-                  webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-              }
-
-              @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-                  super.onActivityResult(requestCode, resultCode, data);
-                  if (requestCode != FILE_CHOOSER_REQUEST || filePathCallback == null) return;
-                  Uri[] results = null;
-                  if (resultCode == RESULT_OK && data != null && data.getData() != null) {
-                      results = new Uri[]{data.getData()};
-                  }
-                  filePathCallback.onReceiveValue(results);
-                  filePathCallback = null;
-              }
-
-              @Override public void onBackPressed() {
-                  if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
-              }
-
-              @Override protected void onDestroy() {
-                  if (filePathCallback != null) filePathCallback.onReceiveValue(null);
-                  if (webView != null) webView.destroy();
-                  super.onDestroy();
-              }
-          }
-          JAVA
-
-          python3 - <<'PY'
-          from pathlib import Path
-          root=Path('app/src/main/assets')
-          tag='<script src="theme.js"></script>'
-          for p in root.glob('*.html'):
-              s=p.read_text(encoding='utf-8')
-              if 'src="theme.js"' not in s and "src='theme.js'" not in s and '</head>' in s:
-                  s=s.replace('</head>',tag+'\n</head>',1)
-              p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Verify Android project
+      - name: Verify updater is embedded
         shell: bash
         run: |
           set -euo pipefail
-          test -f app/src/main/assets/index.html
-          test -f app/src/main/assets/firebase-config.js
-          test -f app/src/main/assets/pembayaran.js
-          test -f app/src/main/assets/pengeluaran.js
-          test -f app/src/main/assets/theme.js
-          test -f app/src/main/res/drawable/ic_keuangan.png
-          grep -q 'WebViewAssetLoader' app/src/main/java/com/catatankas/app/MainActivity.java
-          grep -q 'onShowFileChooser' app/src/main/java/com/catatankas/app/MainActivity.java
+          test -s app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          test -s app/src/main/assets/web-update.json
+          test -s app/src/main/assets/js/update-check.js
+          test -s app/src/main/assets/pengaturan.html
+          grep -q 'AndroidWebUpdater' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q 'onShowFileChooser' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q 'android:name=".UpdatableMainActivity"' app/src/main/AndroidManifest.xml
 
       - name: Build Debug APK
         shell: bash
@@ -326,20 +211,19 @@ jobs:
           set -euo pipefail
           gradle --no-daemon clean :app:assembleDebug --stacktrace
           mkdir -p output
-          cp app/build/outputs/apk/debug/app-debug.apk "output/Keuangan-v${{ steps.version.outputs.version }}-debug.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "output/Keuangan-v${{ steps.version.outputs.version }}-updatable.apk"
 
-      - name: Upload Debug APK
+      - name: Upload Updatable APK
         uses: actions/upload-artifact@v4
         with:
-          name: Keuangan-v${{ steps.version.outputs.version }}-debug-apk
-          path: output/Keuangan-v${{ steps.version.outputs.version }}-debug.apk
+          name: Keuangan-v${{ steps.version.outputs.version }}-updatable-apk
+          path: output/Keuangan-v${{ steps.version.outputs.version }}-updatable.apk
           if-no-files-found: error
 
       - name: Build summary
         shell: bash
         run: |
-          echo "BUILD KEUANGAN SELESAI"
-          echo "Nama aplikasi : Keuangan"
-          echo "Version       : ${{ steps.version.outputs.version }}"
-          echo "Package       : com.catatankas.app"
+          echo 'BUILD KEUANGAN UPDATABLE SELESAI'
+          echo 'Package: com.catatankas.app'
+          echo 'Updater: AndroidWebUpdater'
           ls -lh output/
