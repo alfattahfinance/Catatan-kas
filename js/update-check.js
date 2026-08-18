@@ -1,803 +1,138 @@
-/* =====================================================
-   CATATAN KAS
-   SISTEM UPDATE APK
-   ===================================================== */
-
+/* CATATAN KAS - IN-APP WEB UPDATE */
 (function () {
+  "use strict";
 
-    "use strict";
+  const WEB_VERSION = "1.0.0";
+  const MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
 
+  function versionNumber(v) {
+    return String(v || "0").replace(/^v/i, "").split(".").map(n => parseInt(n, 10) || 0).reduce((a, n) => a * 1000 + n, 0);
+  }
 
-    /* =================================================
-       KONFIGURASI
-    ================================================= */
+  function currentVersion() {
+    try {
+      return localStorage.getItem("keuanganWebVersion") || WEB_VERSION;
+    } catch (_) {
+      return WEB_VERSION;
+    }
+  }
 
-    const VERSION_URL =
-        "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/version.json";
+  function showBox(title, message, buttons) {
+    document.getElementById("webUpdateBox")?.remove();
+    const box = document.createElement("div");
+    box.id = "webUpdateBox";
+    box.innerHTML = `
+      <div style="position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px">
+        <div style="width:min(520px,100%);background:#fff;color:#212529;border-radius:18px;padding:20px;box-shadow:0 15px 45px rgba(0,0,0,.25)">
+          <div style="font-weight:800;font-size:18px;margin-bottom:8px">${title}</div>
+          <div id="webUpdateMessage" style="font-size:14px;line-height:1.55;margin-bottom:16px">${message}</div>
+          <div id="webUpdateButtons" style="display:flex;gap:10px"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(box);
+    const holder = box.querySelector("#webUpdateButtons");
+    (buttons || []).forEach(b => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = b.text;
+      btn.className = b.className || "btn btn-success";
+      btn.style.flex = "1";
+      btn.onclick = b.onClick;
+      holder.appendChild(btn);
+    });
+    return box;
+  }
 
-    const RELEASE_BASE_URL =
-        "https://github.com/alfattahfinance/Catatan-kas/releases/download/";
+  function setStatus(text, ok = true) {
+    const el = document.getElementById("statusUpdateAplikasi");
+    if (el) {
+      el.textContent = text;
+      el.className = "status text-center " + (ok ? "text-success" : "text-danger");
+    }
+  }
 
-    const APK_NAME_PREFIX =
-        "Keuangan-v";
+  function nativeAvailable() {
+    return !!(window.AndroidWebUpdater && typeof window.AndroidWebUpdater.checkForUpdate === "function");
+  }
 
-    const APK_NAME_SUFFIX =
-        ".apk";
-
-
-    /* =================================================
-       VERSI APLIKASI
-    ================================================= */
-
-    const CURRENT_VERSION =
-        window.APP_VERSION || "2.0";
-
-
-    /* =================================================
-       BERSIHKAN VERSI
-    ================================================= */
-
-    function cleanVersion(version) {
-
-        return String(version || "")
-            .trim()
-            .replace(/^v/i, "");
-
+  async function checkWebUpdate(showLatest) {
+    if (nativeAvailable()) {
+      setStatus("Memeriksa pembaruan...");
+      window.AndroidWebUpdater.checkForUpdate();
+      return;
     }
 
-
-    /* =================================================
-       VERSI KE ANGKA
-    ================================================= */
-
-    function versionToNumber(version) {
-
-        const clean =
-            cleanVersion(version);
-
-        if (!clean) {
-            return 0;
-        }
-
-        return clean
-            .split(".")
-            .map(function (number) {
-
-                return parseInt(number, 10) || 0;
-
-            })
-            .reduce(function (
-                total,
-                number
-            ) {
-
-                return total * 1000 + number;
-
-            }, 0);
-
+    try {
+      const response = await fetch(MANIFEST_URL + "?t=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const data = await response.json();
+      const latest = String(data.version || "");
+      if (versionNumber(latest) > versionNumber(currentVersion())) {
+        showWebUpdate(data);
+      } else if (showLatest) {
+        setStatus("Aplikasi sudah menggunakan versi web terbaru (" + currentVersion() + ").");
+      }
+    } catch (e) {
+      console.error("WEB UPDATE CHECK ERROR", e);
+      setStatus("Tidak dapat memeriksa pembaruan. Periksa koneksi internet.", false);
     }
+  }
 
+  function showWebUpdate(data) {
+    const latest = String(data.version || "");
+    setStatus("Pembaruan tersedia: v" + latest);
+    showBox("Pembaruan tersedia", (data.message || "Ada perbaikan aplikasi yang bisa dipasang tanpa mengunduh APK baru.") + "<br><br><b>Versi baru: " + latest + "</b>", [
+      { text: "Nanti", className: "btn btn-outline-secondary", onClick: () => document.getElementById("webUpdateBox")?.remove() },
+      { text: "Perbarui Sekarang", className: "btn btn-success", onClick: () => applyWebUpdate() }
+    ]);
+  }
 
-    /* =================================================
-       URL APK
-    ================================================= */
-
-    function getApkDownloadUrl(version) {
-
-        const clean =
-            cleanVersion(version);
-
-        if (!clean) {
-            return null;
-        }
-
-        return (
-            RELEASE_BASE_URL +
-            "v" +
-            encodeURIComponent(clean) +
-            "/" +
-            APK_NAME_PREFIX +
-            encodeURIComponent(clean) +
-            APK_NAME_SUFFIX
-        );
-
+  function applyWebUpdate() {
+    if (!nativeAvailable() || typeof window.AndroidWebUpdater.applyUpdate !== "function") {
+      setStatus("Fitur update otomatis membutuhkan APK yang sudah mendukung update aplikasi.", false);
+      return;
     }
+    const msg = document.getElementById("webUpdateMessage");
+    const buttons = document.getElementById("webUpdateButtons");
+    if (msg) msg.textContent = "Mengunduh perbaikan aplikasi. Jangan tutup aplikasi...";
+    if (buttons) buttons.innerHTML = "";
+    window.AndroidWebUpdater.applyUpdate();
+  }
 
-
-    /* =================================================
-       CEK VERSI LEBIH BARU
-    ================================================= */
-
-    function isNewerVersion(
-        latestVersion,
-        currentVersion
-    ) {
-
-        return (
-            versionToNumber(latestVersion) >
-            versionToNumber(currentVersion)
-        );
-
+  window.addEventListener("webUpdateAvailable", event => showWebUpdate(event.detail || {}));
+  window.addEventListener("webUpdateProgress", event => {
+    const d = event.detail || {};
+    const msg = document.getElementById("webUpdateMessage");
+    if (msg) msg.textContent = d.message || "Mengunduh perbaikan...";
+  });
+  window.addEventListener("webUpdateComplete", event => {
+    const d = event.detail || {};
+    try { localStorage.setItem("keuanganWebVersion", d.version || ""); } catch (_) {}
+    document.getElementById("webUpdateBox")?.remove();
+    setStatus("Pembaruan berhasil dipasang. Memuat ulang aplikasi...");
+    setTimeout(() => location.reload(), 500);
+  });
+  window.addEventListener("webUpdateError", event => {
+    const d = event.detail || {};
+    const msg = document.getElementById("webUpdateMessage");
+    if (msg) msg.textContent = d.message || "Pembaruan gagal. Versi lama tetap digunakan.";
+    const buttons = document.getElementById("webUpdateButtons");
+    if (buttons) {
+      buttons.innerHTML = "";
+      const btn = document.createElement("button");
+      btn.className = "btn btn-secondary w-100";
+      btn.textContent = "Tutup";
+      btn.onclick = () => document.getElementById("webUpdateBox")?.remove();
+      buttons.appendChild(btn);
     }
-
-
-    /* =================================================
-       TAMPILKAN NOTIFIKASI UPDATE
-    ================================================= */
-
-    function showUpdateNotification(data) {
-
-        const oldNotification =
-            document.getElementById(
-                "updateNotification"
-            );
-
-        if (oldNotification) {
-            oldNotification.remove();
-        }
-
-
-        const apkVersion =
-            cleanVersion(data.version);
-
-        const apkUrl =
-            getApkDownloadUrl(apkVersion);
-
-
-        if (!apkUrl) {
-
-            console.error(
-                "URL APK tidak dapat dibuat."
-            );
-
-            return;
-
-        }
-
-
-        const notification =
-            document.createElement("div");
-
-
-        notification.id =
-            "updateNotification";
-
-
-        notification.innerHTML = `
-
-            <div style="
-                position:fixed;
-                left:15px;
-                right:15px;
-                bottom:85px;
-                z-index:99999;
-                background:#ffffff;
-                color:#212529;
-                border-radius:18px;
-                padding:18px;
-                box-shadow:0 10px 35px rgba(0,0,0,.20);
-                border:1px solid #e2e8e5;
-            ">
-
-                <div style="
-                    display:flex;
-                    align-items:center;
-                    gap:12px;
-                    margin-bottom:10px;
-                ">
-
-                    <div style="
-                        width:44px;
-                        height:44px;
-                        min-width:44px;
-                        border-radius:14px;
-                        background:#e8f5ee;
-                        color:#198754;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-size:22px;
-                    ">
-
-                        <i class="bi bi-arrow-down-circle-fill"></i>
-
-                    </div>
-
-
-                    <div style="flex:1;">
-
-                        <div style="
-                            font-weight:800;
-                            font-size:16px;
-                        ">
-                            Update Tersedia
-                        </div>
-
-
-                        <div style="
-                            color:#6c757d;
-                            font-size:13px;
-                            margin-top:2px;
-                        ">
-
-                            Versi ${apkVersion} tersedia
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        id="closeUpdateNotification"
-                        type="button"
-                        style="
-                            border:0;
-                            background:transparent;
-                            font-size:22px;
-                            color:#6c757d;
-                        "
-                    >
-                        &times;
-                    </button>
-
-                </div>
-
-
-                <div style="
-                    font-size:14px;
-                    line-height:1.5;
-                    margin-bottom:14px;
-                ">
-
-                    ${
-                        data.message ||
-                        "Versi terbaru aplikasi tersedia."
-                    }
-
-                </div>
-
-
-                <div style="
-                    display:flex;
-                    gap:10px;
-                ">
-
-                    <button
-                        id="updateNowButton"
-                        type="button"
-                        style="
-                            flex:1;
-                            border:0;
-                            background:#198754;
-                            color:#ffffff;
-                            border-radius:12px;
-                            padding:10px;
-                            font-weight:700;
-                        "
-                    >
-
-                        <i class="bi bi-download"></i>
-
-                        Perbarui Sekarang
-
-                    </button>
-
-
-                    <button
-                        id="updateLaterButton"
-                        type="button"
-                        style="
-                            flex:1;
-                            border:1px solid #198754;
-                            background:#ffffff;
-                            color:#198754;
-                            border-radius:12px;
-                            padding:10px;
-                            font-weight:700;
-                        "
-                    >
-
-                        Nanti
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        document.body.appendChild(
-            notification
-        );
-
-
-        const closeButton =
-            document.getElementById(
-                "closeUpdateNotification"
-            );
-
-        const laterButton =
-            document.getElementById(
-                "updateLaterButton"
-            );
-
-        const nowButton =
-            document.getElementById(
-                "updateNowButton"
-            );
-
-
-        /* =================================================
-           FUNGSI TUTUP
-        ================================================= */
-
-        function closeNotification() {
-
-            const element =
-                document.getElementById(
-                    "updateNotification"
-                );
-
-            if (element) {
-                element.remove();
-            }
-
-        }
-
-
-        /* =================================================
-           TOMBOL CLOSE
-        ================================================= */
-
-        if (closeButton) {
-
-            closeButton.addEventListener(
-                "click",
-                closeNotification
-            );
-
-        }
-
-
-        /* =================================================
-           TOMBOL NANTI
-        ================================================= */
-
-        if (laterButton) {
-
-            laterButton.addEventListener(
-                "click",
-                closeNotification
-            );
-
-        }
-
-
-        /* =================================================
-           TOMBOL PERBARUI SEKARANG
-        ================================================= */
-
-        if (nowButton) {
-
-            nowButton.addEventListener(
-                "click",
-                function () {
-
-                    console.log(
-                        "================================"
-                    );
-
-                    console.log(
-                        "UPDATE DIMULAI"
-                    );
-
-                    console.log(
-                        "Versi sekarang:",
-                        CURRENT_VERSION
-                    );
-
-                    console.log(
-                        "Versi baru:",
-                        apkVersion
-                    );
-
-                    console.log(
-                        "APK:",
-                        apkUrl
-                    );
-
-                    console.log(
-                        "================================"
-                    );
-
-
-                    nowButton.disabled =
-                        true;
-
-                    nowButton.style.opacity =
-                        "0.7";
-
-                    nowButton.innerHTML = `
-                        <i class="bi bi-hourglass-split"></i>
-                        Mengunduh...
-                    `;
-
-
-                    /* =====================================
-                       ANDROID NATIVE DOWNLOADER
-                    ===================================== */
-
-                    if (
-                        window.AndroidDownload &&
-                        typeof window.AndroidDownload.downloadApk ===
-                            "function"
-                    ) {
-
-                        try {
-
-                            window.AndroidDownload.downloadApk(
-                                apkUrl,
-                                apkVersion
-                            );
-
-                            return;
-
-                        } catch (error) {
-
-                            console.error(
-                                "Native download gagal:",
-                                error
-                            );
-
-                        }
-
-                    }
-
-
-                    /* =====================================
-                       FALLBACK BROWSER / WEBVIEW
-                    ===================================== */
-
-                    setTimeout(
-                        function () {
-
-                            window.location.href =
-                                apkUrl;
-
-                        },
-                        300
-                    );
-
-                }
-            );
-
-        }
-
-    }
-
-
-    /* =================================================
-       PESAN SUDAH TERBARU
-    ================================================= */
-
-    function showLatestMessage() {
-
-        alert(
-            "Aplikasi sudah menggunakan " +
-            "versi terbaru (" +
-            CURRENT_VERSION +
-            ")."
-        );
-
-    }
-
-
-    /* =================================================
-       CEK UPDATE
-    ================================================= */
-
-    async function checkForUpdate(
-        showLatest = false
-    ) {
-
-        try {
-
-            console.log(
-                "Memeriksa update..."
-            );
-
-            console.log(
-                "Versi aplikasi:",
-                CURRENT_VERSION
-            );
-
-
-            const response =
-                await fetch(
-                    VERSION_URL +
-                    "?t=" +
-                    Date.now(),
-                    {
-                        cache: "no-store"
-                    }
-                );
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "Gagal mengambil version.json. HTTP " +
-                    response.status
-                );
-
-            }
-
-
-            const data =
-                await response.json();
-
-
-            const latestVersion =
-                cleanVersion(
-                    data.version
-                );
-
-
-            if (!latestVersion) {
-
-                throw new Error(
-                    "Versi pada version.json tidak ditemukan."
-                );
-
-            }
-
-
-            console.log(
-                "Versi terbaru:",
-                latestVersion
-            );
-
-
-            console.log(
-                "APK terbaru:",
-                getApkDownloadUrl(
-                    latestVersion
-                )
-            );
-
-
-            /* ==========================================
-               VERSI BARU TERSEDIA
-            ========================================== */
-
-            if (
-                isNewerVersion(
-                    latestVersion,
-                    CURRENT_VERSION
-                )
-            ) {
-
-                console.log(
-                    "UPDATE TERSEDIA!"
-                );
-
-
-                showUpdateNotification(
-                    data
-                );
-
-
-                return {
-
-                    updateAvailable:
-                        true,
-
-                    data:
-                        data,
-
-                    apkUrl:
-                        getApkDownloadUrl(
-                            latestVersion
-                        )
-
-                };
-
-            }
-
-
-            /* ==========================================
-               SUDAH TERBARU
-            ========================================== */
-
-            console.log(
-                "Aplikasi sudah terbaru."
-            );
-
-
-            if (showLatest) {
-
-                showLatestMessage();
-
-            }
-
-
-            return {
-
-                updateAvailable:
-                    false,
-
-                data:
-                    data
-
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "UPDATE CHECK ERROR:",
-                error
-            );
-
-
-            if (showLatest) {
-
-                alert(
-                    "Tidak dapat memeriksa update.\n\n" +
-                    "Pastikan koneksi internet tersedia."
-                );
-
-            }
-
-
-            return {
-
-                updateAvailable:
-                    false,
-
-                error:
-                    error
-
-            };
-
-        }
-
-    }
-
-
-    /* =================================================
-       TOMBOL CEK UPDATE
-    ================================================= */
-
-    function setupUpdateButton() {
-
-        const button =
-            document.getElementById(
-                "cekUpdateButton"
-            );
-
-
-        if (!button) {
-
-            console.log(
-                "Tombol cek update tidak ditemukan."
-            );
-
-            return;
-
-        }
-
-
-        button.addEventListener(
-            "click",
-            function () {
-
-                button.disabled =
-                    true;
-
-
-                const text =
-                    button.innerHTML;
-
-
-                button.innerHTML = `
-                    <i class="bi bi-arrow-repeat"></i>
-                    Memeriksa...
-                `;
-
-
-                checkForUpdate(true)
-                    .finally(
-                        function () {
-
-                            button.disabled =
-                                false;
-
-                            button.innerHTML =
-                                text;
-
-                        }
-                    );
-
-            }
-        );
-
-    }
-
-
-    /* =================================================
-       JALANKAN SAAT APLIKASI DIBUKA
-    ================================================= */
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-
-            console.log(
-                "UPDATE CHECK AKTIF"
-            );
-
-            console.log(
-                "APP VERSION:",
-                CURRENT_VERSION
-            );
-
-            console.log(
-                "VERSION URL:",
-                VERSION_URL
-            );
-
-
-            setupUpdateButton();
-
-
-            /* ==========================================
-               CEK OTOMATIS 2,5 DETIK
-            ========================================== */
-
-            setTimeout(
-                function () {
-
-                    checkForUpdate(
-                        false
-                    );
-
-                },
-                2500
-            );
-
-        }
-    );
-
-
-    /* =================================================
-       PUBLIC API
-    ================================================= */
-
-    window.CatatanKasUpdate = {
-
-        check:
-            function () {
-
-                return checkForUpdate(
-                    true
-                );
-
-            },
-
-
-        getApkUrl:
-            function (version) {
-
-                return getApkDownloadUrl(
-                    version
-                );
-
-            }
-
-    };
-
-
+    setStatus(d.message || "Pembaruan gagal.", false);
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const button = document.getElementById("cekUpdateButton");
+    if (button) button.addEventListener("click", () => checkWebUpdate(true));
+    setTimeout(() => checkWebUpdate(false), 3000);
+  });
+
+  window.CatatanKasUpdate = { check: () => checkWebUpdate(true) };
 })();
