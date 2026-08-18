@@ -27,10 +27,7 @@ jobs:
       - name: Install Android SDK packages
         run: |
           yes | sdkmanager --licenses || true
-          sdkmanager \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Create Android project structure
         run: |
@@ -43,18 +40,11 @@ jobs:
         run: |
           cat > settings.gradle <<'EOF'
           pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
+              repositories { google(); mavenCentral(); gradlePluginPortal() }
           }
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
+              repositories { google(); mavenCentral() }
           }
           rootProject.name = "Keuangan"
           include(":app")
@@ -63,9 +53,7 @@ jobs:
       - name: Create root build.gradle
         run: |
           cat > build.gradle <<'EOF'
-          plugins {
-              id 'com.android.application' version '8.7.3' apply false
-          }
+          plugins { id 'com.android.application' version '8.7.3' apply false }
           EOF
 
       - name: Create gradle.properties
@@ -79,9 +67,7 @@ jobs:
       - name: Create app build.gradle
         run: |
           cat > app/build.gradle <<'EOF'
-          plugins {
-              id 'com.android.application'
-          }
+          plugins { id 'com.android.application' }
           android {
               namespace 'com.catatankas.app'
               compileSdk 35
@@ -107,45 +93,52 @@ jobs:
           EOF
 
       - name: Create proguard rules
-        run: |
-          cat > app/proguard-rules.pro <<'EOF'
-          # No custom ProGuard rules required.
-          EOF
+        run: printf '%s\n' '# No custom ProGuard rules required.' > app/proguard-rules.pro
 
       - name: Create Gradle wrapper
         run: |
-          gradle --version
           gradle wrapper --gradle-version 8.9 --distribution-type bin
           chmod +x gradlew
           ./gradlew --version
 
       - name: Copy application files
         run: |
-          echo "Copying web application files..."
+          set -euo pipefail
           for file in *.html *.js *.css *.json *.png *.jpg *.jpeg; do
-            if [ -f "$file" ]; then
-              cp "$file" app/src/main/assets/
-            fi
+            [ -f "$file" ] && cp "$file" app/src/main/assets/
           done
-          echo "Assets:"
-          find app/src/main/assets -maxdepth 1 -type f -print
+          [ -d js ] && cp -r js app/src/main/assets/
+          [ -d assets ] && cp -r assets app/src/main/assets/
+          [ -d images ] && cp -r images app/src/main/assets/
+          [ -d img ] && cp -r img app/src/main/assets/
+
+      - name: Inject global logo sync and landscape CSS
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('app/src/main/assets')
+          tag = '<script src="theme.js"></script>'
+          css = '''\n/* APK responsive landscape fix */\nhtml, body { width:100% !important; min-width:100% !important; max-width:none !important; }\nbody { overflow-x:hidden !important; }\n.mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; margin-left:auto !important; margin-right:auto !important; }\n@media (orientation: landscape) and (min-width:700px) {\n  .mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { padding-left:24px !important; padding-right:24px !important; }\n  .ck-topbar, .custom-card, .pengeluaran-card, .cardx { width:100% !important; max-width:none !important; }\n}\n'''
+          for p in root.glob('*.html'):
+              text = p.read_text(encoding='utf-8')
+              if 'src="theme.js"' not in text and "src='theme.js'" not in text:
+                  text = text.replace('</head>', f'{tag}\n</head>', 1)
+              if 'APK responsive landscape fix' not in text:
+                  text = text.replace('</head>', f'<style>{css}</style>\n</head>', 1)
+              p.write_text(text, encoding='utf-8')
+          PY
 
       - name: Copy Catatan Kas logo
         run: |
-          if [ -f "logo-catatan-kas.jpg" ]; then
-            cp "logo-catatan-kas.jpg" "app/src/main/res/drawable/logo_catatan_kas.jpg"
-          elif [ -f "logo-catatan-kas.png" ]; then
-            cp "logo-catatan-kas.png" "app/src/main/res/drawable/logo_catatan_kas.png"
-          fi
+          if [ -f "logo-catatan-kas.jpg" ]; then cp "logo-catatan-kas.jpg" "app/src/main/res/drawable/logo_catatan_kas.jpg"; fi
+          if [ -f "logo-catatan-kas.png" ]; then cp "logo-catatan-kas.png" "app/src/main/res/drawable/logo_catatan_kas.png"; fi
 
       - name: Create fallback icon
         run: |
           cat > app/src/main/res/drawable/ic_launcher.xml <<'EOF'
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="108dp"
-              android:height="108dp"
-              android:viewportWidth="108"
-              android:viewportHeight="108">
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
               <path android:fillColor="#198754" android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
               <path android:fillColor="#FFFFFF" android:pathData="M27,27 L81,27 L81,81 L27,81 Z" />
           </vector>
@@ -158,14 +151,28 @@ jobs:
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <supports-screens
+                  android:smallScreens="true"
+                  android:normalScreens="true"
+                  android:largeScreens="true"
+                  android:xlargeScreens="true"
+                  android:anyDensity="true"
+                  android:resizeable="true" />
               <application
                   android:allowBackup="true"
                   android:usesCleartextTraffic="true"
                   android:label="Keuangan"
                   android:theme="@style/AppTheme"
                   android:icon="@drawable/ic_launcher"
-                  android:roundIcon="@drawable/ic_launcher">
-                  <activity android:name=".MainActivity" android:exported="true">
+                  android:roundIcon="@drawable/ic_launcher"
+                  android:resizeableActivity="true">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:screenOrientation="unspecified"
+                      android:resizeableActivity="true"
+                      android:maxAspectRatio="2.4"
+                      android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.LAUNCHER" />
@@ -186,6 +193,7 @@ jobs:
                   <item name="android:navigationBarColor">#121212</item>
                   <item name="android:statusBarColor">#121212</item>
                   <item name="android:windowLightStatusBar">false</item>
+                  <item name="android:windowNoTitle">true</item>
               </style>
           </resources>
           EOF
@@ -198,6 +206,7 @@ jobs:
           import android.annotation.SuppressLint;
           import android.app.Activity;
           import android.os.Bundle;
+          import android.view.ViewGroup;
           import android.webkit.WebChromeClient;
           import android.webkit.WebSettings;
           import android.webkit.WebView;
@@ -205,12 +214,11 @@ jobs:
 
           public class MainActivity extends Activity {
               private WebView webView;
-
               @SuppressLint("SetJavaScriptEnabled")
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
+              @Override protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   webView = new WebView(this);
+                  webView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                   setContentView(webView);
                   WebSettings settings = webView.getSettings();
                   settings.setJavaScriptEnabled(true);
@@ -219,19 +227,19 @@ jobs:
                   settings.setAllowFileAccess(true);
                   settings.setAllowContentAccess(true);
                   settings.setJavaScriptCanOpenWindowsAutomatically(true);
+                  settings.setUseWideViewPort(true);
+                  settings.setLoadWithOverviewMode(false);
+                  settings.setSupportZoom(false);
+                  settings.setBuiltInZoomControls(false);
+                  settings.setDisplayZoomControls(false);
                   webView.setWebViewClient(new WebViewClient());
                   webView.setWebChromeClient(new WebChromeClient());
                   webView.loadUrl("file:///android_asset/index.html");
               }
-
-              @Override
-              public void onBackPressed() {
-                  if (webView != null && webView.canGoBack()) webView.goBack();
-                  else super.onBackPressed();
+              @Override public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
               }
-
-              @Override
-              protected void onDestroy() {
+              @Override protected void onDestroy() {
                   if (webView != null) webView.destroy();
                   super.onDestroy();
               }
@@ -245,8 +253,7 @@ jobs:
           find app -type f | sort
 
       - name: Build Debug APK
-        run: |
-          ./gradlew assembleDebug --stacktrace --no-daemon
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Prepare APK
         run: |
