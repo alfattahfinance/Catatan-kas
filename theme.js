@@ -4,7 +4,8 @@
     const SETTINGS_KEY = "pengaturanAplikasi";
     const THEME_KEY = "themeMode";
     const LOGO_KEY = "logoDashboard";
-    const LOGO_DEFAULT = "logo-catatan-kas.jpg";
+    const LOGO_DEFAULT_WEB = "logo-catatan-kas.jpg";
+    const LOGO_DEFAULT_APK = "https://appassets.androidplatform.net/assets/logo-catatan-kas.jpg";
 
     function getSettings() {
         try {
@@ -17,11 +18,8 @@
     }
 
     function saveSettings(settings) {
-        try {
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-        } catch (error) {
-            console.warn("Gagal menyimpan pengaturan aplikasi:", error);
-        }
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+        catch (error) { console.warn("Gagal menyimpan pengaturan aplikasi:", error); }
     }
 
     function getSavedTheme() {
@@ -36,11 +34,8 @@
 
     function resolveTheme(theme) {
         if (theme === "system") {
-            try {
-                return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-            } catch (_) {
-                return "light";
-            }
+            try { return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
+            catch (_) { return "light"; }
         }
         return theme === "dark" ? "dark" : "light";
     }
@@ -49,80 +44,75 @@
         if (!["dark", "light", "system"].includes(theme)) theme = "light";
         const resolvedTheme = resolveTheme(theme);
         const isDark = resolvedTheme === "dark";
-        const html = document.documentElement;
-        const body = document.body;
-
-        html.setAttribute("data-theme", resolvedTheme);
-        html.classList.toggle("dark-mode", isDark);
-        body?.classList.toggle("dark-mode", isDark);
-
+        document.documentElement.setAttribute("data-theme", resolvedTheme);
+        document.documentElement.classList.toggle("dark-mode", isDark);
+        document.body?.classList.toggle("dark-mode", isDark);
         const metaTheme = document.querySelector('meta[name="theme-color"]');
         if (metaTheme) metaTheme.setAttribute("content", isDark ? "#121212" : "#198754");
-
         if (simpan) {
             try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
             const settings = getSettings();
             settings.tema = theme;
             saveSettings(settings);
         }
-
-        window.dispatchEvent(new CustomEvent("themeChanged", {
-            detail: { theme, resolvedTheme, dark: isDark }
-        }));
+        window.dispatchEvent(new CustomEvent("themeChanged", { detail: { theme, resolvedTheme, dark: isDark } }));
     }
 
-    // =====================================================
-    // LOGO DASHBOARD GLOBAL
-    // Satu sumber logo untuk seluruh halaman aplikasi.
-    // =====================================================
+    function getDefaultLogo() {
+        return location.hostname === "appassets.androidplatform.net" ? LOGO_DEFAULT_APK : LOGO_DEFAULT_WEB;
+    }
+
+    function isValidLogo(value) {
+        if (!value || typeof value !== "string") return false;
+        return /^(data:image\/|https?:\/\/|\.\/|\/|[\w.-]+\/)/i.test(value);
+    }
 
     function getLogo() {
         try {
             const saved = localStorage.getItem(LOGO_KEY);
-            if (!saved || saved === "assets/logo-catatan-kas.jpg" || saved === "assets/logo-catatan-kas.png") {
-                return LOGO_DEFAULT;
-            }
-            return saved;
-        } catch (_) {
-            return LOGO_DEFAULT;
+            if (isValidLogo(saved) && saved !== "assets/logo-catatan-kas.jpg" && saved !== "assets/logo-catatan-kas.png") return saved;
+        } catch (_) {}
+        return getDefaultLogo();
+    }
+
+    function applyOneLogo(img, logo) {
+        if (!img || img.tagName !== "IMG") return;
+        img.setAttribute("data-catatan-kas-logo", "true");
+        img.removeAttribute("srcset");
+        img.removeAttribute("data-src");
+        if (!img.dataset.logoFallbackBound) {
+            img.dataset.logoFallbackBound = "true";
+            img.addEventListener("error", function () {
+                const fallback = getDefaultLogo();
+                if (img.getAttribute("src") !== fallback) img.src = fallback;
+            });
         }
+        if (img.getAttribute("src") !== logo) img.src = logo;
     }
 
     function applyLogo() {
         const logo = getLogo();
         const selector = [
-            ".app-logo",
-            ".ck-logo",
-            ".logo",
-            "#logo",
-            "#logoDashboard",
-            "#dashboardLogo",
-            "#logoPreviewV2",
-            "#logoPreview",
-            "#previewLogoDashboard",
-            "img[alt='Logo Dashboard']",
-            "img[alt='Logo aplikasi']",
-            "img[alt='Logo Catatan Kas']",
-            "[data-dashboard-logo]"
+            ".app-logo", ".ck-logo", ".logo", ".top .logo", ".topbar .logo",
+            "#logoDashboard", "#dashboardLogo", "#logoPreviewV2", "#logoPreview",
+            "#previewLogoDashboard", "#laporanLogo", "#logo",
+            "img[alt='Logo Dashboard']", "img[alt='Logo aplikasi']",
+            "img[alt='Logo Catatan Kas']", "[data-dashboard-logo]"
         ].join(",");
-
-        document.querySelectorAll(selector).forEach((img) => {
-            if (img && img.tagName === "IMG") {
-                img.src = logo;
-                img.removeAttribute("srcset");
-                img.removeAttribute("data-src");
-            }
-        });
+        document.querySelectorAll(selector).forEach(img => applyOneLogo(img, logo));
+        window.dispatchEvent(new CustomEvent("logoDashboardChanged", { detail: { logo } }));
     }
 
     function setupLogoSync() {
         applyLogo();
         window.addEventListener("logoDashboardChanged", applyLogo);
-        window.addEventListener("storage", (event) => {
+        window.addEventListener("storage", event => {
             if (event.key === LOGO_KEY || event.key === SETTINGS_KEY) applyLogo();
         });
         window.addEventListener("pageshow", applyLogo);
         window.addEventListener("focus", applyLogo);
+        const observer = new MutationObserver(() => applyLogo());
+        observer.observe(document.documentElement, { childList: true, subtree: true });
     }
 
     function toggleTheme() {
@@ -131,7 +121,7 @@
     }
 
     function setupThemeToggle() {
-        document.addEventListener("click", (event) => {
+        document.addEventListener("click", event => {
             const tombol = event.target.closest("#themeToggle, [data-theme-toggle]");
             if (!tombol) return;
             event.preventDefault();
@@ -142,36 +132,27 @@
     function setupSystemThemeListener() {
         if (!window.matchMedia) return;
         const media = window.matchMedia("(prefers-color-scheme: dark)");
-        const handleChange = () => {
-            if (getSavedTheme() === "system") applyTheme("system", false);
-        };
+        const handleChange = () => { if (getSavedTheme() === "system") applyTheme("system", false); };
         if (typeof media.addEventListener === "function") media.addEventListener("change", handleChange);
         else if (typeof media.addListener === "function") media.addListener(handleChange);
     }
 
-    function initTheme() {
+    function startThemeManager() {
         applyTheme(getSavedTheme(), false);
         applyLogo();
-    }
-
-    function startThemeManager() {
-        initTheme();
         setupThemeToggle();
         setupSystemThemeListener();
         setupLogoSync();
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", startThemeManager);
-    } else {
-        startThemeManager();
-    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startThemeManager);
+    else startThemeManager();
 
     window.themeManager = {
         getTheme: getSavedTheme,
         setTheme: applyTheme,
         toggle: toggleTheme,
-        init: initTheme,
+        init: startThemeManager,
         resolve: resolveTheme,
         getLogo,
         applyLogo
