@@ -5,20 +5,20 @@
     const THEME_KEY = "themeMode";
     const LOGO_KEY = "logoDashboard";
     const DEFAULT_LOGO_FILE = "logo-catatan-kas.jpg";
+    const FALLBACK_LOGO_FILE = "icon-192.png";
 
     function getSettings() {
         try {
             const data = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
             return data && typeof data === "object" ? data : {};
-        } catch (error) {
-            console.warn("Gagal membaca pengaturan aplikasi:", error);
+        } catch (_) {
             return {};
         }
     }
 
     function saveSettings(settings) {
         try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-        catch (error) { console.warn("Gagal menyimpan pengaturan aplikasi:", error); }
+        catch (_) {}
     }
 
     function getSavedTheme() {
@@ -57,71 +57,98 @@
         window.dispatchEvent(new CustomEvent("themeChanged", { detail: { theme, resolvedTheme, dark: isDark } }));
     }
 
-    function getDefaultLogo() {
-        try { return new URL(DEFAULT_LOGO_FILE, document.baseURI).href; }
-        catch (_) { return DEFAULT_LOGO_FILE; }
+    function absoluteFile(file) {
+        try { return new URL(file, document.baseURI).href; }
+        catch (_) { return file; }
     }
 
-    function isValidLogo(value) {
-        if (!value || typeof value !== "string") return false;
+    function normalizeLogo(value) {
+        if (!value || typeof value !== "string") return null;
         const logo = value.trim();
-        if (!logo) return false;
-        if (/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(logo)) return true;
-        return /^(https?:\/\/|\.\/|\/|[\w.-]+\/)/i.test(logo);
+        if (!logo) return null;
+
+        // Semua path logo lama diarahkan ke satu file bawaan yang benar.
+        if (
+            logo === "assets/logo-catatan-kas.jpg" ||
+            logo === "assets/logo-catatan-kas.png" ||
+            logo === "logo-catatan-kas.png"
+        ) return null;
+
+        // Logo pilihan pengguna biasanya berupa data:image/... base64.
+        if (/^data:image\//i.test(logo)) return logo;
+        if (/^(https?:\/\/|\.\/|\/|[\w.-]+\/)/i.test(logo)) return logo;
+        if (/^[\w.-]+\.(jpe?g|png|webp|gif|svg)$/i.test(logo)) return logo;
+        return null;
     }
 
     function getLogo() {
         const settings = getSettings();
         let saved = null;
         try { saved = localStorage.getItem(LOGO_KEY); } catch (_) {}
+
         const candidates = [saved, settings.logoDashboard, settings.logo];
         for (const candidate of candidates) {
-            if (!isValidLogo(candidate)) continue;
-            const value = candidate.trim();
-            if (value === "assets/logo-catatan-kas.jpg" || value === "assets/logo-catatan-kas.png") continue;
-            return value;
+            const normalized = normalizeLogo(candidate);
+            if (normalized) return normalized;
         }
-        return getDefaultLogo();
+        return absoluteFile(DEFAULT_LOGO_FILE);
     }
 
     function applyOneLogo(img, logo) {
         if (!img || img.tagName !== "IMG") return;
-        img.setAttribute("data-catatan-kas-logo", "true");
         img.removeAttribute("srcset");
         img.removeAttribute("data-src");
+        img.setAttribute("data-catatan-kas-logo", "true");
+
         if (!img.dataset.logoFallbackBound) {
             img.dataset.logoFallbackBound = "true";
             img.addEventListener("error", function () {
-                const fallback = getDefaultLogo();
+                const fallback = absoluteFile(FALLBACK_LOGO_FILE);
                 if (img.getAttribute("src") !== fallback) img.src = fallback;
             });
         }
+
         if (img.getAttribute("src") !== logo) img.src = logo;
     }
 
+    let applyingLogo = false;
     function applyLogo() {
-        const logo = getLogo();
-        const selector = [
-            ".app-logo", ".ck-logo", ".logo", ".top .logo", ".topbar .logo",
-            "#logoDashboard", "#dashboardLogo", "#logoPreviewV2", "#logoPreview",
-            "#previewLogoDashboard", "#laporanLogo", "#logo",
-            "img[alt='Logo Dashboard']", "img[alt='Logo aplikasi']",
-            "img[alt='Logo Catatan Kas']", "[data-dashboard-logo]"
-        ].join(",");
-        document.querySelectorAll(selector).forEach(img => applyOneLogo(img, logo));
-        window.dispatchEvent(new CustomEvent("logoDashboardChanged", { detail: { logo } }));
+        if (applyingLogo) return;
+        applyingLogo = true;
+        try {
+            const logo = getLogo();
+            const selector = [
+                ".app-logo", ".ck-logo", ".logo", ".top .logo", ".topbar .logo",
+                "#logoDashboard", "#dashboardLogo", "#logoPreviewV2", "#logoPreview",
+                "#previewLogoDashboard", "#laporanLogo", "#logo",
+                "img[alt='Logo Dashboard']", "img[alt='Logo aplikasi']",
+                "img[alt='Logo Catatan Kas']", "[data-dashboard-logo]"
+            ].join(",");
+            document.querySelectorAll(selector).forEach(img => applyOneLogo(img, logo));
+        } finally {
+            applyingLogo = false;
+        }
     }
 
     function setupLogoSync() {
         applyLogo();
-        window.addEventListener("logoDashboardChanged", applyLogo);
         window.addEventListener("storage", event => {
             if (event.key === LOGO_KEY || event.key === SETTINGS_KEY) applyLogo();
         });
         window.addEventListener("pageshow", applyLogo);
         window.addEventListener("focus", applyLogo);
-        const observer = new MutationObserver(() => applyLogo());
-        observer.observe(document.documentElement, { childList: true, subtree: true });
+        if (window.MutationObserver) {
+            let queued = false;
+            const observer = new MutationObserver(() => {
+                if (queued) return;
+                queued = true;
+                requestAnimationFrame(() => {
+                    queued = false;
+                    applyLogo();
+                });
+            });
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+        }
     }
 
     function toggleTheme() {
@@ -153,7 +180,7 @@
         setupLogoSync();
     }
 
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startThemeManager);
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startThemeManager, { once: true });
     else startThemeManager();
 
     window.themeManager = {
