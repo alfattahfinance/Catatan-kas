@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "message": "Pembaruan fitur aplikasi tersedia.",
+  "files": [
+    "index.html",
+    "app.js",
+    "auth-guard.js",
+    "firebase-config.js",
+    "dashboard-excel.html",
+    "dashboard-excel-fix.js",
+    "laporan.html",
+    "login.html",
+    "login.js",
+    "pembayaran.html",
+    "pembayaran.js",
+    "pengeluaran.html",
+    "pengeluaran.js",
+    "pengaturan.html",
+    "santri.html",
+    "santri.js",
+    "rekap.html",
+    "style.css",
+    "theme.js",
+    "logo-sync.js",
+    "service-worker.js",
+    "manifest.json",
+    "register.html",
+    "js/pengaturan.js",
+    "js/update-check.js",
+    "css/theme.css"
+  ]
+}
