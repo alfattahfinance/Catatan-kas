@@ -9,7 +9,6 @@ const PENGATURAN_DEFAULT = {
     tema: "light"
 };
 
-// Logo bawaan berada di root repository.
 const LOGO_DEFAULT = "logo-catatan-kas.jpg";
 const SETTINGS_KEY = "pengaturanAplikasi";
 const LOGO_KEY = "logoDashboard";
@@ -35,24 +34,23 @@ function simpanDataPengaturan(data) {
 function terapkanTema(tema) {
     const mode = tema || "light";
     let gelap = mode === "dark";
-
     if (mode === "system") {
         gelap = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches === true;
     }
-
     document.documentElement.classList.toggle("dark-mode", gelap);
     document.body?.classList.toggle("dark-mode", gelap);
 }
 
 function logoTersimpan() {
-    const logo = localStorage.getItem(LOGO_KEY);
-
-    // Path lama assets/logo-catatan-kas.* sudah tidak dipakai.
-    if (!logo || logo === "assets/logo-catatan-kas.jpg" || logo === "assets/logo-catatan-kas.png") {
+    try {
+        const logo = localStorage.getItem(LOGO_KEY);
+        if (!logo || logo === "assets/logo-catatan-kas.jpg" || logo === "assets/logo-catatan-kas.png") {
+            return LOGO_DEFAULT;
+        }
+        return logo;
+    } catch (_) {
         return LOGO_DEFAULT;
     }
-
-    return logo;
 }
 
 function tampilkanLogo() {
@@ -65,8 +63,11 @@ function tampilkanLogo() {
         "#dashboardLogo",
         ".app-logo",
         ".ck-logo",
+        ".logo",
+        "#logo",
         "img[alt='Logo Dashboard']",
         "img[alt='Logo aplikasi']",
+        "img[alt='Logo Catatan Kas']",
         "[data-dashboard-logo]"
     ].join(",");
 
@@ -74,6 +75,7 @@ function tampilkanLogo() {
         if (el && el.tagName === "IMG") {
             el.src = logo;
             el.removeAttribute("srcset");
+            el.removeAttribute("data-src");
         }
     });
 
@@ -123,6 +125,10 @@ async function simpanLogo(file) {
     const dataUrl = await kompresLogo(file);
     try {
         localStorage.setItem(LOGO_KEY, dataUrl);
+        const settings = bacaPengaturan();
+        settings.logoDashboard = dataUrl;
+        settings.logo = dataUrl;
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     } catch (error) {
         throw new Error("Logo tidak dapat disimpan. Penyimpanan perangkat mungkin penuh.");
     }
@@ -133,6 +139,10 @@ async function simpanLogo(file) {
 
 function resetLogo() {
     localStorage.removeItem(LOGO_KEY);
+    const settings = bacaPengaturan();
+    delete settings.logoDashboard;
+    delete settings.logo;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     tampilkanLogo();
 }
 
@@ -142,12 +152,10 @@ function muatFormPengaturan() {
     const sub = document.getElementById("subJudul");
     const mata = document.getElementById("mataUang");
     const tema = document.getElementById("tema");
-
     if (nama) nama.value = data.namaPondok;
     if (sub) sub.value = data.subJudul;
     if (mata) mata.value = data.mataUang;
     if (tema) tema.value = data.tema;
-
     terapkanTema(data.tema);
     tampilkanLogo();
 }
@@ -156,7 +164,6 @@ async function simpanPengaturan() {
     const btn = document.getElementById("simpanPengaturanButton");
     const spinner = document.getElementById("loadingSpinner");
     const btnText = document.getElementById("btnText");
-
     const data = {
         namaPondok: document.getElementById("namaPondok")?.value.trim() || "",
         subJudul: document.getElementById("subJudul")?.value.trim() || "",
@@ -174,12 +181,11 @@ async function simpanPengaturan() {
     if (btnText) btnText.innerHTML = " Menyimpan...";
 
     try {
-        simpanDataPengaturan(data);
+        const currentLogo = logoTersimpan();
+        simpanDataPengaturan({ ...data, logoDashboard: currentLogo, logo: currentLogo });
         terapkanTema(data.tema);
-
         const file = document.getElementById("logoDashboardInput")?.files?.[0];
         if (file) await simpanLogo(file);
-
         alert("✅ Pengaturan berhasil disimpan!");
     } catch (error) {
         console.error(error);
@@ -208,7 +214,6 @@ window.CatatanKasSettings = {
 
 document.addEventListener("DOMContentLoaded", () => {
     muatFormPengaturan();
-
     document.getElementById("simpanPengaturanButton")?.addEventListener("click", simpanPengaturan);
     document.getElementById("resetPengaturanButton")?.addEventListener("click", resetSemuaPengaturan);
 
@@ -224,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!file) return;
         try {
             await simpanLogo(file);
-            alert("✅ Logo berhasil dipilih dan disimpan. Logo akan dipakai di halaman yang mendukung logo dashboard.");
+            alert("✅ Logo berhasil dipilih dan disimpan. Logo akan dipakai di seluruh halaman aplikasi.");
         } catch (error) {
             event.target.value = "";
             alert("❌ " + error.message);
@@ -237,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.addEventListener("storage", (event) => {
-    if (event.key === LOGO_KEY) tampilkanLogo();
+    if (event.key === LOGO_KEY || event.key === SETTINGS_KEY) tampilkanLogo();
     if (event.key === SETTINGS_KEY) terapkanTema(bacaPengaturan().tema);
 });
 
