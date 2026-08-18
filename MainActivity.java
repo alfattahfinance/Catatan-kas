@@ -11,6 +11,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -30,7 +32,6 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 
     private static final int FILE_CHOOSER_REQUEST = 4101;
-
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
     private DownloadManager downloadManager;
@@ -46,6 +47,17 @@ public class MainActivity extends AppCompatActivity {
 
         downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         webView = new WebView(this);
+
+        // Pastikan WebView benar-benar menggunakan seluruh area Activity,
+        // termasuk saat tablet diputar ke landscape atau berada di layar lebar.
+        webView.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        getWindow().setLayout(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT
+        );
         setContentView(webView);
 
         WebSettings settings = webView.getSettings();
@@ -95,17 +107,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // WebChromeClient diperlukan agar <input type="file"> berfungsi di APK.
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(
                     WebView view,
                     ValueCallback<Uri[]> callback,
                     FileChooserParams params) {
-
-                if (filePathCallback != null) {
-                    filePathCallback.onReceiveValue(null);
-                }
+                if (filePathCallback != null) filePathCallback.onReceiveValue(null);
                 filePathCallback = callback;
 
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -139,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode != FILE_CHOOSER_REQUEST || filePathCallback == null) return;
-
         Uri[] results = null;
         if (resultCode == RESULT_OK && data != null && data.getData() != null) {
             results = new Uri[]{data.getData()};
@@ -171,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
                 showMessage("URL APK tidak valid.");
                 return;
             }
-
             String cleanVersion = cleanVersion(version);
             if (cleanVersion.isEmpty()) cleanVersion = "latest";
             String fileName = "Keuangan-v" + cleanVersion + ".apk";
@@ -234,9 +240,7 @@ public class MainActivity extends AppCompatActivity {
             cursor.close();
 
             if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                if (pendingApkFile == null || !pendingApkFile.exists()) {
-                    pendingApkFile = resolveDownloadedFile(localUri);
-                }
+                if (pendingApkFile == null || !pendingApkFile.exists()) pendingApkFile = resolveDownloadedFile(localUri);
                 if (pendingApkFile != null && pendingApkFile.exists()) {
                     sendJavascript("window.dispatchEvent(new CustomEvent('apkDownloadComplete'))");
                     showMessage("Download selesai. Membuka installer...");
@@ -274,16 +278,12 @@ public class MainActivity extends AppCompatActivity {
             showMessage("File APK tidak ditemukan.");
             return;
         }
-
         pendingApkFile = apkFile;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && !getPackageManager().canRequestPackageInstalls()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !getPackageManager().canRequestPackageInstalls()) {
             waitingInstallPermission = true;
             try {
-                startActivity(new Intent(
-                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                        Uri.parse("package:" + getPackageName())
-                ));
+                startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + getPackageName())));
                 showMessage("Aktifkan izin Install aplikasi tidak dikenal.");
             } catch (Exception error) {
                 error.printStackTrace();
@@ -298,15 +298,10 @@ public class MainActivity extends AppCompatActivity {
         try {
             Uri apkUri;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                apkUri = FileProvider.getUriForFile(
-                        this,
-                        getPackageName() + ".fileprovider",
-                        apkFile
-                );
+                apkUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", apkFile);
             } else {
                 apkUri = Uri.fromFile(apkFile);
             }
-
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -350,8 +345,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMessage(String message) {
-        runOnUiThread(() -> android.widget.Toast.makeText(
-                MainActivity.this, message, android.widget.Toast.LENGTH_LONG).show());
+        runOnUiThread(() -> android.widget.Toast.makeText(MainActivity.this, message, android.widget.Toast.LENGTH_LONG).show());
     }
 
     @Override
