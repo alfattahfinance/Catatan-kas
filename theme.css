@@ -38,10 +38,8 @@ html:not(.dark-mode) body .filter-card{background:linear-gradient(145deg,#e4ecdf
 html:not(.dark-mode) body .custom-card,html:not(.dark-mode) body .stat,html:not(.dark-mode) body .card,html:not(.dark-mode) body .card-kas{transition:transform .25s ease,box-shadow .25s ease,background .25s ease!important}
 html:not(.dark-mode) body .custom-card:hover,html:not(.dark-mode) body .stat:hover,html:not(.dark-mode) body .card:hover,html:not(.dark-mode) body .card-kas:hover{transform:translateY(-2px);box-shadow:0 9px 24px rgba(77,99,73,.18)!important}
 
-/* RESPONSIVE LAYAR LEBAR / TABLET LANDSCAPE */
 .container,.container-sm,.container-md,.container-lg,.container-xl,.container-xxl,.container-fluid,.mobile-container,.page-container,.ck-page,.wrap{width:100%!important;max-width:none!important}
 
-/* Fallback logo. Gambar valid/custom tetap tampil di atas background; jika src rusak, default logo terlihat. */
 .ck-logo,.app-logo,.logo,#logo,#laporanLogo,#dashboardLogo,#logoDashboard{background-color:#fff!important;background-image:url('./logo-catatan-kas.jpg')!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important;color:transparent!important;font-size:0!important;line-height:0!important}
 #laporanLogo{content:normal!important}
 
@@ -51,12 +49,15 @@ html:not(.dark-mode) body .custom-card:hover,html:not(.dark-mode) body .stat:hov
 }
 
 @media (orientation:landscape) and (min-width:700px){
+  html,body{width:100%!important;min-width:100%!important;max-width:none!important;overflow-x:hidden!important}
   body{padding-bottom:86px!important}
-  .wrap{width:100%!important;max-width:none!important;padding:18px 28px!important}
-  .mobile-container,.page-container,.ck-page{width:100%!important;max-width:none!important;padding-left:28px!important;padding-right:28px!important}
-  .ck-topbar,.topbar,.top{width:100%!important}
-  .cardx,.custom-card,.pengeluaran-card,.chart-card,.table-card,.filter-card,.info-card,.rekap-wrapper{width:100%!important}
-  .bottom-in,.bottomin{max-width:none!important;width:100%!important}
+  body>main,body>header,body>section,body>.wrap,body>.mobile-container,body>.page-container,body>.ck-page{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
+  main,.wrap,.mobile-container,.page-container,.ck-page,.container,.container-sm,.container-md,.container-lg,.container-xl,.container-xxl,.container-fluid{width:100%!important;max-width:none!important;min-width:0!important;margin-left:0!important;margin-right:0!important}
+  .wrap{padding:18px 28px!important}
+  .mobile-container,.page-container,.ck-page{padding-left:28px!important;padding-right:28px!important}
+  .ck-topbar,.topbar,.top,.cardx,.custom-card,.pengeluaran-card,.chart-card,.table-card,.filter-card,.info-card,.rekap-wrapper{width:100%!important;max-width:none!important}
+  .bottom-in,.bottomin,.ck-bottom-inner{max-width:none!important;width:100%!important}
+  .bottom a,.ck-bottom a{min-width:0!important}
 }
 
 @media (orientation:landscape) and (min-width:1000px){
@@ -70,4 +71,16 @@ html:not(.dark-mode) body .custom-card:hover,html:not(.dark-mode) body .stat:hov
 @media (orientation:landscape) and (min-width:1200px){
   .wrap{padding-left:40px!important;padding-right:40px!important}
   .mobile-container,.page-container,.ck-page{padding-left:40px!important;padding-right:40px!important}
+}
+
+/* PATCH 2026-08: landscape tablet/desktop benar-benar memakai lebar viewport. */
+@media (orientation:landscape) and (min-width:700px){
+  body *{max-width:100%!important}
+  body .container,body .container-sm,body .container-md,body .container-lg,body .container-xl,body .container-xxl{max-width:none!important;width:100%!important}
+  body .row{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
+  body main{max-width:none!important;width:100%!important}
+  body .wrap{max-width:none!important;width:100%!important}
+  body .mobile-container{max-width:none!important;width:100%!important}
+  body .page-container{max-width:none!important;width:100%!important}
+  body .ck-page{max-width:none!important;width:100%!important}
 }
