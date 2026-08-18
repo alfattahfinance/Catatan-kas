@@ -233,13 +233,12 @@ jobs:
                   android:icon="@drawable/ic_keuangan"
                   android:roundIcon="@drawable/ic_keuangan"
                   android:theme="@style/AppTheme"
-                  android:resizeableActivity="true"
+                  android:resizeableActivity="false"
                   android:usesCleartextTraffic="true">
                   <activity
                       android:name=".MainActivity"
                       android:screenOrientation="unspecified"
-                      android:resizeableActivity="true"
-                      android:maxAspectRatio="2.4"
+                      android:resizeableActivity="false"
                       android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
                       android:exported="true">
                       <intent-filter>
@@ -298,7 +297,7 @@ jobs:
                   settings.setDatabaseEnabled(true);
                   settings.setAllowFileAccess(false);
                   settings.setAllowContentAccess(true);
-                  settings.setUseWideViewPort(true);
+                  settings.setUseWideViewPort(false);
                   settings.setLoadWithOverviewMode(false);
                   settings.setSupportZoom(false);
                   settings.setBuiltInZoomControls(false);
