@@ -17,8 +17,7 @@
     }
 
     function saveSettings(settings) {
-        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-        catch (_) {}
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (_) {}
     }
 
     function getSavedTheme() {
@@ -66,16 +65,13 @@
         if (!value || typeof value !== "string") return null;
         const logo = value.trim();
         if (!logo) return null;
-
-        // Semua path logo lama diarahkan ke satu file bawaan yang benar.
         if (
             logo === "assets/logo-catatan-kas.jpg" ||
             logo === "assets/logo-catatan-kas.png" ||
             logo === "logo-catatan-kas.png"
         ) return null;
-
-        // Logo pilihan pengguna biasanya berupa data:image/... base64.
         if (/^data:image\//i.test(logo)) return logo;
+        if (/^blob:/i.test(logo)) return logo;
         if (/^(https?:\/\/|\.\/|\/|[\w.-]+\/)/i.test(logo)) return logo;
         if (/^[\w.-]+\.(jpe?g|png|webp|gif|svg)$/i.test(logo)) return logo;
         return null;
@@ -108,7 +104,10 @@
             });
         }
 
-        if (img.getAttribute("src") !== logo) img.src = logo;
+        if (img.getAttribute("src") !== logo) {
+            img.removeAttribute("data-logo-sync-applied");
+            img.src = logo;
+        }
     }
 
     let applyingLogo = false;
@@ -132,23 +131,47 @@
 
     function setupLogoSync() {
         applyLogo();
+
+        // Pengaturan dan halaman lain dapat mengganti src logo setelah theme.js berjalan.
+        // Dengarkan event tersebut agar logo pilihan pengguna selalu menang.
+        window.addEventListener("logoDashboardChanged", applyLogo);
         window.addEventListener("storage", event => {
             if (event.key === LOGO_KEY || event.key === SETTINGS_KEY) applyLogo();
         });
         window.addEventListener("pageshow", applyLogo);
         window.addEventListener("focus", applyLogo);
+
         if (window.MutationObserver) {
             let queued = false;
-            const observer = new MutationObserver(() => {
-                if (queued) return;
+            const observer = new MutationObserver(mutations => {
+                const relevant = mutations.some(m => {
+                    if (m.type === "childList") return true;
+                    if (m.type === "attributes" && m.attributeName === "src") {
+                        return m.target?.matches?.(
+                            ".app-logo, .ck-logo, .logo, .top .logo, .topbar .logo, #logoDashboard, #dashboardLogo, #laporanLogo, #logo, img[alt='Logo Dashboard'], img[alt='Logo aplikasi'], img[alt='Logo Catatan Kas'], [data-dashboard-logo]"
+                        );
+                    }
+                    return false;
+                });
+                if (!relevant || queued) return;
                 queued = true;
                 requestAnimationFrame(() => {
                     queued = false;
                     applyLogo();
                 });
             });
-            observer.observe(document.documentElement, { childList: true, subtree: true });
+            observer.observe(document.documentElement, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ["src"]
+            });
         }
+
+        // Beberapa halaman mengisi header setelah script lain selesai.
+        setTimeout(applyLogo, 0);
+        setTimeout(applyLogo, 250);
+        setTimeout(applyLogo, 1000);
     }
 
     function toggleTheme() {
