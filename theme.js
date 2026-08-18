@@ -4,8 +4,7 @@
     const SETTINGS_KEY = "pengaturanAplikasi";
     const THEME_KEY = "themeMode";
     const LOGO_KEY = "logoDashboard";
-    const LOGO_DEFAULT_WEB = "logo-catatan-kas.jpg";
-    const LOGO_DEFAULT_APK = "https://appassets.androidplatform.net/assets/logo-catatan-kas.jpg";
+    const DEFAULT_LOGO_FILE = "logo-catatan-kas.jpg";
 
     function getSettings() {
         try {
@@ -59,19 +58,29 @@
     }
 
     function getDefaultLogo() {
-        return location.hostname === "appassets.androidplatform.net" ? LOGO_DEFAULT_APK : LOGO_DEFAULT_WEB;
+        try { return new URL(DEFAULT_LOGO_FILE, document.baseURI).href; }
+        catch (_) { return DEFAULT_LOGO_FILE; }
     }
 
     function isValidLogo(value) {
         if (!value || typeof value !== "string") return false;
-        return /^(data:image\/|https?:\/\/|\.\/|\/|[\w.-]+\/)/i.test(value);
+        const logo = value.trim();
+        if (!logo) return false;
+        if (/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(logo)) return true;
+        return /^(https?:\/\/|\.\/|\/|[\w.-]+\/)/i.test(logo);
     }
 
     function getLogo() {
-        try {
-            const saved = localStorage.getItem(LOGO_KEY);
-            if (isValidLogo(saved) && saved !== "assets/logo-catatan-kas.jpg" && saved !== "assets/logo-catatan-kas.png") return saved;
-        } catch (_) {}
+        const settings = getSettings();
+        let saved = null;
+        try { saved = localStorage.getItem(LOGO_KEY); } catch (_) {}
+        const candidates = [saved, settings.logoDashboard, settings.logo];
+        for (const candidate of candidates) {
+            if (!isValidLogo(candidate)) continue;
+            const value = candidate.trim();
+            if (value === "assets/logo-catatan-kas.jpg" || value === "assets/logo-catatan-kas.png") continue;
+            return value;
+        }
         return getDefaultLogo();
     }
 
@@ -139,7 +148,6 @@
 
     function startThemeManager() {
         applyTheme(getSavedTheme(), false);
-        applyLogo();
         setupThemeToggle();
         setupSystemThemeListener();
         setupLogoSync();
