@@ -165,13 +165,12 @@ jobs:
                   android:theme="@style/AppTheme"
                   android:icon="@drawable/ic_launcher"
                   android:roundIcon="@drawable/ic_launcher"
-                  android:resizeableActivity="true">
+                  android:resizeableActivity="false">
                   <activity
                       android:name=".MainActivity"
                       android:exported="true"
                       android:screenOrientation="unspecified"
-                      android:resizeableActivity="true"
-                      android:maxAspectRatio="2.4"
+                      android:resizeableActivity="false"
                       android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -227,7 +226,7 @@ jobs:
                   settings.setAllowFileAccess(true);
                   settings.setAllowContentAccess(true);
                   settings.setJavaScriptCanOpenWindowsAutomatically(true);
-                  settings.setUseWideViewPort(true);
+                  settings.setUseWideViewPort(false);
                   settings.setLoadWithOverviewMode(false);
                   settings.setSupportZoom(false);
                   settings.setBuiltInZoomControls(false);
