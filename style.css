@@ -12,15 +12,6 @@ input,select,button { width:100%; min-height:45px; font-size:16px; }
 @media(min-width:577px) and (max-width:992px){.mobile-container{padding:15px}}
 @media(min-width:993px){.mobile-container{padding:20px}}
 
-/* Tablet / layar lebar: konten mengikuti seluruh viewport landscape. */
-@media (orientation: landscape) and (min-width:700px) {
-  html,body { width:100% !important; min-width:100% !important; max-width:none !important; overflow-x:hidden; }
-  .mobile-container,.page-container,.ck-page,.wrap,.container,.container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; padding-left:24px !important; padding-right:24px !important; }
-  .row { width:100% !important; max-width:none !important; margin-left:0 !important; margin-right:0 !important; }
-  .ck-topbar,.custom-card,.pengeluaran-card,.cardx { width:100% !important; max-width:none !important; }
-  .table-responsive,.table-wrap { width:100% !important; max-width:none !important; overflow-x:auto; }
-}
-
 html,body { transition:background-color .3s ease,color .3s ease; }
 .ck-page { width:100%; max-width:100% !important; margin:0 auto; padding-bottom:90px; }
 .ck-topbar { display:flex; align-items:center; gap:12px; padding:14px 0 18px; }
@@ -34,3 +25,24 @@ html,body { transition:background-color .3s ease,color .3s ease; }
 .ck-bottom a { color:#6c757d; text-decoration:none; font-size:.68rem; text-align:center; min-width:58px; }
 .ck-bottom a i { display:block; font-size:1.15rem; line-height:1.1; }
 .ck-bottom a.active { color:#198754; font-weight:800; }
+
+/* LANDSCAPE TABLET / LAYAR LEBAR: jangan batasi konten ke kolom tengah sempit. */
+@media (orientation: landscape) and (min-width: 700px) {
+  html, body { width:100vw !important; min-width:100vw !important; max-width:none !important; overflow-x:hidden !important; }
+  body > *, main, header, footer { max-width:none !important; }
+  .mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid,
+  .content, .main-content, .app-content, .page-content, .app-container, .screen,
+  [class*="container"], [class*="page-container"] {
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+  }
+  .mobile-container, .page-container, .ck-page { padding-left:24px !important; padding-right:24px !important; }
+  .row { width:100% !important; max-width:none !important; margin-left:0 !important; margin-right:0 !important; }
+  .ck-topbar, .custom-card, .pengeluaran-card, .cardx, .table-responsive, .table-wrap {
+    width:100% !important; max-width:none !important;
+  }
+  .ck-bottom-inner { width:100vw !important; max-width:none !important; }
+}
