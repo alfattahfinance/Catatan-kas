@@ -61,6 +61,23 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "App version: $VERSION"
 
+      - name: Check release signing secrets
+        id: keystore
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "Release signing secrets tersedia."
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Release signing secrets tidak lengkap; hanya Debug APK yang akan dibuat."
+          fi
+
       - name: Prepare Android project
         shell: bash
         env:
@@ -77,11 +94,9 @@ jobs:
             if [ -d "$dir" ]; then cp -r "$dir" app/src/main/assets/; fi
           done
 
-          # Pastikan file logo aplikasi tersedia sebagai asset.
           if [ -f "logo-catatan-kas.jpg" ]; then cp "logo-catatan-kas.jpg" app/src/main/assets/; fi
           if [ -f "logo-catatan-kas.png" ]; then cp "logo-catatan-kas.png" app/src/main/assets/; fi
 
-          # Gunakan ikon proyek jika ada; jika tidak, gunakan icon-192.png.
           if [ -f "Photoroom_20260812_224807.png" ]; then
             cp "Photoroom_20260812_224807.png" app/src/main/res/drawable/ic_keuangan.png
           elif [ -f "icon-192.png" ]; then
@@ -91,7 +106,6 @@ jobs:
             exit 1
           fi
 
-          # Inject theme.js ke setiap halaman APK yang belum memuatnya.
           python3 - <<'PY'
           from pathlib import Path
           root = Path('app/src/main/assets')
@@ -291,18 +305,24 @@ jobs:
           path: output/Keuangan-v${{ steps.version.outputs.version }}-debug.apk
           if-no-files-found: error
 
-      - name: Build signed Release APK when keystore secrets are available
-        if: ${{ env.HAS_RELEASE_KEYSTORE == 'true' }}
+      - name: Decode release keystore
+        if: ${{ steps.keystore.outputs.available == 'true' }}
         env:
-          HAS_RELEASE_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_ALIAS != '' && secrets.KEY_PASSWORD != '' }}
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > keuangan-release.jks
+
+      - name: Build signed Release APK
+        if: ${{ steps.keystore.outputs.available == 'true' }}
+        env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > keuangan-release.jks
           keytool -list -keystore keuangan-release.jks -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
           python3 - <<'PY'
           from pathlib import Path
@@ -316,9 +336,7 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk "output/Keuangan-v${{ steps.version.outputs.version }}-release.apk"
 
       - name: Upload Release APK
-        if: ${{ env.HAS_RELEASE_KEYSTORE == 'true' }}
-        env:
-          HAS_RELEASE_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_ALIAS != '' && secrets.KEY_PASSWORD != '' }}
+        if: ${{ steps.keystore.outputs.available == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: Keuangan-v${{ steps.version.outputs.version }}-release-apk
