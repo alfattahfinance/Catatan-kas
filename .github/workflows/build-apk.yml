@@ -2,17 +2,50 @@ name: Build Keuangan APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.js'
+      - '*.css'
+      - '*.json'
+      - 'theme.js'
+      - 'logo-sync.js'
+      - '.github/workflows/build-apk.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
+    name: Build Keuangan APK
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Read app version
         id: version
@@ -22,186 +55,107 @@ jobs:
           VERSION=$(python3 - <<'PY'
           import json
           with open('version.json', encoding='utf-8') as f:
-              print(json.load(f)['version'])
+              print(json.load(f).get('version', '2.4'))
           PY
           )
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "App version: $VERSION"
 
-      - name: Check runner tools
-        shell: bash
-        run: |
-          set -euo pipefail
-          java -version
-          gradle --version
-          echo "ANDROID_HOME=${ANDROID_HOME:-}"
-          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-}"
-          command -v sdkmanager || true
-
-      - name: Decode permanent keystore
+      - name: Prepare Android project
         shell: bash
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          APP_VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          test -n "$KEYSTORE_BASE64"
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > keuangan-release.jks
-          keytool -list -keystore keuangan-release.jks \
-            -storepass '${{ secrets.KEYSTORE_PASSWORD }}' \
-            -alias '${{ secrets.KEY_ALIAS }}' >/dev/null
-          echo "Permanent keystore OK."
-
-      - name: Prepare Android SDK without external action
-        shell: bash
-        run: |
-          set -euo pipefail
-          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
-          if [ -z "$SDK" ]; then
-            for candidate in "$HOME/Android/Sdk" "/usr/local/lib/android/sdk" "/opt/android-sdk"; do
-              if [ -d "$candidate" ]; then SDK="$candidate"; break; fi
-            done
-          fi
-          if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then
-            echo "Android SDK tidak ditemukan di runner."
-            exit 1
-          fi
-          export ANDROID_SDK_ROOT="$SDK"
-          export ANDROID_HOME="$SDK"
-          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
-          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
-          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
-          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          echo "$SDK/tools/bin" >> "$GITHUB_PATH"
-          SDKMANAGER=""
-          if [ -x "$SDK/cmdline-tools/latest/bin/sdkmanager" ]; then
-            SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
-          elif command -v sdkmanager >/dev/null 2>&1; then
-            SDKMANAGER="$(command -v sdkmanager)"
-          fi
-          if [ -n "$SDKMANAGER" ]; then
-            yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
-            "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-          else
-            echo "sdkmanager tidak ditemukan."
-            exit 1
-          fi
-
-      - name: Create Android project folders
-        run: |
           mkdir -p app/src/main/java/com/catatankas/app
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/assets
 
-      - name: Copy web files
-        run: |
-          set -euo pipefail
-          find . -maxdepth 1 -type f -name "*.html" -exec cp {} app/src/main/assets/ \;
-          find . -maxdepth 1 -type f -name "*.js" -exec cp {} app/src/main/assets/ \;
-          find . -maxdepth 1 -type f -name "*.css" -exec cp {} app/src/main/assets/ \;
-          if [ -d "js" ]; then cp -r js app/src/main/assets/; fi
-          if [ -d "Js" ]; then cp -r Js app/src/main/assets/; fi
-          if [ -d "css" ]; then cp -r css app/src/main/assets/; fi
-          if [ -d "assets" ]; then cp -r assets app/src/main/assets/; fi
-          if [ -d "images" ]; then cp -r images app/src/main/assets/; fi
-          if [ -d "img" ]; then cp -r img app/src/main/assets/; fi
-          if [ -f "logo-catatan-kas.jpg" ]; then cp logo-catatan-kas.jpg app/src/main/assets/logo-catatan-kas.jpg; fi
-          if [ -f "icon-192.png" ]; then cp icon-192.png app/src/main/assets/icon-192.png; fi
-          if [ -f "icon-512.png" ]; then cp icon-512.png app/src/main/assets/icon-512.png; fi
-          test -f app/src/main/assets/logo-catatan-kas.jpg
-          echo "Logo APK:" app/src/main/assets/logo-catatan-kas.jpg
+          find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) -exec cp {} app/src/main/assets/ \;
+          for dir in js Js css assets images img; do
+            if [ -d "$dir" ]; then cp -r "$dir" app/src/main/assets/; fi
+          done
 
-      - name: Inject global logo sync into every APK page
-        shell: bash
-        run: |
-          set -euo pipefail
+          # Pastikan file logo aplikasi tersedia sebagai asset.
+          if [ -f "logo-catatan-kas.jpg" ]; then cp "logo-catatan-kas.jpg" app/src/main/assets/; fi
+          if [ -f "logo-catatan-kas.png" ]; then cp "logo-catatan-kas.png" app/src/main/assets/; fi
+
+          # Gunakan ikon proyek jika ada; jika tidak, gunakan icon-192.png.
+          if [ -f "Photoroom_20260812_224807.png" ]; then
+            cp "Photoroom_20260812_224807.png" app/src/main/res/drawable/ic_keuangan.png
+          elif [ -f "icon-192.png" ]; then
+            cp "icon-192.png" app/src/main/res/drawable/ic_keuangan.png
+          else
+            echo "Ikon APK tidak ditemukan."
+            exit 1
+          fi
+
+          # Inject theme.js ke setiap halaman APK yang belum memuatnya.
           python3 - <<'PY'
           from pathlib import Path
           root = Path('app/src/main/assets')
           tag = '<script src="theme.js"></script>'
           css = '''
-          /* APK responsive landscape fix */
-          html, body { width:100% !important; min-width:100% !important; max-width:none !important; }
+          /* APK responsive fix */
+          html, body { width:100% !important; max-width:none !important; }
           body { overflow-x:hidden !important; }
-          .mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; margin-left:0 !important; margin-right:0 !important; }
-          body > main, body > .wrap, body > .mobile-container, body > .page-container, body > .ck-page { width:100% !important; max-width:none !important; }
           @media (orientation: landscape) and (min-width:700px) {
-            body { width:100vw !important; max-width:100vw !important; }
-            .mobile-container, .page-container, .ck-page, .wrap, .container, .container-sm, .container-md, .container-lg, .container-xl, .container-xxl, .container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; padding-left:24px !important; padding-right:24px !important; margin-left:0 !important; margin-right:0 !important; }
-            body > main, body > .wrap, body > .mobile-container, body > .page-container, body > .ck-page { width:100% !important; max-width:none !important; }
-            .ck-topbar, .topbar, .top, .custom-card, .pengeluaran-card, .cardx, .chart-card, .table-card, .filter-card, .info-card, .rekap-wrapper { width:100% !important; max-width:none !important; }
-            .bottom-in, .bottomin, .ck-bottom-inner { width:100% !important; max-width:none !important; }
+            .mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid {
+              width:100% !important; max-width:none !important; min-width:0 !important;
+              margin-left:0 !important; margin-right:0 !important;
+              padding-left:24px !important; padding-right:24px !important;
+            }
           }
           '''
           for p in root.glob('*.html'):
               text = p.read_text(encoding='utf-8')
               if 'src="theme.js"' not in text and "src='theme.js'" not in text:
-                  marker = '</head>'
-                  if marker in text:
-                      text = text.replace(marker, f'{tag}\n</head>', 1)
+                  if '</head>' in text:
+                      text = text.replace('</head>', tag + '\n</head>', 1)
                   else:
-                      text += f'\n{tag}\n'
-              if 'APK responsive landscape fix' not in text:
-                  text = text.replace('</head>', f'<style>{css}</style>\n</head>', 1)
+                      text += '\n' + tag + '\n'
+              if 'APK responsive fix' not in text and '</head>' in text:
+                  text = text.replace('</head>', '<style>' + css + '</style>\n</head>', 1)
               p.write_text(text, encoding='utf-8')
           PY
-          echo "Global theme/logo sync and landscape CSS injected."
 
-      - name: Set version inside update checker
-        env:
-          APP_VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -euo pipefail
-          if [ -f "app/src/main/assets/js/update-check.js" ]; then
-            sed -i -E 's/window\.APP_VERSION \|\| "[^"]*"/window.APP_VERSION || "'"$APP_VERSION"'"/' app/src/main/assets/js/update-check.js
-          fi
-
-      - name: Install app icon
-        run: |
-          test -f "Photoroom_20260812_224807.png"
-          cp "Photoroom_20260812_224807.png" app/src/main/res/drawable/ic_keuangan.png
-
-      - name: Create gradle.properties
-        run: |
-          printf "android.useAndroidX=true\nandroid.enableJetifier=false\n" > gradle.properties
-          printf "android.useAndroidX=true\nandroid.enableJetifier=false\n" > app/gradle.properties
-
-      - name: Create settings.gradle
-        run: |
           cat > settings.gradle <<'GRADLE'
           pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
+              repositories { google(); mavenCentral(); gradlePluginPortal() }
           }
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
               repositories { google(); mavenCentral() }
           }
-          rootProject.name = "Keuangan"
-          include(":app")
+          rootProject.name = 'Keuangan'
+          include ':app'
           GRADLE
 
-      - name: Create root build.gradle
-        run: |
           cat > build.gradle <<'GRADLE'
-          plugins { id 'com.android.application' version '8.7.3' apply false }
+          plugins {
+              id 'com.android.application' version '8.7.3' apply false
+          }
           GRADLE
 
-      - name: Create app build.gradle
-        env:
-          APP_VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -euo pipefail
+          cat > gradle.properties <<'PROPS'
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.enableJetifier=false
+          PROPS
+
           VERSION_CODE=$(python3 - <<'PY'
           import os
-          parts=[int(x) if x.isdigit() else 0 for x in os.environ['APP_VERSION'].lstrip('v').split('.')]
-          while len(parts) < 3: parts.append(0)
+          raw=os.environ.get('APP_VERSION','2.4').lstrip('v')
+          parts=[]
+          for x in raw.split('.'):
+              try: parts.append(int(x))
+              except ValueError: parts.append(0)
+          while len(parts)<3: parts.append(0)
           print(parts[0]*10000 + parts[1]*100 + parts[2])
           PY
           )
+
           cat > app/build.gradle <<GRADLE
           plugins { id 'com.android.application' }
           android {
@@ -214,32 +168,23 @@ jobs:
                   versionCode ${VERSION_CODE}
                   versionName '${APP_VERSION}'
               }
-              signingConfigs {
-                  release {
-                      storeFile file('../keuangan-release.jks')
-                      storePassword System.getenv('KEYSTORE_PASSWORD')
-                      keyAlias System.getenv('KEY_ALIAS')
-                      keyPassword System.getenv('KEY_PASSWORD')
-                  }
+              buildTypes {
+                  debug { minifyEnabled false }
+                  release { minifyEnabled false; shrinkResources false }
               }
-              buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
           }
-          dependencies { implementation 'androidx.webkit:webkit:1.16.0' }
           GRADLE
 
-      - name: Create AndroidManifest.xml
-        run: |
           cat > app/src/main/AndroidManifest.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-              <supports-screens
-                  android:smallScreens="true"
-                  android:normalScreens="true"
-                  android:largeScreens="true"
-                  android:xlargeScreens="true"
-                  android:anyDensity="true"
-                  android:resizeable="true" />
+              <supports-screens android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true" android:resizeable="true" />
               <application
                   android:allowBackup="true"
                   android:label="Keuangan"
@@ -250,10 +195,10 @@ jobs:
                   android:usesCleartextTraffic="true">
                   <activity
                       android:name=".MainActivity"
+                      android:exported="true"
                       android:screenOrientation="unspecified"
                       android:resizeableActivity="true"
-                      android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
-                      android:exported="true">
+                      android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.LAUNCHER" />
@@ -263,9 +208,8 @@ jobs:
           </manifest>
           XML
 
-      - name: Create styles.xml
-        run: |
           cat > app/src/main/res/values/styles.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
                   <item name="android:fontFamily">sans</item>
@@ -273,32 +217,23 @@ jobs:
                   <item name="android:navigationBarColor">#000000</item>
                   <item name="android:statusBarColor">#000000</item>
                   <item name="android:windowNoTitle">true</item>
-          </style>
+              </style>
           </resources>
           XML
 
-      - name: Create MainActivity.java
-        run: |
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
           package com.catatankas.app;
+
           import android.app.Activity;
-          import android.content.Intent;
-          import android.net.Uri;
           import android.os.Bundle;
           import android.view.ViewGroup;
-          import android.webkit.ValueCallback;
           import android.webkit.WebChromeClient;
-          import android.webkit.WebResourceRequest;
-          import android.webkit.WebResourceResponse;
           import android.webkit.WebSettings;
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
-          import androidx.webkit.WebViewAssetLoader;
 
           public class MainActivity extends Activity {
-              private static final int FILE_CHOOSER_REQUEST = 4101;
               private WebView webView;
-              private ValueCallback<Uri[]> filePathCallback;
               @Override protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   webView = new WebView(this);
@@ -308,70 +243,93 @@ jobs:
                   settings.setJavaScriptEnabled(true);
                   settings.setDomStorageEnabled(true);
                   settings.setDatabaseEnabled(true);
-                  settings.setAllowFileAccess(false);
+                  settings.setAllowFileAccess(true);
                   settings.setAllowContentAccess(true);
+                  settings.setJavaScriptCanOpenWindowsAutomatically(true);
                   settings.setUseWideViewPort(false);
                   settings.setLoadWithOverviewMode(false);
                   settings.setSupportZoom(false);
                   settings.setBuiltInZoomControls(false);
                   settings.setDisplayZoomControls(false);
-                  final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
-                          .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this)).build();
-                  webView.setWebViewClient(new WebViewClient() {
-                      @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                          return assetLoader.shouldInterceptRequest(request.getUrl());
-                      }
-                  });
-                  webView.setWebChromeClient(new WebChromeClient() {
-                      @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
-                          if (filePathCallback != null) filePathCallback.onReceiveValue(null);
-                          filePathCallback = callback;
-                          Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                          intent.addCategory(Intent.CATEGORY_OPENABLE);
-                          intent.setType("image/*");
-                          intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-                          try { startActivityForResult(intent, FILE_CHOOSER_REQUEST); return true; }
-                          catch (Exception error) { filePathCallback = null; return false; }
-                      }
-                  });
-                  webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-              }
-              @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-                  super.onActivityResult(requestCode, resultCode, data);
-                  if (requestCode != FILE_CHOOSER_REQUEST || filePathCallback == null) return;
-                  Uri[] results = null;
-                  if (resultCode == RESULT_OK && data != null && data.getData() != null) results = new Uri[]{data.getData()};
-                  filePathCallback.onReceiveValue(results);
-                  filePathCallback = null;
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebChromeClient(new WebChromeClient());
+                  webView.loadUrl("file:///android_asset/index.html");
               }
               @Override public void onBackPressed() {
                   if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
               }
+              @Override protected void onDestroy() {
+                  if (webView != null) webView.destroy();
+                  super.onDestroy();
+              }
           }
           JAVA
 
-      - name: Build signed release APK
+      - name: Verify project files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f app/src/main/assets/index.html
+          test -f app/src/main/assets/theme.js
+          test -f app/src/main/res/drawable/ic_keuangan.png
+          java -version
+          gradle --version
+          find app/src/main -maxdepth 3 -type f | sort
+
+      - name: Build Debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle --no-daemon clean :app:assembleDebug --stacktrace
+          mkdir -p output
+          cp app/build/outputs/apk/debug/app-debug.apk "output/Keuangan-v${{ steps.version.outputs.version }}-debug.apk"
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Keuangan-v${{ steps.version.outputs.version }}-debug-apk
+          path: output/Keuangan-v${{ steps.version.outputs.version }}-debug.apk
+          if-no-files-found: error
+
+      - name: Build signed Release APK when keystore secrets are available
+        if: ${{ env.HAS_RELEASE_KEYSTORE == 'true' }}
         env:
+          HAS_RELEASE_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_ALIAS != '' && secrets.KEY_PASSWORD != '' }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        shell: bash
         run: |
           set -euo pipefail
-          gradle --no-daemon clean
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > keuangan-release.jks
+          keytool -list -keystore keuangan-release.jks -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('app/build.gradle')
+          s=p.read_text()
+          s=s.replace("buildTypes {", "signingConfigs { release { storeFile file('../keuangan-release.jks'); storePassword System.getenv('KEYSTORE_PASSWORD'); keyAlias System.getenv('KEY_ALIAS'); keyPassword System.getenv('KEY_PASSWORD') } }\n              buildTypes {")
+          s=s.replace("release { minifyEnabled false; shrinkResources false }", "release { minifyEnabled false; shrinkResources false; signingConfig signingConfigs.release }")
+          p.write_text(s)
+          PY
           gradle --no-daemon :app:assembleRelease --stacktrace
-          cp app/build/outputs/apk/release/app-release.apk "Keuangan-v${{ steps.version.outputs.version }}.apk"
-          ls -lh "Keuangan-v${{ steps.version.outputs.version }}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "output/Keuangan-v${{ steps.version.outputs.version }}-release.apk"
 
-      - name: Upload APK artifact
+      - name: Upload Release APK
+        if: ${{ env.HAS_RELEASE_KEYSTORE == 'true' }}
+        env:
+          HAS_RELEASE_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_ALIAS != '' && secrets.KEY_PASSWORD != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: Keuangan-v${{ steps.version.outputs.version }}-release-apk
-          path: Keuangan-v${{ steps.version.outputs.version }}.apk
+          path: output/Keuangan-v${{ steps.version.outputs.version }}-release.apk
           if-no-files-found: error
 
       - name: Build summary
+        shell: bash
         run: |
           echo "BUILD KEUANGAN SELESAI"
           echo "Nama aplikasi : Keuangan"
           echo "Version       : ${{ steps.version.outputs.version }}"
           echo "Package       : com.catatankas.app"
+          ls -lh output/
