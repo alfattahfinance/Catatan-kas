@@ -119,7 +119,20 @@ jobs:
           from pathlib import Path
           root = Path('app/src/main/assets')
           tag = '<script src="theme.js"></script>'
-          css = '''\n/* APK responsive landscape fix */\nhtml, body { width:100% !important; min-width:100% !important; max-width:none !important; }\nbody { overflow-x:hidden !important; }\n.mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; margin-left:auto !important; margin-right:auto !important; }\n@media (orientation: landscape) and (min-width:700px) {\n  .mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { padding-left:24px !important; padding-right:24px !important; }\n  .ck-topbar, .custom-card, .pengeluaran-card, .cardx { width:100% !important; max-width:none !important; }\n}\n'''
+          css = '''
+          /* APK responsive landscape fix */
+          html, body { width:100% !important; min-width:100% !important; max-width:none !important; }
+          body { overflow-x:hidden !important; }
+          .mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; margin-left:0 !important; margin-right:0 !important; }
+          body > main, body > .wrap, body > .mobile-container, body > .page-container, body > .ck-page { width:100% !important; max-width:none !important; }
+          @media (orientation: landscape) and (min-width:700px) {
+            body { width:100vw !important; max-width:100vw !important; }
+            .mobile-container, .page-container, .ck-page, .wrap, .container, .container-sm, .container-md, .container-lg, .container-xl, .container-xxl, .container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; padding-left:24px !important; padding-right:24px !important; margin-left:0 !important; margin-right:0 !important; }
+            body > main, body > .wrap, body > .mobile-container, body > .page-container, body > .ck-page { width:100% !important; max-width:none !important; }
+            .ck-topbar, .topbar, .top, .custom-card, .pengeluaran-card, .cardx, .chart-card, .table-card, .filter-card, .info-card, .rekap-wrapper { width:100% !important; max-width:none !important; }
+            .bottom-in, .bottomin, .ck-bottom-inner { width:100% !important; max-width:none !important; }
+          }
+          '''
           for p in root.glob('*.html'):
               text = p.read_text(encoding='utf-8')
               if 'src="theme.js"' not in text and "src='theme.js'" not in text:
@@ -233,12 +246,12 @@ jobs:
                   android:icon="@drawable/ic_keuangan"
                   android:roundIcon="@drawable/ic_keuangan"
                   android:theme="@style/AppTheme"
-                  android:resizeableActivity="false"
+                  android:resizeableActivity="true"
                   android:usesCleartextTraffic="true">
                   <activity
                       android:name=".MainActivity"
                       android:screenOrientation="unspecified"
-                      android:resizeableActivity="false"
+                      android:resizeableActivity="true"
                       android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
                       android:exported="true">
                       <intent-filter>
@@ -260,7 +273,7 @@ jobs:
                   <item name="android:navigationBarColor">#000000</item>
                   <item name="android:statusBarColor">#000000</item>
                   <item name="android:windowNoTitle">true</item>
-              </style>
+          </style>
           </resources>
           XML
 
