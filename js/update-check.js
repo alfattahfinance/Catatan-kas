@@ -100,18 +100,39 @@
   }
 
   window.addEventListener("webUpdateAvailable", event => showWebUpdate(event.detail || {}));
+
+  window.addEventListener("webUpdateLatest", event => {
+    const d = event.detail || {};
+    setStatus("Aplikasi sudah menggunakan versi terbaru (" + (d.version || currentVersion()) + ").");
+  });
+
   window.addEventListener("webUpdateProgress", event => {
     const d = event.detail || {};
     const msg = document.getElementById("webUpdateMessage");
     if (msg) msg.textContent = d.message || "Mengunduh perbaikan...";
   });
-  window.addEventListener("webUpdateComplete", event => {
+
+  window.addEventListener("webUpdateComplete", async event => {
     const d = event.detail || {};
     try { localStorage.setItem("keuanganWebVersion", d.version || ""); } catch (_) {}
+
+    // Hapus cache Service Worker agar file HTML/JS/CSS versi baru benar-benar dipakai.
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+    } catch (_) {}
+
     document.getElementById("webUpdateBox")?.remove();
     setStatus("Pembaruan berhasil dipasang. Memuat ulang aplikasi...");
-    setTimeout(() => location.reload(), 500);
+    setTimeout(() => location.reload(true), 500);
   });
+
   window.addEventListener("webUpdateError", event => {
     const d = event.detail || {};
     const msg = document.getElementById("webUpdateMessage");
