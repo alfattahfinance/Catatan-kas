@@ -1,22 +1,25 @@
-const CACHE_NAME = "catatan-kas-v7";
+const CACHE_NAME = "catatan-kas-v8";
 const BASE = self.registration.scope;
 const LOGO_URL = new URL("logo-catatan-kas.jpg", BASE).href;
 const ICON_URL = new URL("icon-192.png", BASE).href;
+const LOGO_SYNC_URL = new URL("logo-sync.js?v=2", BASE).href;
 
 const urlsToCache = [
     BASE,
     BASE + "index.html",
     BASE + "laporan.html",
     BASE + "santri.html",
+    BASE + "pembayaran.html",
+    BASE + "pengeluaran.html",
+    BASE + "rekap.html",
+    BASE + "pengaturan.html",
     BASE + "manifest.json",
     BASE + "style.css",
     BASE + "theme.css?v=20260817",
-    BASE + "js/app.js",
-    BASE + "js/theme.js",
-    BASE + "js/auth-guard.js",
-    BASE + "js/firebase-config.js",
-    BASE + "logo-catatan-kas.jpg",
-    BASE + "icon-192.png"
+    BASE + "theme.js",
+    BASE + "logo-sync.js?v=2",
+    BASE + "icon-192.png",
+    BASE + "logo-catatan-kas.jpg"
 ];
 
 self.addEventListener("install", event => {
@@ -43,7 +46,8 @@ self.addEventListener("activate", event => {
 async function logoResponse(request) {
     const pathname = new URL(request.url).pathname.toLowerCase();
     const isOldAssetLogo = pathname.endsWith("/assets/logo-catatan-kas.jpg") ||
-        pathname.endsWith("/assets/logo-catatan-kas.png");
+        pathname.endsWith("/assets/logo-catatan-kas.png") ||
+        pathname.endsWith("/logo-catatan-kas.png");
 
     if (isOldAssetLogo) {
         const cached = await caches.match(LOGO_URL);
@@ -77,12 +81,41 @@ async function logoResponse(request) {
     return caches.match(ICON_URL);
 }
 
+async function preparePageResponse(response) {
+    if (!response || !response.ok) return response;
+    const type = response.headers.get("content-type") || "";
+    if (!type.includes("text/html")) return response;
+
+    try {
+        const text = await response.text();
+        if (text.includes("logo-sync.js")) return new Response(text, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers
+        });
+
+        const injected = text.replace(
+            /<\/head>/i,
+            '<script src="logo-sync.js?v=2"></script></head>'
+        );
+
+        return new Response(injected, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers
+        });
+    } catch (_) {
+        return response;
+    }
+}
+
 self.addEventListener("fetch", event => {
     if (event.request.method !== "GET") return;
 
     const url = new URL(event.request.url);
     const isTheme = url.pathname.endsWith("/css/theme.css") ||
-        url.pathname.endsWith("/theme.css");
+        url.pathname.endsWith("/theme.css") ||
+        url.pathname.endsWith("/theme.js");
     const isPage = event.request.mode === "navigate" ||
         url.pathname.endsWith(".html");
     const isImage = event.request.destination === "image" ||
@@ -91,12 +124,12 @@ self.addEventListener("fetch", event => {
     if (isTheme || isPage) {
         event.respondWith(
             fetch(event.request, { cache: "no-cache" })
-                .then(networkResponse => {
-                    if (networkResponse && networkResponse.status === 200) {
-                        const clone = networkResponse.clone();
-                        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-                    }
-                    return networkResponse;
+                .then(async networkResponse => {
+                    if (!networkResponse || networkResponse.status !== 200) return networkResponse;
+                    const prepared = isPage ? await preparePageResponse(networkResponse) : networkResponse;
+                    const clone = prepared.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+                    return prepared;
                 })
                 .catch(() => caches.match(event.request))
         );
