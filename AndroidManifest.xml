@@ -1,71 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Internet untuk Firebase dan update APK -->
-    <uses-permission
-        android:name="android.permission.INTERNET" />
-
-    <!-- Instalasi APK update -->
-    <uses-permission
-        android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:allowBackup="true"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.CatatanKas"
         android:label="Catatan Kas"
-        android:resizeableActivity="true">
-
-
-        <!-- =================================================
-             MAIN ACTIVITY
-        ================================================== -->
+        android:resizeableActivity="false">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="unspecified"
-            android:configChanges="
-                orientation|
-                screenSize|
-                keyboardHidden|
-                screenLayout|
-                smallestScreenSize"
-            android:resizeableActivity="true">
-
-
+            android:resizeableActivity="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize">
             <intent-filter>
-
-                <action
-                    android:name="android.intent.action.MAIN" />
-
-                <category
-                    android:name="android.intent.category.LAUNCHER" />
-
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
-
-
-        <!-- =================================================
-             FILE PROVIDER
-        ================================================== -->
 
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
-
         </provider>
-
     </application>
-
 </manifest>
