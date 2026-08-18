@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "message": "Pembaruan fitur aplikasi tersedia.",
+  "version": "1.0.1",
+  "message": "Pembaruan sistem aplikasi: update dalam aplikasi sekarang membersihkan cache agar perbaikan HTML, JavaScript, dan CSS langsung digunakan.",
   "files": [
     "index.html",
     "app.js",
@@ -20,6 +20,7 @@
     "santri.js",
     "rekap.html",
     "style.css",
+    "theme.css",
     "theme.js",
     "logo-sync.js",
     "service-worker.js",
