@@ -111,6 +111,29 @@ jobs:
           test -f app/src/main/assets/logo-catatan-kas.jpg
           echo "Logo APK:" app/src/main/assets/logo-catatan-kas.jpg
 
+      - name: Inject global logo sync into every APK page
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('app/src/main/assets')
+          tag = '<script src="theme.js"></script>'
+          css = '''\n/* APK responsive landscape fix */\nhtml, body { width:100% !important; min-width:100% !important; max-width:none !important; }\nbody { overflow-x:hidden !important; }\n.mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; margin-left:auto !important; margin-right:auto !important; }\n@media (orientation: landscape) and (min-width:700px) {\n  .mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { padding-left:24px !important; padding-right:24px !important; }\n  .ck-topbar, .custom-card, .pengeluaran-card, .cardx { width:100% !important; max-width:none !important; }\n}\n'''
+          for p in root.glob('*.html'):
+              text = p.read_text(encoding='utf-8')
+              if 'src="theme.js"' not in text and "src='theme.js'" not in text:
+                  marker = '</head>'
+                  if marker in text:
+                      text = text.replace(marker, f'{tag}\n</head>', 1)
+                  else:
+                      text += f'\n{tag}\n'
+              if 'APK responsive landscape fix' not in text:
+                  text = text.replace('</head>', f'<style>{css}</style>\n</head>', 1)
+              p.write_text(text, encoding='utf-8')
+          PY
+          echo "Global theme/logo sync and landscape CSS injected."
+
       - name: Set version inside update checker
         env:
           APP_VERSION: ${{ steps.version.outputs.version }}
@@ -197,6 +220,13 @@ jobs:
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <supports-screens
+                  android:smallScreens="true"
+                  android:normalScreens="true"
+                  android:largeScreens="true"
+                  android:xlargeScreens="true"
+                  android:anyDensity="true"
+                  android:resizeable="true" />
               <application
                   android:allowBackup="true"
                   android:label="Keuangan"
@@ -209,6 +239,7 @@ jobs:
                       android:name=".MainActivity"
                       android:screenOrientation="unspecified"
                       android:resizeableActivity="true"
+                      android:maxAspectRatio="2.4"
                       android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
                       android:exported="true">
                       <intent-filter>
@@ -229,6 +260,7 @@ jobs:
                   <item name="android:colorAccent">#198754</item>
                   <item name="android:navigationBarColor">#000000</item>
                   <item name="android:statusBarColor">#000000</item>
+                  <item name="android:windowNoTitle">true</item>
               </style>
           </resources>
           XML
@@ -241,6 +273,7 @@ jobs:
           import android.content.Intent;
           import android.net.Uri;
           import android.os.Bundle;
+          import android.view.ViewGroup;
           import android.webkit.ValueCallback;
           import android.webkit.WebChromeClient;
           import android.webkit.WebResourceRequest;
@@ -257,6 +290,7 @@ jobs:
               @Override protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   webView = new WebView(this);
+                  webView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                   setContentView(webView);
                   WebSettings settings = webView.getSettings();
                   settings.setJavaScriptEnabled(true);
