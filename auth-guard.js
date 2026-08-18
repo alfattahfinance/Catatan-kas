@@ -4,26 +4,29 @@
 // ======================================
 
 import { auth } from "./firebase-config.js";
-import {
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 const DEFAULT_LOGO = "logo-catatan-kas.jpg";
 const LOGO_KEY = "logoDashboard";
 const SETTINGS_KEY = "pengaturanAplikasi";
 
+function isValidLogo(value) {
+    if (!value || typeof value !== "string") return false;
+    const v = value.trim();
+    if (!v) return false;
+    if (/^(?:\.\/)?assets\/logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v)) return false;
+    if (/^\/assets\/logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v)) return false;
+    return /^data:image\//i.test(v) || /^https?:\/\//i.test(v) || /^blob:/i.test(v) || /^(?:\.\/)?[\w./-]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(v);
+}
+
 function getConfiguredLogo() {
     try {
         const directLogo = localStorage.getItem(LOGO_KEY);
-        if (directLogo && directLogo !== "assets/logo-catatan-kas.jpg" && directLogo !== "assets/logo-catatan-kas.png") {
-            return directLogo;
-        }
+        if (isValidLogo(directLogo)) return directLogo;
 
         const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") || {};
         const settingsLogo = settings.logoDashboard || settings.logo || settings.logoUrl;
-        if (settingsLogo && settingsLogo !== "assets/logo-catatan-kas.jpg" && settingsLogo !== "assets/logo-catatan-kas.png") {
-            return settingsLogo;
-        }
+        if (isValidLogo(settingsLogo)) return settingsLogo;
     } catch (error) {
         console.warn("Gagal membaca pengaturan logo:", error);
     }
@@ -34,19 +37,10 @@ function getConfiguredLogo() {
 function applyPageLogo() {
     const logo = getConfiguredLogo();
     const selectors = [
-        "#laporanLogo",
-        "#logo",
-        ".ck-logo",
-        ".app-logo",
-        ".logo",
-        "#logoDashboard",
-        "#dashboardLogo",
-        "#previewLogoDashboard",
-        "#logoPreviewV2",
-        "#logoPreview",
-        "img[alt='Logo Dashboard']",
-        "img[alt='Logo aplikasi']",
-        "img[alt='Logo Catatan Kas']",
+        "#laporanLogo", "#logo", ".ck-logo", ".app-logo", ".logo",
+        "#logoDashboard", "#dashboardLogo", "#previewLogoDashboard",
+        "#logoPreviewV2", "#logoPreview", "img[alt='Logo Dashboard']",
+        "img[alt='Logo aplikasi']", "img[alt='Logo Catatan Kas']",
         "[data-dashboard-logo]"
     ];
 
@@ -55,9 +49,7 @@ function applyPageLogo() {
 
         img.onerror = () => {
             img.onerror = null;
-            if (img.src !== new URL(DEFAULT_LOGO, document.baseURI).href) {
-                img.src = DEFAULT_LOGO;
-            }
+            img.src = new URL(DEFAULT_LOGO, document.baseURI).href;
         };
 
         img.src = logo;
@@ -75,7 +67,6 @@ function setupLogoEvents() {
     window.addEventListener("storage", (event) => {
         if (event.key === LOGO_KEY || event.key === SETTINGS_KEY) applyPageLogo();
     });
-
     document.addEventListener("DOMContentLoaded", applyPageLogo, { once: true });
     setTimeout(applyPageLogo, 100);
     setTimeout(applyPageLogo, 500);
@@ -89,7 +80,6 @@ onAuthStateChanged(auth, (user) => {
         window.location.replace("login.html");
         return;
     }
-
     console.log("Pengguna sudah login:", user.email);
     applyPageLogo();
 });
