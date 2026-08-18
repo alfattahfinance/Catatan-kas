@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const WEB_VERSION = "1.0.0";
+  const WEB_VERSION = "1.0.1";
   const MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
 
   function versionNumber(v) {
@@ -21,14 +21,7 @@
     document.getElementById("webUpdateBox")?.remove();
     const box = document.createElement("div");
     box.id = "webUpdateBox";
-    box.innerHTML = `
-      <div style="position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px">
-        <div style="width:min(520px,100%);background:#fff;color:#212529;border-radius:18px;padding:20px;box-shadow:0 15px 45px rgba(0,0,0,.25)">
-          <div style="font-weight:800;font-size:18px;margin-bottom:8px">${title}</div>
-          <div id="webUpdateMessage" style="font-size:14px;line-height:1.55;margin-bottom:16px">${message}</div>
-          <div id="webUpdateButtons" style="display:flex;gap:10px"></div>
-        </div>
-      </div>`;
+    box.innerHTML = `<div style="position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px"><div style="width:min(520px,100%);background:#fff;color:#212529;border-radius:18px;padding:20px;box-shadow:0 15px 45px rgba(0,0,0,.25)"><div style="font-weight:800;font-size:18px;margin-bottom:8px">${title}</div><div id="webUpdateMessage" style="font-size:14px;line-height:1.55;margin-bottom:16px">${message}</div><div id="webUpdateButtons" style="display:flex;gap:10px"></div></div></div>`;
     document.body.appendChild(box);
     const holder = box.querySelector("#webUpdateButtons");
     (buttons || []).forEach(b => {
@@ -47,17 +40,17 @@
     const el = document.getElementById("statusUpdateAplikasi");
     if (el) {
       el.textContent = text;
-      el.className = "status text-center " + (ok ? "text-success" : "text-danger");
+      el.className = "status text-center mt-2 " + (ok ? "text-success" : "text-danger");
     }
   }
 
   function nativeAvailable() {
-    return !!(window.AndroidWebUpdater && typeof window.AndroidWebUpdater.checkForUpdate === "function");
+    return !!(window.AndroidWebUpdater && typeof window.AndroidWebUpdater.checkForUpdate === "function" && typeof window.AndroidWebUpdater.applyUpdate === "function");
   }
 
   async function checkWebUpdate(showLatest) {
+    setStatus("Memeriksa pembaruan...");
     if (nativeAvailable()) {
-      setStatus("Memeriksa pembaruan...");
       window.AndroidWebUpdater.checkForUpdate();
       return;
     }
@@ -88,14 +81,15 @@
   }
 
   function applyWebUpdate() {
-    if (!nativeAvailable() || typeof window.AndroidWebUpdater.applyUpdate !== "function") {
-      setStatus("Fitur update otomatis membutuhkan APK yang sudah mendukung update aplikasi.", false);
+    if (!nativeAvailable()) {
+      setStatus("APK ini belum memiliki mesin update. Instal APK Keuangan versi Updatable satu kali terlebih dahulu.", false);
       return;
     }
     const msg = document.getElementById("webUpdateMessage");
     const buttons = document.getElementById("webUpdateButtons");
-    if (msg) msg.textContent = "Mengunduh perbaikan aplikasi. Jangan tutup aplikasi...";
+    if (msg) msg.textContent = "Mengunduh dan memasang perbaikan aplikasi. Jangan tutup aplikasi...";
     if (buttons) buttons.innerHTML = "";
+    setStatus("Sedang memasang pembaruan...");
     window.AndroidWebUpdater.applyUpdate();
   }
 
@@ -115,8 +109,6 @@
   window.addEventListener("webUpdateComplete", async event => {
     const d = event.detail || {};
     try { localStorage.setItem("keuanganWebVersion", d.version || ""); } catch (_) {}
-
-    // Hapus cache Service Worker agar file HTML/JS/CSS versi baru benar-benar dipakai.
     try {
       if ("serviceWorker" in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations();
@@ -127,10 +119,9 @@
         await Promise.all(keys.map(k => caches.delete(k)));
       }
     } catch (_) {}
-
     document.getElementById("webUpdateBox")?.remove();
     setStatus("Pembaruan berhasil dipasang. Memuat ulang aplikasi...");
-    setTimeout(() => location.reload(true), 500);
+    setTimeout(() => location.reload(), 700);
   });
 
   window.addEventListener("webUpdateError", event => {
@@ -151,7 +142,12 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     const button = document.getElementById("cekUpdateButton");
-    if (button) button.addEventListener("click", () => checkWebUpdate(true));
+    if (button) {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        checkWebUpdate(true);
+      });
+    }
     setTimeout(() => checkWebUpdate(false), 3000);
   });
 
