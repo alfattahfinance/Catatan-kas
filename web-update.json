@@ -1,6 +1,6 @@
 {
-  "version": "1.0.1",
-  "message": "Pembaruan sistem aplikasi: update dalam aplikasi sekarang membersihkan cache agar perbaikan HTML, JavaScript, dan CSS langsung digunakan.",
+  "version": "1.0.2",
+  "message": "Pembaruan tersedia. Perbaikan sistem update dan sinkronisasi fitur aplikasi. Data Anda tetap dipertahankan.",
   "files": [
     "index.html",
     "app.js",
