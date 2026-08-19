@@ -11,16 +11,18 @@
     document.head.appendChild(theme);
   }
 
-  // Jangan bergantung pada MutationObserver/theme manager agar fitur pasti muncul.
+  // Loader khusus halaman Santri. Cache-busting memastikan APK mengambil file baru.
   function loadBulk() {
     if (!/santri\.html$/i.test(location.pathname)) return;
     if (window.__ckBulkSantriLoaded) return;
     window.__ckBulkSantriLoaded = true;
 
     const script = document.createElement("script");
-    script.src = "js/santri-import.js?v=1.0.3";
+    script.src = "js/santri-import.js?v=1.0.6";
     script.async = false;
+    script.onload = () => console.log("Fitur Tambah Banyak Santri berhasil dimuat.");
     script.onerror = () => {
+      window.__ckBulkSantriLoaded = false;
       console.error("Fitur tambah banyak santri gagal dimuat.");
     };
     document.head.appendChild(script);
