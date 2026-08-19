@@ -2,6 +2,7 @@ package com.catatankas.app;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
@@ -23,12 +24,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * MainActivity + updater web.  Native APK behaviour stays in MainActivity;
+ * MainActivity + updater web. Native APK behaviour stays in MainActivity;
  * this class only adds the in-app HTML/JS/CSS update mechanism.
  */
 public class UpdatableMainActivity extends MainActivity {
     private static final String MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
-    private static final String EMBEDDED_WEB_VERSION = "1.0.1";
+    private static final String EMBEDDED_WEB_VERSION = "1.0.5";
     private File webUpdateDir;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -37,7 +38,6 @@ public class UpdatableMainActivity extends MainActivity {
         webUpdateDir = new File(getFilesDir(), "web_update");
         if (!webUpdateDir.exists()) webUpdateDir.mkdirs();
         if (webView != null) webView.addJavascriptInterface(new AndroidWebUpdater(), "AndroidWebUpdater");
-        // Replace the inherited asset loader with one that first checks updated files.
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new UpdatableAssetsPathHandler(this, webUpdateDir)).build();
         webView.setWebViewClient(new androidx.webkit.WebViewClientCompat() {
@@ -49,13 +49,12 @@ public class UpdatableMainActivity extends MainActivity {
                 if (u == null) return false;
                 String x = u.toString().toLowerCase();
                 if (!x.startsWith("https://appassets.androidplatform.net/") && !x.startsWith("http://appassets.androidplatform.net/")) {
-                    try { startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
                     return true;
                 }
                 return false;
             }
         });
-        // MainActivity already loaded index.html. Reload once after installing the updater-aware loader.
         webView.reload();
     }
 
