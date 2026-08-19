@@ -2,35 +2,52 @@
 (() => {
   "use strict";
 
-  // Tetap aktifkan theme manager utama.
-  if (!window.themeManager && !document.getElementById("catatanKasThemeBridge")) {
-    const theme = document.createElement("script");
-    theme.id = "catatanKasThemeBridge";
-    theme.src = "../theme.js";
-    theme.async = false;
-    document.head.appendChild(theme);
+  function isSantriPage() {
+    return !!(
+      document.getElementById('ckBulkSantriAnchor') ||
+      document.getElementById('formSantri') ||
+      document.getElementById('daftarSantri') ||
+      document.querySelector('[data-page="santri"]') ||
+      /santri/i.test(document.title || '')
+    );
   }
 
-  // Loader khusus halaman Santri. Cache-busting memastikan APK mengambil file baru.
   function loadBulk() {
-    if (!/santri\.html$/i.test(location.pathname)) return;
-    if (window.__ckBulkSantriLoaded) return;
-    window.__ckBulkSantriLoaded = true;
+    if (!isSantriPage()) return;
+    if (window.__ckBulkSantriLoading || window.__ckBulkSantriLoaded) return;
+    window.__ckBulkSantriLoading = true;
 
-    const script = document.createElement("script");
-    script.src = "js/santri-import.js?v=1.0.6";
+    const script = document.createElement('script');
+    script.src = 'js/santri-import.js?v=1.0.7';
     script.async = false;
-    script.onload = () => console.log("Fitur Tambah Banyak Santri berhasil dimuat.");
+    script.onload = () => {
+      window.__ckBulkSantriLoaded = true;
+      window.__ckBulkSantriLoading = false;
+      console.log('Fitur Tambah Banyak Santri berhasil dimuat.');
+    };
     script.onerror = () => {
-      window.__ckBulkSantriLoaded = false;
-      console.error("Fitur tambah banyak santri gagal dimuat.");
+      window.__ckBulkSantriLoading = false;
+      console.error('Fitur Tambah Banyak Santri gagal dimuat:', script.src);
     };
     document.head.appendChild(script);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", loadBulk, { once: true });
+  // Jangan mengubah theme manager yang sudah berjalan.
+  if (!window.themeManager && !document.getElementById('catatanKasThemeBridge')) {
+    const theme = document.createElement('script');
+    theme.id = 'catatanKasThemeBridge';
+    theme.src = 'theme.js';
+    theme.async = false;
+    document.head.appendChild(theme);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadBulk, { once: true });
   } else {
     loadBulk();
   }
+
+  // WebView kadang menyelesaikan DOM setelah DOMContentLoaded.
+  setTimeout(loadBulk, 500);
+  setTimeout(loadBulk, 1500);
 })();
