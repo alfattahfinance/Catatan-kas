@@ -29,11 +29,32 @@ const LOGO_DEFAULT = "logo-catatan-kas.jpg";
 
 function logoDashboardTersimpan() {
     try {
-        const logo = localStorage.getItem("logoDashboard");
-        if (!logo || logo === "assets/logo-catatan-kas.jpg" || logo === "assets/logo-catatan-kas.png") {
-            return LOGO_DEFAULT;
+        const settings = JSON.parse(localStorage.getItem("pengaturanAplikasi") || "{}");
+        const saved = localStorage.getItem("logoDashboard");
+        const candidates = [saved, settings?.logoDashboard, settings?.logo];
+
+        for (const candidate of candidates) {
+            if (typeof candidate !== "string") continue;
+            const logo = candidate.trim();
+            if (!logo) continue;
+
+            // Path logo lama yang sudah tidak valid di root APK/PWA.
+            if (
+                logo === "assets/logo-catatan-kas.jpg" ||
+                logo === "assets/logo-catatan-kas.png" ||
+                logo === "logo-catatan-kas.png"
+            ) {
+                continue;
+            }
+
+            // Logo pilihan pengguna (termasuk data:image/... dari Pengaturan).
+            if (/^data:image\//i.test(logo)) return logo;
+            if (/^https?:\/\//i.test(logo)) return logo;
+            if (/^blob:/i.test(logo)) return logo;
+            if (/^(\.\/|\/)?[\w./-]+\.(jpe?g|png|webp|gif|svg)$/i.test(logo)) return logo;
         }
-        return logo;
+
+        return LOGO_DEFAULT;
     } catch (_) {
         return LOGO_DEFAULT;
     }
@@ -51,6 +72,7 @@ function muatLogoDashboard() {
         "#previewLogoDashboard",
         "img[alt='Logo Dashboard']",
         "img[alt='Logo aplikasi']",
+        "img[alt='Logo Catatan Kas']",
         "[data-dashboard-logo]"
     ].join(","));
 
@@ -58,6 +80,7 @@ function muatLogoDashboard() {
         if (element && element.tagName === "IMG") {
             element.src = logo;
             element.removeAttribute("srcset");
+            element.removeAttribute("data-src");
         }
     });
 }
@@ -227,7 +250,7 @@ window.addEventListener("logoDashboardChanged", function () {
 });
 
 window.addEventListener("storage", function (event) {
-    if (event.key === "catatanKasDataBerubah" || event.key === "logoDashboard") {
+    if (event.key === "catatanKasDataBerubah" || event.key === "logoDashboard" || event.key === "pengaturanAplikasi") {
         refreshLogoDanDashboard();
     }
 });
