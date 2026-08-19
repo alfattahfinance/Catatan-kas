@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const WEB_VERSION = "1.0.3";
+  const WEB_VERSION = "1.0.5";
   const MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
 
   function versionNumber(v) {
