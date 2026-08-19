@@ -1,6 +1,6 @@
 {
-  "version": "1.0.3",
-  "message": "Pembaruan tersedia: fitur tambah banyak santri sekaligus melalui Excel/CSV dan perbaikan proses import. Data yang sudah ada tetap dipertahankan.",
+  "version": "1.0.4",
+  "message": "Pembaruan v1.0.4: fitur Tambah Banyak Santri sekarang dipastikan tampil di halaman Santri. Mendukung Excel dan CSV, mencegah duplikat, dan menyimpan banyak data sekaligus.",
   "files": [
     "index.html",
     "app.js",
