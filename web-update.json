@@ -1,6 +1,6 @@
 {
-  "version": "1.0.8",
-  "message": "Pembaruan v1.0.8: memperbaiki fitur Tambah Banyak Santri agar berjalan mandiri di WebView APK. Dapat memasukkan banyak santri dari Excel/CSV, mencegah duplikat, dan mempertahankan data santri lama.",
+  "version": "1.0.9",
+  "message": "Pembaruan v1.0.9: memastikan nama santri hasil import banyak muncul di kolom Pembayaran, dengan sinkronisasi daftar lokal dan Firestore serta perbaikan cache WebView.",
   "files": [
     "index.html",
     "app.js",
@@ -30,6 +30,7 @@
     "js/update-check.js",
     "js/theme.js",
     "js/santri-import.js",
+    "js/pembayaran-autocomplete.js",
     "css/theme.css"
   ]
 }
