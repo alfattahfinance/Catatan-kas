@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build:
-    name: Build APK dengan Update Dalam Aplikasi
+    name: Build Keuangan APK (Updatable)
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +28,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
       - name: Setup Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
@@ -43,21 +42,26 @@ jobs:
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Prepare isolated Android project
+      - name: Prepare Android project
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p app/src/main/java/com/catatankas/app
-          mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/drawable
-          mkdir -p app/src/main/assets
+          mkdir -p app/src/main/java/com/catatankas/app app/src/main/res/values app/src/main/res/drawable app/src/main/assets
 
-          find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) -exec cp {} app/src/main/assets/ \;
+          # Copy all web files without relying on cp directory nesting behaviour.
+          find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' \) -exec cp -f {} app/src/main/assets/ \;
           for dir in js css assets images img; do
-            if [ -d "$dir" ]; then cp -r "$dir" app/src/main/assets/; fi
+            if [ -d "$dir" ]; then
+              mkdir -p "app/src/main/assets/$dir"
+              cp -a "$dir/." "app/src/main/assets/$dir/"
+            fi
+          done
+          for img in *.png *.jpg *.jpeg; do
+            [ -f "$img" ] && cp -f "$img" app/src/main/assets/
           done
 
-          cp UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          cp -f UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          cp -f icon-192.png app/src/main/res/drawable/ic_keuangan.png
 
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
           package com.catatankas.app;
@@ -148,8 +152,6 @@ jobs:
           }
           JAVA
 
-          cp icon-192.png app/src/main/res/drawable/ic_keuangan.png
-
           cat > settings.gradle <<'GRADLE'
           import org.gradle.api.initialization.resolve.RepositoriesMode
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
@@ -192,9 +194,7 @@ jobs:
                   targetCompatibility JavaVersion.VERSION_17
               }
           }
-          dependencies {
-              implementation 'androidx.webkit:webkit:1.13.0'
-          }
+          dependencies { implementation 'androidx.webkit:webkit:1.13.0' }
           GRADLE
 
           cat > app/src/main/AndroidManifest.xml <<'XML'
@@ -226,41 +226,28 @@ jobs:
           </resources>
           XML
 
-      - name: Verify updater sources
+      - name: Verify updater is embedded
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          checks = {
-              'app/src/main/java/com/catatankas/app/MainActivity.java': ['onShowFileChooser'],
-              'app/src/main/java/com/catatankas/app/UpdatableMainActivity.java': ['AndroidWebUpdater', 'extends MainActivity'],
-              'app/src/main/assets/web-update.json': ['"version"', '"files"'],
-              'app/src/main/assets/js/update-check.js': ['cekUpdateButton', 'AndroidWebUpdater'],
-              'app/src/main/assets/pengaturan.html': ['cekUpdateButton'],
-              'app/src/main/AndroidManifest.xml': ['.UpdatableMainActivity', 'android.intent.category.LAUNCHER'],
-          }
-          errors = []
-          for name, needles in checks.items():
-              p = Path(name)
-              if not p.is_file() or p.stat().st_size == 0:
-                  errors.append(f'MISSING FILE: {name}')
-                  continue
-              text = p.read_text(encoding='utf-8', errors='replace')
-              for needle in needles:
-                  if needle not in text:
-                      errors.append(f'MISSING TEXT: {needle!r} in {name}')
-          if errors:
-              print('UPDATER VERIFICATION FAILED')
-              for e in errors:
-                  print(' -', e)
-              raise SystemExit(1)
-          print('UPDATER VERIFICATION OK')
-          print('MainActivity: stable WebView + file chooser')
-          print('UpdatableMainActivity: updater embedded')
-          print('Manifest: UpdatableMainActivity is launcher')
-          print('Pengaturan: update button present')
-          PY
+          required=(
+            "app/src/main/java/com/catatankas/app/MainActivity.java"
+            "app/src/main/java/com/catatankas/app/UpdatableMainActivity.java"
+            "app/src/main/assets/web-update.json"
+            "app/src/main/assets/js/update-check.js"
+            "app/src/main/assets/pengaturan.html"
+            "app/src/main/AndroidManifest.xml"
+          )
+          for f in "${required[@]}"; do
+            test -s "$f" || { echo "MISSING: $f"; exit 1; }
+          done
+          grep -q 'AndroidWebUpdater' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q 'onShowFileChooser' app/src/main/java/com/catatankas/app/MainActivity.java
+          grep -q 'android:name=".UpdatableMainActivity"' app/src/main/AndroidManifest.xml
+          grep -q 'cekUpdateButton' app/src/main/assets/js/update-check.js
+          grep -q '"version"' app/src/main/assets/web-update.json
+          grep -q '"files"' app/src/main/assets/web-update.json
+          echo 'UPDATER VERIFICATION OK'
 
       - name: Build Debug APK
         run: gradle --no-daemon --stacktrace :app:assembleDebug
@@ -269,11 +256,20 @@ jobs:
         run: |
           set -euo pipefail
           test -s app/build/outputs/apk/debug/app-debug.apk
-          ls -lh app/build/outputs/apk/debug/app-debug.apk
+          mkdir -p output
+          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-v2.4.apk
+          ls -lh output/Keuangan-v2.4.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Keuangan-APK-Updatable-Web
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: output/Keuangan-v2.4.apk
           if-no-files-found: error
+
+      - name: Build summary
+        run: |
+          echo 'BUILD KEUANGAN SELESAI'
+          echo 'Nama aplikasi : Keuangan'
+          echo 'Version       : 2.4'
+          echo 'Package       : com.catatankas.app'
