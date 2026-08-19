@@ -48,7 +48,6 @@ jobs:
           set -euo pipefail
           mkdir -p app/src/main/java/com/catatankas/app app/src/main/res/values app/src/main/res/drawable app/src/main/assets
 
-          # Copy all web files without relying on cp directory nesting behaviour.
           find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' \) -exec cp -f {} app/src/main/assets/ \;
           for dir in js css assets images img; do
             if [ -d "$dir" ]; then
@@ -230,6 +229,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           required=(
             "app/src/main/java/com/catatankas/app/MainActivity.java"
             "app/src/main/java/com/catatankas/app/UpdatableMainActivity.java"
@@ -239,14 +239,20 @@ jobs:
             "app/src/main/AndroidManifest.xml"
           )
           for f in "${required[@]}"; do
-            test -s "$f" || { echo "MISSING: $f"; exit 1; }
+            if [ ! -s "$f" ]; then
+              echo "MISSING OR EMPTY: $f"
+              exit 1
+            fi
           done
+
+          # Keep each check tied to the file that actually owns the feature.
           grep -q 'AndroidWebUpdater' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'onShowFileChooser' app/src/main/java/com/catatankas/app/MainActivity.java
           grep -q 'android:name=".UpdatableMainActivity"' app/src/main/AndroidManifest.xml
           grep -q 'cekUpdateButton' app/src/main/assets/js/update-check.js
           grep -q '"version"' app/src/main/assets/web-update.json
           grep -q '"files"' app/src/main/assets/web-update.json
+
           echo 'UPDATER VERIFICATION OK'
 
       - name: Build Debug APK
