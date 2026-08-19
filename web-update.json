@@ -1,6 +1,6 @@
 {
-  "version": "1.0.2",
-  "message": "Pembaruan tersedia. Perbaikan sistem update dan sinkronisasi fitur aplikasi. Data Anda tetap dipertahankan.",
+  "version": "1.0.3",
+  "message": "Pembaruan tersedia: fitur tambah banyak santri sekaligus melalui Excel/CSV dan perbaikan proses import. Data yang sudah ada tetap dipertahankan.",
   "files": [
     "index.html",
     "app.js",
@@ -28,6 +28,7 @@
     "register.html",
     "js/pengaturan.js",
     "js/update-check.js",
+    "js/santri-import.js",
     "css/theme.css"
   ]
 }
