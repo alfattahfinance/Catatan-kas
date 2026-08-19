@@ -28,6 +28,7 @@
     "register.html",
     "js/pengaturan.js",
     "js/update-check.js",
+    "js/theme.js",
     "js/santri-import.js",
     "css/theme.css"
   ]
