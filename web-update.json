@@ -1,6 +1,6 @@
 {
-  "version": "1.0.7",
-  "message": "Pembaruan v1.0.7: memperbaiki pemuatan fitur Tambah Banyak Santri pada APK WebView. Fitur lain tetap dipertahankan.",
+  "version": "1.0.8",
+  "message": "Pembaruan v1.0.8: memperbaiki fitur Tambah Banyak Santri agar berjalan mandiri di WebView APK. Dapat memasukkan banyak santri dari Excel/CSV, mencegah duplikat, dan mempertahankan data santri lama.",
   "files": [
     "index.html",
     "app.js",
