@@ -59,6 +59,98 @@ jobs:
 
           cp UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
 
+          cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
+          package com.catatankas.app;
+
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.os.Bundle;
+          import android.view.ViewGroup;
+          import android.webkit.ValueCallback;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebResourceResponse;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import androidx.webkit.WebViewAssetLoader;
+
+          public class MainActivity extends Activity {
+              protected WebView webView;
+              protected static final int FILE_CHOOSER_REQUEST = 1001;
+
+              @Override protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  webView = new WebView(this);
+                  webView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                  setContentView(webView);
+
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setDatabaseEnabled(true);
+                  settings.setAllowFileAccess(true);
+                  settings.setAllowContentAccess(true);
+                  settings.setJavaScriptCanOpenWindowsAutomatically(true);
+                  settings.setUseWideViewPort(true);
+                  settings.setLoadWithOverviewMode(false);
+                  settings.setSupportZoom(false);
+                  settings.setBuiltInZoomControls(false);
+                  settings.setDisplayZoomControls(false);
+
+                  final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
+                          .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                          .build();
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                          WebResourceResponse response = loader.shouldInterceptRequest(request.getUrl());
+                          return response != null ? response : super.shouldInterceptRequest(view, request);
+                      }
+                  });
+
+                  webView.setWebChromeClient(new WebChromeClient() {
+                      @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                          Intent intent = fileChooserParams.createIntent();
+                          intent.addCategory(Intent.CATEGORY_OPENABLE);
+                          intent.setType("image/*");
+                          try {
+                              startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                              pendingFileCallback = filePathCallback;
+                              return true;
+                          } catch (Exception e) {
+                              filePathCallback.onReceiveValue(null);
+                              return false;
+                          }
+                      }
+                  });
+
+                  webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+              }
+
+              private ValueCallback<Uri[]> pendingFileCallback;
+
+              @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.onActivityResult(requestCode, resultCode, data);
+                  if (requestCode == FILE_CHOOSER_REQUEST && pendingFileCallback != null) {
+                      Uri[] result = null;
+                      if (resultCode == RESULT_OK && data != null && data.getData() != null) result = new Uri[]{data.getData()};
+                      pendingFileCallback.onReceiveValue(result);
+                      pendingFileCallback = null;
+                  }
+              }
+
+              @Override public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+              }
+
+              @Override protected void onDestroy() {
+                  if (webView != null) webView.destroy();
+                  super.onDestroy();
+              }
+          }
+          JAVA
+
           cp icon-192.png app/src/main/res/drawable/ic_keuangan.png
 
           cat > settings.gradle <<'GRADLE'
@@ -149,16 +241,30 @@ jobs:
           </resources>
           XML
 
-      - name: Verify updater sources
+      - name: Verify updater is embedded
+        shell: bash
         run: |
+          set -euo pipefail
+          test -s app/src/main/java/com/catatankas/app/MainActivity.java
           test -s app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           test -s app/src/main/assets/web-update.json
           test -s app/src/main/assets/js/update-check.js
-          grep -q "AndroidWebUpdater" app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          grep -q "cekUpdateButton" app/src/main/assets/js/update-check.js
+          test -s app/src/main/assets/pengaturan.html
+          grep -q 'AndroidWebUpdater' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q 'onShowFileChooser' app/src/main/java/com/catatankas/app/MainActivity.java
+          grep -q 'android:name=".UpdatableMainActivity"' app/src/main/AndroidManifest.xml
+          grep -q 'android.intent.category.LAUNCHER' app/src/main/AndroidManifest.xml
+          grep -q 'cekUpdateButton' app/src/main/assets/js/update-check.js
+          echo 'Updater source verification: OK'
 
       - name: Build Debug APK
         run: gradle --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Verify APK output
+        run: |
+          set -euo pipefail
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
