@@ -1,6 +1,6 @@
 {
-  "version": "1.0.4",
-  "message": "Pembaruan v1.0.4: fitur Tambah Banyak Santri sekarang dipastikan tampil di halaman Santri. Mendukung Excel dan CSV, mencegah duplikat, dan menyimpan banyak data sekaligus.",
+  "version": "1.0.5",
+  "message": "Pembaruan v1.0.5: perbaikan sistem update dalam APK dan fitur Tambah Banyak Santri dari Excel/CSV. Fitur lama tetap dipertahankan.",
   "files": [
     "index.html",
     "app.js",
