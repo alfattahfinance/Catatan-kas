@@ -26,14 +26,14 @@
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startThemeManager, { once: true }); else startThemeManager();
     window.themeManager = { getTheme: getSavedTheme, setTheme: applyTheme, toggle: toggleTheme, init: startThemeManager, resolve: resolveTheme, getLogo, applyLogo };
 
-    // Fitur import banyak santri hanya dimuat di halaman Santri.
+    // Import banyak santri hanya dimuat di halaman Santri.
     // Halaman lain tidak disentuh.
     function loadSantriImport() {
         if (!document.getElementById("tabelSantri") || document.getElementById("importSantriLoader")) return;
         const s = document.createElement("script");
         s.id = "importSantriLoader";
         s.type = "module";
-        s.src = "js/import-santri-ui.js";
+        s.src = "js/santri-import.js";
         document.body.appendChild(s);
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", loadSantriImport, { once: true }); else loadSantriImport();
