@@ -43,7 +43,7 @@ jobs:
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Prepare Android project
+      - name: Prepare isolated Android project
         shell: bash
         run: |
           set -euo pipefail
@@ -86,7 +86,6 @@ jobs:
                   webView = new WebView(this);
                   webView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                   setContentView(webView);
-
                   WebSettings settings = webView.getSettings();
                   settings.setJavaScriptEnabled(true);
                   settings.setDomStorageEnabled(true);
@@ -101,19 +100,18 @@ jobs:
                   settings.setDisplayZoomControls(false);
 
                   final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
-                          .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                          .build();
+                      .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                      .build();
                   webView.setWebViewClient(new WebViewClient() {
                       @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                           WebResourceResponse response = loader.shouldInterceptRequest(request.getUrl());
                           return response != null ? response : super.shouldInterceptRequest(view, request);
                       }
                   });
-
                   webView.setWebChromeClient(new WebChromeClient() {
-                      @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-                          pendingFileCallback = filePathCallback;
-                          Intent intent = fileChooserParams.createIntent();
+                      @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
+                          pendingFileCallback = callback;
+                          Intent intent = params.createIntent();
                           intent.addCategory(Intent.CATEGORY_OPENABLE);
                           intent.setType("image/*");
                           try {
@@ -121,12 +119,11 @@ jobs:
                               return true;
                           } catch (Exception e) {
                               pendingFileCallback = null;
-                              filePathCallback.onReceiveValue(null);
+                              callback.onReceiveValue(null);
                               return false;
                           }
                       }
                   });
-
                   webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
               }
 
@@ -196,8 +193,6 @@ jobs:
               }
           }
           dependencies {
-              implementation 'androidx.activity:activity:1.10.1'
-              implementation 'androidx.appcompat:appcompat:1.7.0'
               implementation 'androidx.webkit:webkit:1.13.0'
           }
           GRADLE
@@ -207,19 +202,8 @@ jobs:
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
               <supports-screens android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true" android:resizeable="true" />
-              <application
-                  android:allowBackup="true"
-                  android:label="Keuangan"
-                  android:icon="@drawable/ic_keuangan"
-                  android:roundIcon="@drawable/ic_keuangan"
-                  android:theme="@style/AppTheme"
-                  android:resizeableActivity="true">
-                  <activity
-                      android:name=".UpdatableMainActivity"
-                      android:exported="true"
-                      android:screenOrientation="unspecified"
-                      android:resizeableActivity="true"
-                      android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+              <application android:allowBackup="true" android:label="Keuangan" android:icon="@drawable/ic_keuangan" android:roundIcon="@drawable/ic_keuangan" android:theme="@style/AppTheme" android:resizeableActivity="true">
+                  <activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:resizeableActivity="true" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.LAUNCHER" />
@@ -242,26 +226,41 @@ jobs:
           </resources>
           XML
 
-      - name: Verify updater is embedded
+      - name: Verify updater sources
         shell: bash
         run: |
           set -euo pipefail
-          check_file() { test -s "$1" || { echo "MISSING/EMPTY: $1"; exit 1; }; echo "OK file: $1"; }
-          check_text() { grep -Fq -- "$2" "$1" || { echo "MISSING TEXT: [$2] in $1"; echo '--- file tail ---'; tail -n 40 "$1" || true; exit 1; }; echo "OK text: [$2]"; }
-
-          check_file app/src/main/java/com/catatankas/app/MainActivity.java
-          check_file app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          check_file app/src/main/assets/web-update.json
-          check_file app/src/main/assets/js/update-check.js
-          check_file app/src/main/assets/pengaturan.html
-
-          check_text app/src/main/java/com/catatankas/app/UpdatableMainActivity.java 'AndroidWebUpdater'
-          check_text app/src/main/java/com/catatankas/app/MainActivity.java 'onShowFileChooser'
-          check_text app/src/main/AndroidManifest.xml 'android:name=".UpdatableMainActivity"'
-          check_text app/src/main/AndroidManifest.xml 'android.intent.category.LAUNCHER'
-          check_text app/src/main/assets/js/update-check.js 'cekUpdateButton'
-
-          echo 'Updater source verification: OK'
+          python3 - <<'PY'
+          from pathlib import Path
+          checks = {
+              'app/src/main/java/com/catatankas/app/MainActivity.java': ['onShowFileChooser'],
+              'app/src/main/java/com/catatankas/app/UpdatableMainActivity.java': ['AndroidWebUpdater', 'extends MainActivity'],
+              'app/src/main/assets/web-update.json': ['"version"', '"files"'],
+              'app/src/main/assets/js/update-check.js': ['cekUpdateButton', 'AndroidWebUpdater'],
+              'app/src/main/assets/pengaturan.html': ['cekUpdateButton'],
+              'app/src/main/AndroidManifest.xml': ['.UpdatableMainActivity', 'android.intent.category.LAUNCHER'],
+          }
+          errors = []
+          for name, needles in checks.items():
+              p = Path(name)
+              if not p.is_file() or p.stat().st_size == 0:
+                  errors.append(f'MISSING FILE: {name}')
+                  continue
+              text = p.read_text(encoding='utf-8', errors='replace')
+              for needle in needles:
+                  if needle not in text:
+                      errors.append(f'MISSING TEXT: {needle!r} in {name}')
+          if errors:
+              print('UPDATER VERIFICATION FAILED')
+              for e in errors:
+                  print(' -', e)
+              raise SystemExit(1)
+          print('UPDATER VERIFICATION OK')
+          print('MainActivity: stable WebView + file chooser')
+          print('UpdatableMainActivity: updater embedded')
+          print('Manifest: UpdatableMainActivity is launcher')
+          print('Pengaturan: update button present')
+          PY
 
       - name: Build Debug APK
         run: gradle --no-daemon --stacktrace :app:assembleDebug
