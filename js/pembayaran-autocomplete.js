@@ -1,7 +1,9 @@
 import "./jenis-keuangan.js";
 
-// Autocomplete nama santri - Pembayaran.
-// Membaca Firestore + daftarSantri lokal agar hasil import banyak santri langsung tersedia.
+// Autocomplete nama peserta didik - Pembayaran.
+// Sumber utama: Firestore koleksi santri. Sumber kompatibilitas: daftarSantri lokal.
+// Ketika pengguna mengetik "A", nama yang diawali A diprioritaskan; pencarian
+// bagian nama tetap tersedia setelah hasil awalan.
 import { db } from "../firebase-config.js";
 import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
@@ -11,7 +13,7 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17
   window.__ckPaymentAutocompleteStarted = true;
 
   const inputIds = ["namaSantriPemasukan", "namaSantri", "santri"];
-  let input = null, box = null, names = [], unsubscribe = null;
+  let input = null, box = null, names = [], unsubscribe = null, observer = null;
 
   const findInput = () => inputIds.map(id => document.getElementById(id)).find(Boolean) || null;
   const localNames = () => {
@@ -28,11 +30,61 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17
   const rebuildLocal = () => {
     const set = new Set(names);
     localNames().forEach(n => set.add(n));
-    names = [...set].sort((a,b) => a.localeCompare(b, "id", { sensitivity: "base" }));
+    names = [...set].sort((a, b) => a.localeCompare(b, "id", { sensitivity: "base" }));
+  };
+
+  const hide = () => { if (box) box.hidden = true; };
+
+  const move = delta => {
+    if (!box || box.hidden) return;
+    const items = [...box.querySelectorAll(".ck-suggest-item")];
+    if (!items.length) return;
+    let index = items.findIndex(x => x.classList.contains("ck-suggest-active"));
+    index = Math.max(0, Math.min(items.length - 1, index + delta));
+    items.forEach(x => x.classList.remove("ck-suggest-active"));
+    items[index].classList.add("ck-suggest-active");
+    items[index].scrollIntoView({ block: "nearest" });
+  };
+
+  const render = () => {
+    ensureUI();
+    if (!input || !box) return;
+    rebuildLocal();
+    const q = input.value.trim().toLocaleLowerCase("id-ID");
+    if (!q) { hide(); return; }
+
+    const starts = names.filter(n => n.toLocaleLowerCase("id-ID").startsWith(q));
+    const contains = names.filter(n => !n.toLocaleLowerCase("id-ID").startsWith(q) && n.toLocaleLowerCase("id-ID").includes(q));
+    const matches = [...starts, ...contains].slice(0, 30);
+
+    box.innerHTML = "";
+    if (!matches.length) { hide(); return; }
+    matches.forEach(name => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "list-group-item list-group-item-action border-0 text-start ck-suggest-item";
+      b.textContent = name;
+      b.style.cssText = "display:block;width:100%;padding:10px 12px;background:transparent;cursor:pointer;";
+      b.addEventListener("mousedown", e => e.preventDefault());
+      b.addEventListener("click", () => {
+        if (input) input.value = name;
+        hide();
+        input?.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      box.appendChild(b);
+    });
+    box.hidden = false;
   };
 
   const ensureUI = () => {
-    input = findInput();
+    const nextInput = findInput();
+    if (nextInput && nextInput !== input) {
+      input = nextInput;
+      if (box && box.parentElement !== input.parentElement) {
+        box.remove();
+        box = null;
+      }
+    }
     if (!input || box) return;
     const wrapper = input.parentElement;
     if (!wrapper) return;
@@ -40,9 +92,11 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17
     box = document.createElement("div");
     box.id = "ckNamaSantriSuggestions";
     box.hidden = true;
+    box.setAttribute("role", "listbox");
     box.style.cssText = "position:absolute;left:0;right:0;top:100%;z-index:2000;background:#fff;border:1px solid #ced4da;border-radius:0 0 12px 12px;box-shadow:0 6px 18px rgba(0,0,0,.12);max-height:240px;overflow:auto;";
     wrapper.appendChild(box);
     input.setAttribute("autocomplete", "off");
+    input.setAttribute("aria-autocomplete", "list");
     input.addEventListener("input", render);
     input.addEventListener("focus", render);
     input.addEventListener("keydown", e => {
@@ -54,47 +108,6 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17
         if (active) { e.preventDefault(); active.click(); }
       }
     });
-  };
-
-  const hide = () => { if (box) box.hidden = true; };
-
-  const render = () => {
-    ensureUI();
-    if (!input || !box) return;
-    rebuildLocal();
-    const q = input.value.trim().toLocaleLowerCase("id-ID");
-    if (!q) { hide(); return; }
-    const starts = names.filter(n => n.toLocaleLowerCase("id-ID").startsWith(q));
-    const contains = names.filter(n => !n.toLocaleLowerCase("id-ID").startsWith(q) && n.toLocaleLowerCase("id-ID").includes(q));
-    const matches = [...starts, ...contains].slice(0, 30);
-    box.innerHTML = "";
-    if (!matches.length) { hide(); return; }
-    matches.forEach(name => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "list-group-item list-group-item-action border-0 text-start ck-suggest-item";
-      b.textContent = name;
-      b.style.cssText = "display:block;width:100%;padding:10px 12px;background:transparent;cursor:pointer;";
-      b.addEventListener("mousedown", e => e.preventDefault());
-      b.addEventListener("click", () => {
-        input.value = name;
-        hide();
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-      box.appendChild(b);
-    });
-    box.hidden = false;
-  };
-
-  const move = delta => {
-    if (!box || box.hidden) return;
-    const items = [...box.querySelectorAll(".ck-suggest-item")];
-    if (!items.length) return;
-    let index = items.findIndex(x => x.classList.contains("ck-suggest-active"));
-    index = Math.max(0, Math.min(items.length - 1, index + delta));
-    items.forEach(x => x.classList.remove("ck-suggest-active"));
-    items[index].classList.add("ck-suggest-active");
-    items[index].scrollIntoView({ block: "nearest" });
   };
 
   const start = () => {
@@ -112,23 +125,41 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17
       rebuildLocal();
       if (input?.value.trim()) render();
     }, err => {
-      console.warn("Autocomplete santri memakai daftar lokal:", err);
+      console.warn("Autocomplete peserta didik memakai daftar lokal:", err);
       rebuildLocal();
       if (input?.value.trim()) render();
     });
     if (input?.value.trim()) render();
   };
 
-  document.addEventListener("DOMContentLoaded", () => setTimeout(start, 0), { once: true });
+  const startWhenReady = () => {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => setTimeout(start, 0), { once: true });
+    } else {
+      setTimeout(start, 0);
+    }
+  };
+
+  startWhenReady();
+
   document.addEventListener("click", e => {
     if (box && !box.contains(e.target) && e.target !== input) hide();
   });
+
   window.addEventListener("storage", e => {
     if (e.key === "daftarSantri") {
       rebuildLocal();
       if (input?.value.trim()) render();
     }
   });
+
+  observer = new MutationObserver(() => {
+    const previous = input;
+    ensureUI();
+    if (input !== previous) render();
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+
   setInterval(() => {
     const before = names.length;
     rebuildLocal();
