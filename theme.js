@@ -37,4 +37,8 @@
         document.body.appendChild(s);
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", loadSantriImport, { once: true }); else loadSantriImport();
+
+    // Semua halaman harus memakai daftar jenis pembayaran/pengeluaran
+    // yang diatur pengguna. Ini juga memperbarui filter Dashboard.
+    import("./js/jenis-keuangan.js").catch(() => {});
 })();
