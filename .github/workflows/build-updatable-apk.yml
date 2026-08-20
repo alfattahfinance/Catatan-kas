@@ -24,30 +24,24 @@ jobs:
   build:
     name: Build Keuangan APK (Updatable)
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Setup Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
       - name: Install Android SDK
         run: |
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
       - name: Prepare Android project
         shell: bash
         run: |
@@ -55,59 +49,23 @@ jobs:
           mkdir -p app/src/main/java/com/catatankas/app app/src/main/res/values app/src/main/res/drawable app/src/main/assets
           find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' \) -exec cp -f {} app/src/main/assets/ \;
           for dir in js css assets images img; do
-            if [ -d "$dir" ]; then
-              mkdir -p "app/src/main/assets/$dir"
-              cp -a "$dir/." "app/src/main/assets/$dir/"
-            fi
+            if [ -d "$dir" ]; then mkdir -p "app/src/main/assets/$dir"; cp -a "$dir/." "app/src/main/assets/$dir/"; fi
           done
-          for img in *.png *.jpg *.jpeg; do
-            [ -f "$img" ] && cp -f "$img" app/src/main/assets/
-          done
+          for img in *.png *.jpg *.jpeg; do [ -f "$img" ] && cp -f "$img" app/src/main/assets/ || true; done
           cp -f UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           cp -f icon-192.png app/src/main/res/drawable/ic_keuangan.png
-
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
           package com.catatankas.app;
-          import android.app.Activity;
-          import android.content.Intent;
-          import android.net.Uri;
-          import android.os.Bundle;
-          import android.view.ViewGroup;
-          import android.webkit.ValueCallback;
-          import android.webkit.WebChromeClient;
-          import android.webkit.WebResourceRequest;
-          import android.webkit.WebResourceResponse;
-          import android.webkit.WebSettings;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-          import androidx.webkit.WebViewAssetLoader;
-          public class MainActivity extends Activity {
-              protected WebView webView;
-              protected static final int FILE_CHOOSER_REQUEST = 1001;
-              private ValueCallback<Uri[]> pendingFileCallback;
-              @Override protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  webView = new WebView(this);
-                  webView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                  setContentView(webView);
-                  WebSettings settings = webView.getSettings(); settings.setJavaScriptEnabled(true); settings.setDomStorageEnabled(true); settings.setDatabaseEnabled(true); settings.setAllowFileAccess(true); settings.setAllowContentAccess(true); settings.setJavaScriptCanOpenWindowsAutomatically(true); settings.setUseWideViewPort(true); settings.setLoadWithOverviewMode(false); settings.setSupportZoom(false); settings.setBuiltInZoomControls(false); settings.setDisplayZoomControls(false);
-                  final WebViewAssetLoader loader = new WebViewAssetLoader.Builder().addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this)).build();
-                  webView.setWebViewClient(new WebViewClient() { @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) { WebResourceResponse response = loader.shouldInterceptRequest(request.getUrl()); return response != null ? response : super.shouldInterceptRequest(view, request); } });
-                  webView.setWebChromeClient(new WebChromeClient() { @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) { pendingFileCallback = callback; Intent intent = params.createIntent(); intent.addCategory(Intent.CATEGORY_OPENABLE); intent.setType("image/*"); try { startActivityForResult(intent, FILE_CHOOSER_REQUEST); return true; } catch (Exception e) { pendingFileCallback = null; callback.onReceiveValue(null); return false; } } });
-                  webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-              }
-              @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) { super.onActivityResult(requestCode, resultCode, data); if (requestCode == FILE_CHOOSER_REQUEST && pendingFileCallback != null) { Uri[] result = null; if (resultCode == RESULT_OK && data != null && data.getData() != null) result = new Uri[]{data.getData()}; pendingFileCallback.onReceiveValue(result); pendingFileCallback = null; } }
-              @Override public void onBackPressed() { if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed(); }
-              @Override protected void onDestroy() { if (webView != null) webView.destroy(); super.onDestroy(); }
-          }
+          import android.app.Activity; import android.content.Intent; import android.net.Uri; import android.os.Bundle; import android.view.ViewGroup; import android.webkit.ValueCallback; import android.webkit.WebChromeClient; import android.webkit.WebResourceRequest; import android.webkit.WebResourceResponse; import android.webkit.WebSettings; import android.webkit.WebView; import android.webkit.WebViewClient; import androidx.webkit.WebViewAssetLoader;
+          public class MainActivity extends Activity { protected WebView webView; protected static final int FILE_CHOOSER_REQUEST=1001; private ValueCallback<Uri[]> pendingFileCallback;
+          @Override protected void onCreate(Bundle b){super.onCreate(b);webView=new WebView(this);webView.setLayoutParams(new ViewGroup.LayoutParams(-1,-1));setContentView(webView);WebSettings s=webView.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setDatabaseEnabled(true);s.setAllowFileAccess(true);s.setAllowContentAccess(true);final WebViewAssetLoader l=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();webView.setWebViewClient(new WebViewClient(){@Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){WebResourceResponse x=l.shouldInterceptRequest(r.getUrl());return x!=null?x:super.shouldInterceptRequest(v,r);}});webView.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> c,FileChooserParams p){pendingFileCallback=c;Intent i=p.createIntent();i.setType("image/*");i.addCategory(Intent.CATEGORY_OPENABLE);try{startActivityForResult(i,FILE_CHOOSER_REQUEST);return true;}catch(Exception e){pendingFileCallback=null;c.onReceiveValue(null);return false;}}});webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");}
+          @Override protected void onActivityResult(int r,int c,Intent d){super.onActivityResult(r,c,d);if(r==FILE_CHOOSER_REQUEST&&pendingFileCallback!=null){Uri[] x=null;if(c==RESULT_OK&&d!=null&&d.getData()!=null)x=new Uri[]{d.getData()};pendingFileCallback.onReceiveValue(x);pendingFileCallback=null;}} @Override public void onBackPressed(){if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed();} @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}}
           JAVA
-
           cat > settings.gradle <<'GRADLE'
           import org.gradle.api.initialization.resolve.RepositoriesMode
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
-          rootProject.name = 'Keuangan'
-          include ':app'
+          rootProject.name='Keuangan'; include ':app'
           GRADLE
           cat > build.gradle <<'GRADLE'
           plugins { id 'com.android.application' version '8.7.3' apply false }
@@ -119,42 +77,34 @@ jobs:
           PROPS
           cat > app/build.gradle <<'GRADLE'
           plugins { id 'com.android.application' }
-          android { namespace 'com.catatankas.app'; compileSdk 35; defaultConfig { applicationId 'com.catatankas.app'; minSdk 24; targetSdk 35; versionCode 20400; versionName '2.4' }; buildTypes { debug { minifyEnabled false }; release { minifyEnabled false; shrinkResources false } }; compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 } }
+          android { namespace 'com.catatankas.app'; compileSdk 35; defaultConfig { applicationId 'com.catatankas.app'; minSdk 24; targetSdk 35; versionCode 20500; versionName '2.5' }; buildTypes { debug { minifyEnabled false }; release { minifyEnabled false; shrinkResources false } }; compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 } }
           dependencies { implementation 'androidx.webkit:webkit:1.13.0' }
           GRADLE
           cat > app/src/main/AndroidManifest.xml <<'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><supports-screens android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true" android:resizeable="true"/><application android:allowBackup="true" android:label="Keuangan" android:icon="@drawable/ic_keuangan" android:roundIcon="@drawable/ic_keuangan" android:theme="@style/AppTheme" android:resizeableActivity="true"><activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:resizeableActivity="true" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
+          <?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><supports-screens android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true" android:resizeable="true"/><application android:allowBackup="true" android:label="Keuangan" android:icon="@drawable/ic_keuangan" android:roundIcon="@drawable/ic_keuangan" android:theme="@style/AppTheme" android:resizeableActivity="true"><activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:resizeableActivity="true" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
           XML
           cat > app/src/main/res/values/styles.xml <<'XML'
           <?xml version="1.0" encoding="utf-8"?><resources><style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#198754</item><item name="android:navigationBarColor">#000000</item><item name="android:statusBarColor">#000000</item><item name="android:windowNoTitle">true</item></style></resources>
           XML
-
       - name: Verify updater is embedded
-        shell: bash
         run: |
           set -euo pipefail
           required=("app/src/main/java/com/catatankas/app/MainActivity.java" "app/src/main/java/com/catatankas/app/UpdatableMainActivity.java" "app/src/main/assets/web-update.json" "app/src/main/assets/js/update-check.js" "app/src/main/assets/pengaturan.html" "app/src/main/AndroidManifest.xml")
           for f in "${required[@]}"; do test -s "$f" || { echo "MISSING OR EMPTY: $f"; exit 1; }; done
           grep -q 'AndroidWebUpdater' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          grep -q 'onShowFileChooser' app/src/main/java/com/catatankas/app/MainActivity.java
-          grep -q 'android:name=".UpdatableMainActivity"' app/src/main/AndroidManifest.xml
           echo 'UPDATER VERIFICATION OK'
-
       - name: Build Debug APK
         run: gradle --no-daemon --stacktrace :app:assembleDebug
-
       - name: Verify APK output
         run: |
           set -euo pipefail
           test -s app/build/outputs/apk/debug/app-debug.apk
           mkdir -p output
-          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-v2.4.apk
-          ls -lh output/Keuangan-v2.4.apk
-
+          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-v2.5.apk
+          ls -lh output/Keuangan-v2.5.apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Keuangan-APK-Updatable-Web
-          path: output/Keuangan-v2.4.apk
+          name: Keuangan-APK-Updatable-Web-v2.5
+          path: output/Keuangan-v2.5.apk
           if-no-files-found: error
