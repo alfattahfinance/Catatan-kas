@@ -26,6 +26,16 @@ html,body { transition:background-color .3s ease,color .3s ease; }
 .ck-bottom a i { display:block; font-size:1.15rem; line-height:1.1; }
 .ck-bottom a.active { color:#198754; font-weight:800; }
 
+/* DARK MODE: daftar nama/autocomplete harus tetap terbaca. */
+html.dark-mode .ck-nama-suggest,
+body.dark-mode .ck-nama-suggest { background:#2a2a2a !important; color:#f1f1f1 !important; border-color:#555 !important; }
+html.dark-mode .ck-nama-suggest .ck-suggest-item,
+body.dark-mode .ck-nama-suggest .ck-suggest-item { background:#2a2a2a !important; color:#f1f1f1 !important; border-color:#444 !important; }
+html.dark-mode .ck-nama-suggest .ck-suggest-item:hover,
+html.dark-mode .ck-nama-suggest .ck-suggest-active,
+body.dark-mode .ck-nama-suggest .ck-suggest-item:hover,
+body.dark-mode .ck-nama-suggest .ck-suggest-active { background:#343434 !important; color:#fff !important; }
+
 /* LANDSCAPE TABLET / LAYAR LEBAR: jangan batasi konten ke kolom tengah sempit. */
 @media (orientation: landscape) and (min-width: 700px) {
   html, body { width:100vw !important; min-width:100vw !important; max-width:none !important; overflow-x:hidden !important; }
