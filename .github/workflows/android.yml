@@ -123,19 +123,22 @@ jobs:
           [ -d images ] && cp -r images app/src/main/assets/
           [ -d img ] && cp -r img app/src/main/assets/
 
-      - name: Inject global logo sync and landscape CSS
+      - name: Inject global UI and landscape CSS
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
           root = Path('app/src/main/assets')
-          tag = '<script src="theme.js"></script>'
+          theme_tag = '<script src="theme.js"></script>'
+          general_tag = '<script src="js/general-ui.js"></script>'
           css = '''\n/* APK responsive landscape fix */\nhtml, body { width:100% !important; min-width:100% !important; max-width:none !important; }\nbody { overflow-x:hidden !important; }\n.mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { width:100% !important; max-width:none !important; min-width:0 !important; margin-left:auto !important; margin-right:auto !important; }\n@media (orientation: landscape) and (min-width:700px) {\n  .mobile-container, .page-container, .ck-page, .wrap, .container, .container-fluid { padding-left:24px !important; padding-right:24px !important; }\n  .ck-topbar, .custom-card, .pengeluaran-card, .cardx { width:100% !important; max-width:none !important; }\n}\n'''
           for p in root.glob('*.html'):
               text = p.read_text(encoding='utf-8')
               if 'src="theme.js"' not in text and "src='theme.js'" not in text:
-                  text = text.replace('</head>', f'{tag}\n</head>', 1)
+                  text = text.replace('</head>', f'{theme_tag}\n</head>', 1)
+              if 'src="js/general-ui.js"' not in text and "src='js/general-ui.js'" not in text:
+                  text = text.replace('</head>', f'{general_tag}\n</head>', 1)
               if 'APK responsive landscape fix' not in text:
                   text = text.replace('</head>', f'<style>{css}</style>\n</head>', 1)
               p.write_text(text, encoding='utf-8')
