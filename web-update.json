@@ -1,6 +1,6 @@
 {
   "version": "1.0.9",
-  "message": "Pembaruan v1.0.9: sistem keuangan lebih umum untuk sekolah, madrasah, pesantren, dan lembaga pendidikan. Menambahkan jenis pembayaran umum, jenis Lainnya yang bisa diberi nama sendiri, sinkronisasi pos dengan pengeluaran, saldo dashboard berdasarkan jenis, serta mempertahankan fitur import banyak siswa dan data lama.",
+  "message": "Pembaruan v1.0.9: sistem keuangan lebih umum untuk sekolah, madrasah, pesantren, dan lembaga pendidikan. Menambahkan jenis pembayaran umum, jenis Lainnya yang bisa diberi nama sendiri, sinkronisasi pos dengan pengeluaran, saldo dashboard berdasarkan jenis, pencarian peserta didik, import banyak peserta didik termasuk PDF teks, serta mempertahankan data lama.",
   "files": [
     "index.html",
     "app.js",
@@ -32,6 +32,7 @@
     "js/santri-import.js",
     "js/pembayaran-autocomplete.js",
     "js/jenis-keuangan.js",
+    "js/general-ui.js",
     "css/theme.css"
   ]
 }
