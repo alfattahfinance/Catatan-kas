@@ -3,8 +3,8 @@
 // ======================================
 
 const PENGATURAN_DEFAULT = {
-    namaPondok: "Ribath Madrasah Al-Fattah",
-    subJudul: "Dashboard Keuangan Pondok",
+    namaPondok: "",
+    subJudul: "",
     mataUang: "Rupiah",
     tema: "light"
 };
@@ -56,21 +56,11 @@ function logoTersimpan() {
 function tampilkanLogo() {
     const logo = logoTersimpan();
     const selector = [
-        "#previewLogoDashboard",
-        "#logoPreviewV2",
-        "#logoPreview",
-        "#logoDashboard",
-        "#dashboardLogo",
-        ".app-logo",
-        ".ck-logo",
-        ".logo",
-        "#logo",
-        "img[alt='Logo Dashboard']",
-        "img[alt='Logo aplikasi']",
-        "img[alt='Logo Catatan Kas']",
+        "#previewLogoDashboard", "#logoPreviewV2", "#logoPreview", "#logoDashboard",
+        "#dashboardLogo", ".app-logo", ".ck-logo", ".logo", "#logo",
+        "img[alt='Logo Dashboard']", "img[alt='Logo aplikasi']", "img[alt='Logo Catatan Kas']",
         "[data-dashboard-logo]"
     ].join(",");
-
     document.querySelectorAll(selector).forEach((el) => {
         if (el && el.tagName === "IMG") {
             el.src = logo;
@@ -78,10 +68,7 @@ function tampilkanLogo() {
             el.removeAttribute("data-src");
         }
     });
-
-    window.dispatchEvent(new CustomEvent("logoDashboardChanged", {
-        detail: { logo }
-    }));
+    window.dispatchEvent(new CustomEvent("logoDashboardChanged", { detail: { logo } }));
 }
 
 function kompresLogo(file) {
@@ -98,10 +85,7 @@ function kompresLogo(file) {
                 canvas.width = Math.max(1, Math.round(img.width * scale));
                 canvas.height = Math.max(1, Math.round(img.height * scale));
                 const ctx = canvas.getContext("2d");
-                if (!ctx) {
-                    reject(new Error("Perangkat tidak mendukung pemrosesan gambar."));
-                    return;
-                }
+                if (!ctx) return reject(new Error("Perangkat tidak mendukung pemrosesan gambar."));
                 ctx.fillStyle = "#ffffff";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -115,13 +99,8 @@ function kompresLogo(file) {
 
 async function simpanLogo(file) {
     if (!file) return false;
-    if (!file.type || !file.type.startsWith("image/")) {
-        throw new Error("Silakan pilih file gambar (JPG, PNG, WEBP, dll.).");
-    }
-    if (file.size > 10 * 1024 * 1024) {
-        throw new Error("Ukuran file terlalu besar. Maksimal 10 MB.");
-    }
-
+    if (!file.type || !file.type.startsWith("image/")) throw new Error("Silakan pilih file gambar.");
+    if (file.size > 10 * 1024 * 1024) throw new Error("Ukuran file terlalu besar. Maksimal 10 MB.");
     const dataUrl = await kompresLogo(file);
     try {
         localStorage.setItem(LOGO_KEY, dataUrl);
@@ -132,7 +111,6 @@ async function simpanLogo(file) {
     } catch (error) {
         throw new Error("Logo tidak dapat disimpan. Penyimpanan perangkat mungkin penuh.");
     }
-
     tampilkanLogo();
     return true;
 }
@@ -152,10 +130,10 @@ function muatFormPengaturan() {
     const sub = document.getElementById("subJudul");
     const mata = document.getElementById("mataUang");
     const tema = document.getElementById("tema");
-    if (nama) nama.value = data.namaPondok;
-    if (sub) sub.value = data.subJudul;
-    if (mata) mata.value = data.mataUang;
-    if (tema) tema.value = data.tema;
+    if (nama) nama.value = data.namaPondok || "";
+    if (sub) sub.value = data.subJudul || "";
+    if (mata) mata.value = data.mataUang || "Rupiah";
+    if (tema) tema.value = data.tema || "light";
     terapkanTema(data.tema);
     tampilkanLogo();
 }
@@ -172,7 +150,7 @@ async function simpanPengaturan() {
     };
 
     if (!data.namaPondok) {
-        alert("Nama pondok belum diisi.");
+        alert("Nama lembaga belum diisi.");
         return;
     }
 
@@ -186,7 +164,7 @@ async function simpanPengaturan() {
         terapkanTema(data.tema);
         const file = document.getElementById("logoDashboardInput")?.files?.[0];
         if (file) await simpanLogo(file);
-        alert("✅ Pengaturan berhasil disimpan!");
+        alert("✅ Pengaturan lembaga berhasil disimpan!");
     } catch (error) {
         console.error(error);
         alert("❌ " + error.message);
@@ -202,7 +180,7 @@ function resetSemuaPengaturan() {
     simpanDataPengaturan(PENGATURAN_DEFAULT);
     resetLogo();
     muatFormPengaturan();
-    alert("✅ Pengaturan dikembalikan ke awal. Data transaksi tetap aman.");
+    alert("✅ Pengaturan dikembalikan. Data transaksi tetap aman.");
 }
 
 window.CatatanKasSettings = {
@@ -216,29 +194,24 @@ document.addEventListener("DOMContentLoaded", () => {
     muatFormPengaturan();
     document.getElementById("simpanPengaturanButton")?.addEventListener("click", simpanPengaturan);
     document.getElementById("resetPengaturanButton")?.addEventListener("click", resetSemuaPengaturan);
-
     document.getElementById("resetLogoButton")?.addEventListener("click", () => {
         resetLogo();
         const input = document.getElementById("logoDashboardInput");
         if (input) input.value = "";
         alert("✅ Logo bawaan digunakan kembali.");
     });
-
     document.getElementById("logoDashboardInput")?.addEventListener("change", async (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
         try {
             await simpanLogo(file);
-            alert("✅ Logo berhasil dipilih dan disimpan. Logo akan dipakai di seluruh halaman aplikasi.");
+            alert("✅ Logo berhasil disimpan.");
         } catch (error) {
             event.target.value = "";
             alert("❌ " + error.message);
         }
     });
-
-    document.getElementById("tema")?.addEventListener("change", (event) => {
-        terapkanTema(event.target.value);
-    });
+    document.getElementById("tema")?.addEventListener("change", (event) => terapkanTema(event.target.value));
 });
 
 window.addEventListener("storage", (event) => {
@@ -247,6 +220,5 @@ window.addEventListener("storage", (event) => {
 });
 
 window.matchMedia?.("(prefers-color-scheme: dark)")?.addEventListener?.("change", () => {
-    const data = bacaPengaturan();
-    if (data.tema === "system") terapkanTema("system");
+    if (bacaPengaturan().tema === "system") terapkanTema("system");
 });
