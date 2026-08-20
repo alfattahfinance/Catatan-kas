@@ -1,30 +1,153 @@
 // KEUANGAN - jenis/pos keuangan bersama untuk pembayaran, pengeluaran, dan dashboard.
-// Tidak menghapus jenis lama; hanya menambahkan jenis umum dan jenis custom.
+// Tahap 2: jenis awal kosong. Pengguna menambahkan sendiri dari Pengaturan.
+// Jenis pengeluaran selalu memakai daftar jenis pembayaran yang sama.
 (() => {
   "use strict";
-  const KEY="jenisKeuanganCustom";
-  const DEFAULTS=["SPP","Uang Kegiatan","Uang Gedung","Seragam","Ujian","Syahriyyah","Infaq","Kas","Beras"];
-  const norm=value=>String(value??"").trim().replace(/\s+/g," ");
-  const key=value=>norm(value).toLocaleLowerCase("id-ID");
-  function getCustom(){try{const data=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(data)?data.map(norm).filter(Boolean):[];}catch(_){return[];}}
-  function saveCustom(list){const seen=new Set(),clean=[];[...list].forEach(item=>{const value=norm(item),k=key(value);if(!value||seen.has(k))return;seen.add(k);clean.push(value);});localStorage.setItem(KEY,JSON.stringify(clean));window.dispatchEvent(new CustomEvent("jenisKeuanganBerubah",{detail:{jenis:clean}}));return clean;}
-  function allTypes(extra=[]){const seen=new Set(),result=[];[...DEFAULTS,...getCustom(),...extra].forEach(item=>{const value=norm(item),k=key(value);if(!value||seen.has(k))return;seen.add(k);result.push(value);});return result;}
-  function addCustom(value){const name=norm(value);if(!name)return"";saveCustom([...getCustom(),name]);return name;}
-  function findSelect(){for(const id of ["jenisPembayaran","jenis","jenisPengeluaran","kategoriPengeluaran","kategori"]){const el=document.getElementById(id);if(el&&el.tagName==="SELECT")return el;}return null;}
-  function findOtherInput(select){return select?.parentElement?.querySelector("#ckJenisLainnya")||document.getElementById("ckJenisLainnya");}
-  function populate(select,extra=[]){if(!select||select.tagName!=="SELECT")return;const current=select.value,types=allTypes(extra),existingSet=new Set([...select.options].map(o=>norm(o.value||o.textContent)).filter(Boolean).map(key));types.forEach(type=>{if(existingSet.has(key(type))||key(type)==="lainnya")return;const option=document.createElement("option");option.value=type;option.textContent=type;select.appendChild(option);existingSet.add(key(type));});let other=[...select.options].find(o=>key(o.value)==="lainnya"||key(o.textContent)==="lainnya");if(!other){other=document.createElement("option");other.value="Lainnya";other.textContent="Lainnya — isi sendiri";select.appendChild(other);}else{other.value="Lainnya";other.textContent="Lainnya — isi sendiri";}if(current&&[...select.options].some(o=>key(o.value)===key(current)))select.value=current;}
-  function injectOtherInput(select){if(!select||select.dataset.ckJenisReady==="1")return;select.dataset.ckJenisReady="1";populate(select);const wrapper=document.createElement("div");wrapper.id="ckJenisLainnyaWrap";wrapper.className="mt-2";wrapper.style.display="none";wrapper.innerHTML=`<label class="form-label" for="ckJenisLainnya">Nama jenis/pos keuangan</label><input id="ckJenisLainnya" class="form-control" type="text" maxlength="80" placeholder="Contoh: Buku Paket"><div class="form-text">Jenis ini akan disimpan dan dapat digunakan kembali pada pembayaran maupun pengeluaran.</div>`;select.parentElement?.appendChild(wrapper);const input=wrapper.querySelector("#ckJenisLainnya");const toggle=()=>{const isOther=key(select.value)==="lainnya";wrapper.style.display=isOther?"block":"none";if(!isOther)input.value="";};select.addEventListener("change",toggle);toggle();}
-  function resolve(selectOrIds){const select=typeof selectOrIds==="string"?document.getElementById(selectOrIds):(selectOrIds||findSelect());if(!select)return"";if(key(select.value)!=="lainnya")return norm(select.value);const input=findOtherInput(select),value=norm(input?.value);if(!value)return"";addCustom(value);let exists=[...select.options].find(o=>key(o.value)===key(value));if(!exists){exists=document.createElement("option");exists.value=value;exists.textContent=value;select.appendChild(exists);}select.value=value;return value;}
-  function reset(selectOrIds){const select=typeof selectOrIds==="string"?document.getElementById(selectOrIds):(selectOrIds||findSelect());if(!select)return;select.value="";const input=findOtherInput(select);if(input)input.value="";const wrap=select.parentElement?.querySelector("#ckJenisLainnyaWrap")||document.getElementById("ckJenisLainnyaWrap");if(wrap)wrap.style.display="none";}
-  function updateDashboardFilter(){const select=document.getElementById("filterKategori");if(!select)return;const current=select.value||"Semua",types=allTypes(),existing=new Set([...select.options].map(o=>key(o.value)));types.forEach(type=>{if(existing.has(key(type)))return;const option=document.createElement("option");option.value=type;option.textContent=type;select.appendChild(option);existing.add(key(type));});if([...select.options].some(o=>key(o.value)===key(current)))select.value=current;}
-  function replaceTextOnly(el, map){
-    const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
-    const nodes=[];let node;while((node=walker.nextNode()))nodes.push(node);
-    nodes.forEach(textNode=>{let text=textNode.nodeValue||"",changed=false;map.forEach(([from,to])=>{if(text.includes(from)){text=text.replaceAll(from,to);changed=true;}});if(changed)textNode.nodeValue=text;});
+  const KEY = "jenisKeuanganCustom";
+  const norm = value => String(value ?? "").trim().replace(/\s+/g, " ");
+  const key = value => norm(value).toLocaleLowerCase("id-ID");
+
+  function getCustom() {
+    try {
+      const data = JSON.parse(localStorage.getItem(KEY) || "[]");
+      return Array.isArray(data) ? data.map(norm).filter(Boolean) : [];
+    } catch (_) { return []; }
   }
-  function generalizeLabels(){const map=[["Pembayaran Santri","Pembayaran"],["Data Santri","Data Peserta Didik"],["Daftar Santri","Daftar Peserta Didik"],["Tambah Santri Baru","Tambah Peserta Didik"],["Tambah Santri","Tambah Peserta Didik"],["Kelola data santri pondok","Kelola data peserta didik"],["Nama Santri","Nama Siswa / Peserta Didik"],["Nama santri / keterangan","Nama siswa / peserta didik / keterangan"]];document.querySelectorAll("h1,h2,h3,h4,h5,h6,p,small,label,button,a,span,th").forEach(el=>{if(el.dataset.ckGeneralized==="1")return;const before=el.textContent;replaceTextOnly(el,map);if(el.textContent!==before)el.dataset.ckGeneralized="1";});const sub=document.getElementById("subJudulHeader");if(sub)sub.textContent="Dashboard Keuangan";const paymentLabel=document.querySelector('label[for="namaSantriPemasukan"]');if(paymentLabel)paymentLabel.textContent="Nama Siswa / Peserta Didik / Keterangan";}
-  function init(){const selects=["jenisPembayaran","jenisPengeluaran","jenis","kategoriPengeluaran","kategori"].map(id=>document.getElementById(id)).filter(el=>el?.tagName==="SELECT");selects.forEach(select=>{populate(select);injectOtherInput(select);});updateDashboardFilter();generalizeLabels();}
-  window.ckJenisKeuangan={DEFAULTS,allTypes,addCustom,populate,resolve,reset,init,getCustom};
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
-  setTimeout(init,300);setTimeout(init,1000);setTimeout(generalizeLabels,1800);window.addEventListener("jenisKeuanganBerubah",init);
+
+  function saveCustom(list) {
+    const seen = new Set(), clean = [];
+    for (const item of list) {
+      const value = norm(item), k = key(value);
+      if (!value || seen.has(k)) continue;
+      seen.add(k); clean.push(value);
+    }
+    localStorage.setItem(KEY, JSON.stringify(clean));
+    window.dispatchEvent(new CustomEvent("jenisKeuanganBerubah", { detail: { jenis: clean } }));
+    return clean;
+  }
+
+  function allTypes() { return getCustom(); }
+
+  function addCustom(value) {
+    const name = norm(value);
+    if (!name) return "";
+    if (getCustom().some(x => key(x) === key(name))) return name;
+    saveCustom([...getCustom(), name]);
+    return name;
+  }
+
+  function removeCustom(value) {
+    const k = key(value);
+    saveCustom(getCustom().filter(x => key(x) !== k));
+  }
+
+  function typeSelect(select) {
+    if (!select || select.tagName !== "SELECT") return;
+    const current = norm(select.value);
+    const types = allTypes();
+    const placeholder = select.id === "filterKategori" ? "Semua" : "Pilih jenis";
+    select.innerHTML = "";
+    const first = document.createElement("option");
+    first.value = select.id === "filterKategori" ? "Semua" : "";
+    first.textContent = placeholder;
+    select.appendChild(first);
+    types.forEach(type => {
+      const option = document.createElement("option");
+      option.value = type; option.textContent = type;
+      select.appendChild(option);
+    });
+    if (current && [...select.options].some(o => key(o.value) === key(current))) select.value = current;
+    else if (select.id === "filterKategori") select.value = "Semua";
+    else select.value = "";
+  }
+
+  function populate(select) {
+    if (!select || select.tagName !== "SELECT") return;
+    typeSelect(select);
+  }
+
+  function resolve(selectOrIds) {
+    const select = typeof selectOrIds === "string" ? document.getElementById(selectOrIds) : selectOrIds;
+    if (!select) return "";
+    return norm(select.value);
+  }
+
+  function reset(selectOrIds) {
+    const select = typeof selectOrIds === "string" ? document.getElementById(selectOrIds) : selectOrIds;
+    if (select) select.value = "";
+  }
+
+  function updateDashboardFilter() {
+    const select = document.getElementById("filterKategori");
+    if (select) typeSelect(select);
+  }
+
+  function injectSettingsManager() {
+    if (!document.body || document.getElementById("ckJenisKeuanganManager")) return;
+    const anchor = document.querySelector("#simpanPengaturanButton")?.closest(".d-grid") || document.querySelector("#namaPondok")?.closest(".card")?.parentElement;
+    if (!anchor) return;
+    const section = document.createElement("section");
+    section.id = "ckJenisKeuanganManager";
+    section.className = "card custom-card";
+    section.innerHTML = `
+      <div class="card-body">
+        <h5 class="fw-bold mb-2"><i class="bi bi-list-check text-success"></i> Jenis Pembayaran & Pengeluaran</h5>
+        <p class="text-muted small">Tambahkan jenis pembayaran sesuai kebutuhan lembaga. Jenis yang sama otomatis tersedia pada Pengeluaran.</p>
+        <div class="input-group mb-3">
+          <input id="ckTambahJenisInput" class="form-control" maxlength="80" placeholder="Contoh: SPP, Infaq, Listrik">
+          <button id="ckTambahJenisButton" class="btn btn-success" type="button"><i class="bi bi-plus-lg"></i> Tambahkan</button>
+        </div>
+        <div id="ckDaftarJenis"></div>
+      </div>`;
+    anchor.parentNode?.insertBefore(section, anchor);
+    renderSettingsTypes();
+    document.getElementById("ckTambahJenisButton")?.addEventListener("click", () => {
+      const input = document.getElementById("ckTambahJenisInput");
+      const name = norm(input?.value);
+      if (!name) return alert("Nama jenis belum diisi.");
+      addCustom(name); if (input) input.value = ""; renderSettingsTypes();
+    });
+    document.getElementById("ckTambahJenisInput")?.addEventListener("keydown", e => {
+      if (e.key === "Enter") document.getElementById("ckTambahJenisButton")?.click();
+    });
+  }
+
+  function renderSettingsTypes() {
+    const box = document.getElementById("ckDaftarJenis");
+    if (!box) return;
+    const types = allTypes();
+    if (!types.length) {
+      box.innerHTML = `<div class="text-center text-muted border rounded-3 p-3">Belum ada jenis pembayaran. Tekan <b>Tambahkan</b> untuk membuatnya.</div>`;
+      return;
+    }
+    box.innerHTML = types.map(type => `<div class="d-flex align-items-center justify-content-between border rounded-3 p-2 mb-2"><span class="fw-semibold">${escapeHtml(type)}</span><button type="button" class="btn btn-sm btn-outline-danger" data-hapus-jenis="${escapeHtml(type)}"><i class="bi bi-trash"></i></button></div>`).join("");
+    box.querySelectorAll("[data-hapus-jenis]").forEach(btn => btn.addEventListener("click", () => {
+      const name = btn.getAttribute("data-hapus-jenis");
+      if (!confirm(`Hapus jenis "${name}" dari daftar? Data transaksi lama tidak dihapus.`)) return;
+      removeCustom(name); renderSettingsTypes();
+    }));
+  }
+
+  function escapeHtml(v) { return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])); }
+
+  function generalizeLabels() {
+    const map = [["Pembayaran Santri", "Pembayaran"], ["Data Santri", "Data Peserta Didik"], ["Daftar Santri", "Daftar Peserta Didik"], ["Tambah Santri Baru", "Tambah Peserta Didik"], ["Tambah Santri", "Tambah Peserta Didik"], ["Kelola data santri pondok", "Kelola data peserta didik"], ["Nama Santri", "Nama Siswa / Peserta Didik"], ["Nama santri / keterangan", "Nama siswa / peserta didik / keterangan"]];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = []; let node; while ((node = walker.nextNode())) nodes.push(node);
+    nodes.forEach(n => { let text = n.nodeValue || ""; map.forEach(([from, to]) => { text = text.replaceAll(from, to); }); n.nodeValue = text; });
+  }
+
+  function init() {
+    ["jenis", "jenisPembayaran", "jenisPengeluaran", "kategoriPengeluaran", "kategori"].forEach(id => {
+      const el = document.getElementById(id); if (el?.tagName === "SELECT") populate(el);
+    });
+    updateDashboardFilter();
+    if (location.pathname.endsWith("pengaturan.html")) injectSettingsManager();
+    generalizeLabels();
+  }
+
+  window.ckJenisKeuangan = { allTypes, addCustom, removeCustom, populate, resolve, reset, init, getCustom };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true }); else init();
+  setTimeout(init, 300); setTimeout(init, 1000);
+  window.addEventListener("jenisKeuanganBerubah", () => { init(); renderSettingsTypes(); });
 })();
