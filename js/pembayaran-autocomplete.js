@@ -1,3 +1,5 @@
+import "./jenis-keuangan.js";
+
 // Autocomplete nama santri - Pembayaran.
 // Membaca Firestore + daftarSantri lokal agar hasil import banyak santri langsung tersedia.
 import { db } from "../firebase-config.js";
@@ -62,7 +64,6 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17
     rebuildLocal();
     const q = input.value.trim().toLocaleLowerCase("id-ID");
     if (!q) { hide(); return; }
-    // Awali dengan nama yang dimulai huruf yang diketik, lalu nama yang mengandung kata tersebut.
     const starts = names.filter(n => n.toLocaleLowerCase("id-ID").startsWith(q));
     const contains = names.filter(n => !n.toLocaleLowerCase("id-ID").startsWith(q) && n.toLocaleLowerCase("id-ID").includes(q));
     const matches = [...starts, ...contains].slice(0, 30);
@@ -128,7 +129,6 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17
       if (input?.value.trim()) render();
     }
   });
-  // WebView tertentu tidak mengirim event storage antar halaman; cek lokal secara ringan.
   setInterval(() => {
     const before = names.length;
     rebuildLocal();
