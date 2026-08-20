@@ -1,6 +1,6 @@
 {
-  "version": "1.0.9",
-  "message": "Pembaruan v1.0.9: sistem keuangan lebih umum untuk sekolah, madrasah, pesantren, dan lembaga pendidikan. Menambahkan jenis pembayaran umum, jenis Lainnya yang bisa diberi nama sendiri, sinkronisasi pos dengan pengeluaran, saldo dashboard berdasarkan jenis, pencarian peserta didik, import banyak peserta didik termasuk PDF teks, serta mempertahankan data lama.",
+  "version": "1.0.10",
+  "message": "Pembaruan v1.0.10: pengaturan lembaga dibuat kosong dan identitas aplikasi menggunakan Nama Lembaga. Versi APK 2.5.",
   "files": [
     "index.html",
     "app.js",
