@@ -1,6 +1,6 @@
 {
-  "version": "1.0.10",
-  "message": "Pembaruan v1.0.10: pengaturan lembaga dibuat kosong dan identitas aplikasi menggunakan Nama Lembaga. Versi APK 2.5.",
+  "version": "1.0.11",
+  "message": "Pembaruan v1.0.11: perbaikan Dashboard/Lembaga, identitas Nama Lembaga, penghapusan kategori bawaan lama, dan tampilan daftar nama pada mode gelap. Versi APK tetap 2.5.",
   "files": [
     "index.html",
     "app.js",
