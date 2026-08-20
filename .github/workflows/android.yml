@@ -2,6 +2,17 @@ name: Build Catatan Kas APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - '**.js'
+      - '**.css'
+      - '**.json'
+      - '**.png'
+      - '**.jpg'
+      - '**.jpeg'
+      - '.github/workflows/android.yml'
 
 permissions:
   contents: read
@@ -75,8 +86,8 @@ jobs:
                   applicationId 'com.catatankas.app'
                   minSdk 23
                   targetSdk 35
-                  versionCode 24
-                  versionName '2.4'
+                  versionCode 25
+                  versionName '2.5'
               }
               buildTypes {
                   release {
@@ -257,20 +268,11 @@ jobs:
       - name: Prepare APK
         run: |
           mkdir -p output
-          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-v2.4.apk
-          ls -lh output/Keuangan-v2.4.apk
+          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-v2.5.apk
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Keuangan-v2.4-APK
-          path: output/Keuangan-v2.4.apk
+          name: Keuangan-v2.5
+          path: output/Keuangan-v2.5.apk
           if-no-files-found: error
-
-      - name: Build summary
-        run: |
-          echo "BUILD KEUANGAN SELESAI"
-          echo "Nama aplikasi : Keuangan"
-          echo "Version       : 2.4"
-          echo "Package       : com.catatankas.app"
-          ls -lh output/Keuangan-v2.4.apk
