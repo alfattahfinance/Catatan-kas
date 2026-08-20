@@ -1,4 +1,4 @@
-// KEUANGAN - jenis/pos keuangan bersama untuk pembayaran dan pengeluaran.
+// KEUANGAN - jenis/pos keuangan bersama untuk pembayaran, pengeluaran, dan dashboard.
 // Tidak menghapus jenis lama; hanya menambahkan jenis umum dan jenis custom.
 (() => {
   "use strict";
@@ -77,8 +77,7 @@
     if (!select || select.tagName !== "SELECT") return;
     const current = select.value;
     const types = allTypes(extra);
-    const existing = [...select.options].map(o => norm(o.value || o.textContent)).filter(Boolean);
-    const existingSet = new Set(existing.map(key));
+    const existingSet = new Set([...select.options].map(o => norm(o.value || o.textContent)).filter(Boolean).map(key));
 
     types.forEach(type => {
       if (existingSet.has(key(type)) || key(type) === "lainnya") return;
@@ -126,16 +125,8 @@
     };
     select.addEventListener("change", toggle);
     input.addEventListener("input", () => {
-      const value = norm(input.value);
-      if (key(select.value) !== "lainnya" || !value) return;
-      const option = [...select.options].find(o => key(o.value) === key(value));
-      if (option) option.remove();
-      const custom = document.createElement("option");
-      custom.value = value;
-      custom.textContent = value;
-      custom.dataset.ckCustom = "1";
-      select.appendChild(custom);
-      select.value = "Lainnya";
+      // Jangan mengganti pilihan Lainnya ketika pengguna sedang mengetik.
+      // Nilai final akan dipasang oleh resolve() tepat sebelum penyimpanan.
     });
     toggle();
   }
@@ -148,12 +139,12 @@
     const value = norm(input?.value);
     if (!value) return "";
     addCustom(value);
-    const exists = [...select.options].find(o => key(o.value) === key(value));
+    let exists = [...select.options].find(o => key(o.value) === key(value));
     if (!exists) {
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = value;
-      select.appendChild(option);
+      exists = document.createElement("option");
+      exists.value = value;
+      exists.textContent = value;
+      select.appendChild(exists);
     }
     select.value = value;
     return value;
@@ -169,12 +160,56 @@
     if (wrap) wrap.style.display = "none";
   }
 
+  function updateDashboardFilter() {
+    const select = document.getElementById("filterKategori");
+    if (!select) return;
+    const current = select.value || "Semua";
+    const types = allTypes();
+    const existing = new Set([...select.options].map(o => key(o.value)));
+    types.forEach(type => {
+      if (existing.has(key(type))) return;
+      const option = document.createElement("option");
+      option.value = type;
+      option.textContent = type;
+      select.appendChild(option);
+      existing.add(key(type));
+    });
+    if ([...select.options].some(o => key(o.value) === key(current))) select.value = current;
+  }
+
+  function generalizeLabels() {
+    if (document.getElementById("subJudulHeader")) document.getElementById("subJudulHeader").textContent = "Dashboard Keuangan";
+    const paymentTitle = document.querySelector(".ck-title");
+    if (paymentTitle && /pembayaran santri/i.test(paymentTitle.textContent)) paymentTitle.textContent = "Pembayaran";
+    const paymentLabel = document.querySelector('label[for="namaSantriPemasukan"]');
+    if (paymentLabel) paymentLabel.textContent = "Nama Siswa / Peserta Didik / Keterangan";
+  }
+
   function init() {
     const select = findSelect();
-    if (!select) return;
-    populate(select);
-    injectOtherInput(select);
+    if (select) {
+      populate(select);
+      injectOtherInput(select);
+    }
+    updateDashboardFilter();
+    generalizeLabels();
   }
+
+  // Capture dijalankan sebelum listener penyimpanan lama, sehingga "Lainnya"
+  // sudah berubah menjadi nama pos sebenarnya ketika pembayaran/pengeluaran dibaca.
+  document.addEventListener("click", event => {
+    const button = event.target.closest("#btnSimpanPembayaran,#btnSimpanPengeluaran,#simpanPembayaran,#simpanPengeluaran");
+    if (!button || !window.ckJenisKeuangan) return;
+    const select = findSelect();
+    if (select && key(select.value) === "lainnya") {
+      const resolved = resolve(select);
+      if (!resolved) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        alert("Silakan isi nama jenis/pos keuangan pada bagian Lainnya.");
+      }
+    }
+  }, true);
 
   window.ckJenisKeuangan = { DEFAULTS, allTypes, addCustom, populate, resolve, reset, init };
 
