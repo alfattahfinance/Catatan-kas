@@ -31,23 +31,47 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
+
+      - name: Setup Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(python3 - <<'PY'
+          import json
+          with open('version.json', encoding='utf-8') as f:
+              print(json.load(f).get('version', '2.4'))
+          PY
+          )
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Install Android SDK packages
+        shell: bash
         run: |
-          yes | sdkmanager --licenses || true
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Create Android project structure
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p app/src/main/java/com/catatankas/app
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/assets
 
       - name: Create settings.gradle
+        shell: bash
         run: |
           cat > settings.gradle <<'EOF'
           pluginManagement {
@@ -62,12 +86,14 @@ jobs:
           EOF
 
       - name: Create root build.gradle
+        shell: bash
         run: |
           cat > build.gradle <<'EOF'
           plugins { id 'com.android.application' version '8.7.3' apply false }
           EOF
 
       - name: Create gradle.properties
+        shell: bash
         run: |
           cat > gradle.properties <<'EOF'
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
@@ -76,8 +102,23 @@ jobs:
           EOF
 
       - name: Create app build.gradle
+        shell: bash
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          cat > app/build.gradle <<'EOF'
+          set -euo pipefail
+          VERSION_CODE=$(python3 - <<'PY'
+          import os
+          raw=os.environ.get('APP_VERSION','2.4').lstrip('v')
+          parts=[]
+          for x in raw.split('.'):
+              try: parts.append(int(x))
+              except ValueError: parts.append(0)
+          while len(parts)<3: parts.append(0)
+          print(parts[0]*10000 + parts[1]*100 + parts[2])
+          PY
+          )
+          cat > app/build.gradle <<EOF
           plugins { id 'com.android.application' }
           android {
               namespace 'com.catatankas.app'
@@ -86,8 +127,8 @@ jobs:
                   applicationId 'com.catatankas.app'
                   minSdk 23
                   targetSdk 35
-                  versionCode 25
-                  versionName '2.5'
+                  versionCode ${VERSION_CODE}
+                  versionName '${APP_VERSION}'
               }
               buildTypes {
                   release {
@@ -101,18 +142,19 @@ jobs:
                   targetCompatibility JavaVersion.VERSION_17
               }
           }
+          dependencies {
+              implementation 'androidx.activity:activity:1.10.1'
+              implementation 'androidx.appcompat:appcompat:1.7.0'
+              implementation 'androidx.webkit:webkit:1.13.0'
+          }
           EOF
 
       - name: Create proguard rules
+        shell: bash
         run: printf '%s\n' '# No custom ProGuard rules required.' > app/proguard-rules.pro
 
-      - name: Create Gradle wrapper
-        run: |
-          gradle wrapper --gradle-version 8.9 --distribution-type bin
-          chmod +x gradlew
-          ./gradlew --version
-
       - name: Copy application files
+        shell: bash
         run: |
           set -euo pipefail
           for file in *.html *.js *.css *.json *.png *.jpg *.jpeg; do
@@ -145,11 +187,13 @@ jobs:
           PY
 
       - name: Copy Catatan Kas logo
+        shell: bash
         run: |
           if [ -f "logo-catatan-kas.jpg" ]; then cp "logo-catatan-kas.jpg" "app/src/main/res/drawable/logo_catatan_kas.jpg"; fi
           if [ -f "logo-catatan-kas.png" ]; then cp "logo-catatan-kas.png" "app/src/main/res/drawable/logo_catatan_kas.png"; fi
 
       - name: Create fallback icon
+        shell: bash
         run: |
           cat > app/src/main/res/drawable/ic_launcher.xml <<'EOF'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
@@ -159,6 +203,7 @@ jobs:
           EOF
 
       - name: Create AndroidManifest.xml
+        shell: bash
         run: |
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
@@ -196,6 +241,7 @@ jobs:
           EOF
 
       - name: Create Android styles
+        shell: bash
         run: |
           cat > app/src/main/res/values/styles.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
@@ -212,6 +258,7 @@ jobs:
           EOF
 
       - name: Create MainActivity.java
+        shell: bash
         run: |
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
           package com.catatankas.app;
@@ -260,22 +307,29 @@ jobs:
           EOF
 
       - name: Check Android project
+        shell: bash
         run: |
+          set -euo pipefail
           java -version
-          ./gradlew --version
+          gradle --version
           find app -type f | sort
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        shell: bash
+        run: gradle --no-daemon clean assembleDebug --stacktrace
 
       - name: Prepare APK
+        shell: bash
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
         run: |
+          set -euo pipefail
           mkdir -p output
-          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-v2.5.apk
+          cp app/build/outputs/apk/debug/app-debug.apk "output/Keuangan-v${APP_VERSION}.apk"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Keuangan-v2.5
-          path: output/Keuangan-v2.5.apk
+          name: Keuangan-v${{ steps.version.outputs.version }}
+          path: output/Keuangan-v${{ steps.version.outputs.version }}.apk
           if-no-files-found: error
