@@ -1,3 +1,4 @@
+import "./js/ui-fixes.js";
 // ======================================
 // CATATAN KAS
 // AUTH GUARD + DATA AKUN PERSISTEN
@@ -5,7 +6,6 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-
 const DEFAULT_LOGO="logo-catatan-kas.jpg";
 const SETTINGS_KEY="pengaturanAplikasi";
 const LOGO_KEY="logoDashboard";
@@ -14,7 +14,6 @@ const STUDENTS_KEY="daftarSantri";
 const PENDING_KEY="pengaturanAplikasiPending";
 const SAVED_AT_KEY="pengaturanAplikasiLastSavedAt";
 let akunLokalAktif=null,cloudProfileReady=false,cloudSaveTimer=null;
-
 function readJson(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch(_){return fallback}}
 function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(_){} }
 function userKey(key,user){return `${key}_${user.uid}`}
@@ -24,49 +23,10 @@ function localSavedAt(user){try{const scoped=localStorage.getItem(userKey(SAVED_
 function saveLocalSavedAt(user,at){try{localStorage.setItem(userKey(SAVED_AT_KEY,user),String(at));localStorage.setItem(SAVED_AT_KEY,String(at))}catch(_){} }
 function readPending(user){try{const raw=localStorage.getItem(userKey(PENDING_KEY,user))||localStorage.getItem(PENDING_KEY);if(!raw)return null;const p=JSON.parse(raw);return p&&p.data?p:null}catch(_){return null}}
 function markPending(){if(!akunLokalAktif)return;try{const savedAt=Date.now(),data={settings:readJson(SETTINGS_KEY,{}),logo:localStorage.getItem(LOGO_KEY)||"",types:readTypes(akunLokalAktif),savedAt};localStorage.setItem(userKey(SAVED_AT_KEY,akunLokalAktif),String(savedAt));localStorage.setItem(SAVED_AT_KEY,String(savedAt));localStorage.setItem(userKey(PENDING_KEY,akunLokalAktif),JSON.stringify({data,savedAt}));localStorage.setItem(PENDING_KEY,JSON.stringify({data,savedAt}))}catch(_){} }
-function loadAccountLocalData(user){
-  akunLokalAktif=user||null;cloudProfileReady=false;if(!user)return;
-  // Only restore account-scoped data here. Do not manufacture an empty SETTINGS_KEY
-  // before Firestore is checked, otherwise the cloud profile would be mistaken for
-  // an already-existing local profile and could never hydrate the app on a new device.
-  const scopedSettings=localStorage.getItem(userKey(SETTINGS_KEY,user));
-  const legacySettings=localStorage.getItem(SETTINGS_KEY);
-  const scopedStudents=localStorage.getItem(userKey(STUDENTS_KEY,user));
-  const legacyStudents=localStorage.getItem(STUDENTS_KEY);
-  const scopedLogo=localStorage.getItem(userKey(LOGO_KEY,user));
-  const legacyLogo=localStorage.getItem(LOGO_KEY);
-  const scopedTypes=localStorage.getItem(userKey(TYPES_KEY,user));
-  const scopedSavedAt=localStorage.getItem(userKey(SAVED_AT_KEY,user));
-  const scopedPending=localStorage.getItem(userKey(PENDING_KEY,user));
-
-  if(scopedSettings!==null)localStorage.setItem(SETTINGS_KEY,scopedSettings);
-  else if(legacySettings!==null)localStorage.setItem(SETTINGS_KEY,legacySettings);
-  else localStorage.removeItem(SETTINGS_KEY);
-
-  if(scopedStudents!==null)localStorage.setItem(STUDENTS_KEY,scopedStudents);
-  else if(legacyStudents!==null)localStorage.setItem(STUDENTS_KEY,legacyStudents);
-  else localStorage.removeItem(STUDENTS_KEY);
-
-  if(scopedLogo!==null)localStorage.setItem(LOGO_KEY,scopedLogo);
-  else if(legacyLogo!==null)localStorage.setItem(LOGO_KEY,legacyLogo);
-  else localStorage.removeItem(LOGO_KEY);
-
-  if(scopedTypes!==null)writeTypes(user,JSON.parse(scopedTypes));
-  else if(localStorage.getItem(TYPES_KEY)!==null)writeTypes(user,readTypes(user));
-  else localStorage.removeItem(TYPES_KEY);
-
-  if(scopedSavedAt!==null)localStorage.setItem(SAVED_AT_KEY,scopedSavedAt);else if(!legacySettings)localStorage.removeItem(SAVED_AT_KEY);
-  if(scopedPending!==null)localStorage.setItem(PENDING_KEY,scopedPending);
-}
+function loadAccountLocalData(user){akunLokalAktif=user||null;cloudProfileReady=false;if(!user)return;const scopedSettings=localStorage.getItem(userKey(SETTINGS_KEY,user)),legacySettings=localStorage.getItem(SETTINGS_KEY),scopedStudents=localStorage.getItem(userKey(STUDENTS_KEY,user)),legacyStudents=localStorage.getItem(STUDENTS_KEY),scopedLogo=localStorage.getItem(userKey(LOGO_KEY,user)),legacyLogo=localStorage.getItem(LOGO_KEY),scopedTypes=localStorage.getItem(userKey(TYPES_KEY,user)),scopedSavedAt=localStorage.getItem(userKey(SAVED_AT_KEY,user)),scopedPending=localStorage.getItem(userKey(PENDING_KEY,user));if(scopedSettings!==null)localStorage.setItem(SETTINGS_KEY,scopedSettings);else if(legacySettings!==null)localStorage.setItem(SETTINGS_KEY,legacySettings);else localStorage.removeItem(SETTINGS_KEY);if(scopedStudents!==null)localStorage.setItem(STUDENTS_KEY,scopedStudents);else if(legacyStudents!==null)localStorage.setItem(STUDENTS_KEY,legacyStudents);else localStorage.removeItem(STUDENTS_KEY);if(scopedLogo!==null)localStorage.setItem(LOGO_KEY,scopedLogo);else if(legacyLogo!==null)localStorage.setItem(LOGO_KEY,legacyLogo);else localStorage.removeItem(LOGO_KEY);if(scopedTypes!==null)writeTypes(user,JSON.parse(scopedTypes));else if(localStorage.getItem(TYPES_KEY)!==null)writeTypes(user,readTypes(user));else localStorage.removeItem(TYPES_KEY);if(scopedSavedAt!==null)localStorage.setItem(SAVED_AT_KEY,scopedSavedAt);else if(!legacySettings)localStorage.removeItem(SAVED_AT_KEY);if(scopedPending!==null)localStorage.setItem(PENDING_KEY,scopedPending)}
 function saveAccountLocalData(user){if(!user)return;for(const base of [SETTINGS_KEY,STUDENTS_KEY,LOGO_KEY]){const value=localStorage.getItem(base);if(value!==null)localStorage.setItem(userKey(base,user),value)}writeTypes(user,readTypes(user));const at=localStorage.getItem(SAVED_AT_KEY);if(at)localStorage.setItem(userKey(SAVED_AT_KEY,user),at);const pending=localStorage.getItem(PENDING_KEY);if(pending)localStorage.setItem(userKey(PENDING_KEY,user),pending)}
 function currentLocalSnapshot(user){return{settings:readJson(SETTINGS_KEY,{}),logo:localStorage.getItem(LOGO_KEY)||"",types:readTypes(user),savedAt:localSavedAt(user)}}
-async function loadCloudAccountData(user){if(!user)return;try{const ref=doc(db,"users",user.uid,"private","profile"),snap=await getDoc(ref),pending=readPending(user),localAt=localSavedAt(user);if(snap.exists()){const data=snap.data()||{},cloudAt=Number(data.settingsSavedAt||0),hasLocalSettings=localStorage.getItem(userKey(SETTINGS_KEY,user))!==null,localIsNewer=(localAt>0&&localAt>=cloudAt)||!!pending?.data;
-if(data.settings&&typeof data.settings==="object"&&!localIsNewer&&!hasLocalSettings){writeJson(SETTINGS_KEY,data.settings);localStorage.setItem(userKey(SETTINGS_KEY,user),JSON.stringify(data.settings));if(cloudAt)saveLocalSavedAt(user,cloudAt)}
-if(Array.isArray(data.types)&&!localIsNewer&&!localStorage.getItem(userKey(TYPES_KEY,user)))writeTypes(user,data.types);
-if(Array.isArray(data.localStudents)&&!localIsNewer){writeJson(STUDENTS_KEY,data.localStudents);localStorage.setItem(userKey(STUDENTS_KEY,user),JSON.stringify(data.localStudents))}
-if(typeof data.logo==="string"&&data.logo.length>0&&data.logo.length<900000&&!localIsNewer&&!localStorage.getItem(userKey(LOGO_KEY,user))){localStorage.setItem(LOGO_KEY,data.logo);localStorage.setItem(userKey(LOGO_KEY,user),data.logo)}
-if(localIsNewer)scheduleCloudSave();
-}else await saveCloudAccountData(user,{createOnly:true});cloudProfileReady=true;window.dispatchEvent(new CustomEvent("accountDataReady",{detail:{uid:user.uid}}));if(readPending(user))scheduleCloudSave()}catch(error){console.error("Gagal memuat data akun dari Firestore:",error);cloudProfileReady=true;if(readPending(user))scheduleCloudSave()}}
+async function loadCloudAccountData(user){if(!user)return;try{const ref=doc(db,"users",user.uid,"private","profile"),snap=await getDoc(ref),pending=readPending(user),localAt=localSavedAt(user);if(snap.exists()){const data=snap.data()||{},cloudAt=Number(data.settingsSavedAt||0),hasLocalSettings=localStorage.getItem(userKey(SETTINGS_KEY,user))!==null,localIsNewer=(localAt>0&&localAt>=cloudAt)||!!pending?.data;if(data.settings&&typeof data.settings==="object"&&!localIsNewer&&!hasLocalSettings){writeJson(SETTINGS_KEY,data.settings);localStorage.setItem(userKey(SETTINGS_KEY,user),JSON.stringify(data.settings));if(cloudAt)saveLocalSavedAt(user,cloudAt)}if(Array.isArray(data.types)&&!localIsNewer&&!localStorage.getItem(userKey(TYPES_KEY,user)))writeTypes(user,data.types);if(Array.isArray(data.localStudents)&&!localIsNewer){writeJson(STUDENTS_KEY,data.localStudents);localStorage.setItem(userKey(STUDENTS_KEY,user),JSON.stringify(data.localStudents))}if(typeof data.logo==="string"&&data.logo.length>0&&data.logo.length<900000&&!localIsNewer&&!localStorage.getItem(userKey(LOGO_KEY,user))){localStorage.setItem(LOGO_KEY,data.logo);localStorage.setItem(userKey(LOGO_KEY,user),data.logo)}if(localIsNewer)scheduleCloudSave()}else await saveCloudAccountData(user,{createOnly:true});cloudProfileReady=true;window.dispatchEvent(new CustomEvent("accountDataReady",{detail:{uid:user.uid}}));if(readPending(user))scheduleCloudSave()}catch(error){console.error("Gagal memuat data akun dari Firestore:",error);cloudProfileReady=true;if(readPending(user))scheduleCloudSave()}}
 async function saveCloudAccountData(user,options={}){if(!user||(!cloudProfileReady&&!options.createOnly))return;const snapshot=currentLocalSnapshot(user);try{saveAccountLocalData(user);const students=readJson(STUDENTS_KEY,[]),payload={uid:user.uid,email:user.email||"",settings:snapshot.settings&&typeof snapshot.settings==="object"?snapshot.settings:{},settingsSavedAt:snapshot.savedAt,types:Array.isArray(snapshot.types)?snapshot.types:[],localStudents:Array.isArray(students)?students:[],updatedAt:serverTimestamp()};if(snapshot.logo&&snapshot.logo.length<900000)payload.logo=snapshot.logo;await setDoc(doc(db,"users",user.uid,"private","profile"),payload,{merge:true});const p=readPending(user);if(p&&JSON.stringify(currentLocalSnapshot(user))===JSON.stringify(snapshot)){localStorage.removeItem(userKey(PENDING_KEY,user));localStorage.removeItem(PENDING_KEY)}}catch(error){console.error("Gagal menyimpan data akun ke Firestore:",error)}}
 function scheduleCloudSave(){if(!akunLokalAktif||!cloudProfileReady)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>saveCloudAccountData(akunLokalAktif),300)}
 function isValidLogo(value){if(!value||typeof value!=="string")return false;const v=value.trim();if(!v)return false;if(/^(?:\.\/)?assets\/logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v)||/^\/assets\/logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v))return false;return /^data:image\//i.test(v)||/^https?:\/\//i.test(v)||/^blob:/i.test(v)||/^(?:\.\/)?[\w./-]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(v)}
