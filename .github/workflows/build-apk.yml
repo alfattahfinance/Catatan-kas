@@ -78,8 +78,18 @@ jobs:
             if [ -d "$dir" ]; then cp -r "$dir" app/src/main/assets/; fi
           done
 
-          if [ -f "logo-catatan-kas.jpg" ]; then cp "logo-catatan-kas.jpg" app/src/main/assets/; fi
-          if [ -f "logo-catatan-kas.png" ]; then cp "logo-catatan-kas.png" app/src/main/assets/; fi
+          # Pastikan logo yang berada di root tersedia baik sebagai logo root
+          # maupun pada path web assets/logo-catatan-kas.jpg.
+          if [ -f "logo-catatan-kas.jpg" ]; then
+            cp "logo-catatan-kas.jpg" app/src/main/assets/logo-catatan-kas.jpg
+            mkdir -p app/src/main/assets/assets
+            cp "logo-catatan-kas.jpg" app/src/main/assets/assets/logo-catatan-kas.jpg
+          fi
+          if [ -f "logo-catatan-kas.png" ]; then
+            cp "logo-catatan-kas.png" app/src/main/assets/logo-catatan-kas.png
+            mkdir -p app/src/main/assets/assets
+            cp "logo-catatan-kas.png" app/src/main/assets/assets/logo-catatan-kas.png
+          fi
 
           if [ -f "Photoroom_20260812_224807.png" ]; then
             cp "Photoroom_20260812_224807.png" app/src/main/res/drawable/ic_keuangan.png
@@ -193,7 +203,7 @@ jobs:
 
           cp UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
 
-      - name: Verify updater is embedded
+      - name: Verify web assets and updater
         shell: bash
         run: |
           set -euo pipefail
@@ -201,6 +211,9 @@ jobs:
           test -s app/src/main/assets/web-update.json
           test -s app/src/main/assets/js/update-check.js
           test -s app/src/main/assets/pengaturan.html
+          test -s app/src/main/assets/login.html
+          test -s app/src/main/assets/js/theme.js
+          test -s app/src/main/assets/assets/logo-catatan-kas.jpg
           grep -q 'AndroidWebUpdater' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'onShowFileChooser' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'android:name=".UpdatableMainActivity"' app/src/main/AndroidManifest.xml
