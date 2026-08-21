@@ -1,6 +1,6 @@
 {
-  "version": "1.0.16",
-  "message": "Pembaruan v1.0.16: pengaturan tema, nama lembaga, dan logo kini dipersistenkan per akun ke Firebase; data peserta didik tetap realtime; seluruh label menggunakan Peserta Didik untuk penggunaan umum. Versi APK tetap 2.5.",
+  "version": "1.0.17",
+  "message": "Pembaruan v1.0.17: perbaikan final persistensi pengaturan akun, tema terang/gelap, nama lembaga, logo, cache service worker, data peserta didik realtime, dan label umum Peserta Didik. Versi APK tetap 2.5.",
   "files": [
     "index.html","app.js","auth-guard.js","firebase-config.js","dashboard-excel.html","dashboard-excel-fix.js","laporan.html","login.html","login.js","pembayaran.html","pembayaran.js","pengeluaran.html","pengeluaran.js","pengaturan.html","santri.html","santri.js","rekap.html","style.css","theme.css","theme.js","logo-sync.js","service-worker.js","manifest.json","register.html","js/pengaturan.js","js/update-check.js","js/theme.js","js/santri-import.js","js/import-santri-ui.js","js/pembayaran-autocomplete.js","js/jenis-keuangan.js","js/general-ui.js","js/data-cleanup.js","css/theme.css"
   ]
