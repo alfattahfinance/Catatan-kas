@@ -1,5 +1,6 @@
 import "./js/pembayaran-autocomplete.js";
 import "./js/jenis-keuangan.js";
+import "./js/data-cleanup.js";
 import { db, auth } from "./firebase-config.js";
 import { collection, addDoc, getDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
