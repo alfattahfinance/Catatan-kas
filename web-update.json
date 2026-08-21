@@ -1,6 +1,6 @@
 {
-  "version": "1.0.11",
-  "message": "Pembaruan v1.0.11: perbaikan Dashboard/Lembaga, identitas Nama Lembaga, penghapusan kategori bawaan lama, dan tampilan daftar nama pada mode gelap. Versi APK tetap 2.5.",
+  "version": "1.0.12",
+  "message": "Pembaruan v1.0.12: pemisahan data peserta didik berdasarkan akun login, perbaikan import Excel/CSV agar tidak mencampur data antar-akun, dan penyelarasan mesin update. Versi APK tetap 2.5.",
   "files": [
     "index.html",
     "app.js",
@@ -30,6 +30,7 @@
     "js/update-check.js",
     "js/theme.js",
     "js/santri-import.js",
+    "js/import-santri-ui.js",
     "js/pembayaran-autocomplete.js",
     "js/jenis-keuangan.js",
     "js/general-ui.js",
