@@ -1,7 +1,7 @@
 /* CATATAN KAS - IN-APP WEB UPDATE */
 (function () {
   "use strict";
-  const WEB_VERSION = "1.0.12";
+  const WEB_VERSION = "1.0.20";
   const MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
   function versionNumber(v) { return String(v || "0").replace(/^v/i, "").split(".").map(n => parseInt(n, 10) || 0).reduce((a, n) => a * 1000 + n, 0); }
   function currentVersion() { try { return localStorage.getItem("keuanganWebVersion") || WEB_VERSION; } catch (_) { return WEB_VERSION; } }
@@ -14,7 +14,7 @@
   window.addEventListener("webUpdateAvailable",e=>showWebUpdate(e.detail||{}));
   window.addEventListener("webUpdateLatest",e=>{const d=e.detail||{};setStatus("Aplikasi sudah menggunakan versi terbaru ("+(d.version||currentVersion())+").");});
   window.addEventListener("webUpdateProgress",e=>{const d=e.detail||{};const msg=document.getElementById("webUpdateMessage");if(msg)msg.textContent=d.message||"Mengunduh pembaruan...";});
-  window.addEventListener("webUpdateComplete",async e=>{const d=e.detail||{};try{localStorage.setItem("keuanganWebVersion",d.version||"");}catch(_){}try{if("serviceWorker"in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}if("caches"in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}}catch(_){}document.getElementById("webUpdateBox")?.remove();setStatus("Pembaruan berhasil dipasang. Memuat ulang aplikasi...");setTimeout(()=>location.reload(),700);});
+  window.addEventListener("webUpdateComplete",async e=>{const d=e.detail||{};try{localStorage.setItem("keuanganWebVersion",d.version||WEB_VERSION);}catch(_){}try{if("serviceWorker"in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}if("caches"in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}}catch(_){}document.getElementById("webUpdateBox")?.remove();setStatus("Pembaruan berhasil dipasang. Memuat ulang aplikasi...");setTimeout(()=>location.reload(),700);});
   window.addEventListener("webUpdateError",e=>{const d=e.detail||{};const msg=document.getElementById("webUpdateMessage");if(msg)msg.textContent=d.message||"Pembaruan gagal. Versi lama tetap digunakan.";const buttons=document.getElementById("webUpdateButtons");if(buttons){buttons.innerHTML="";const btn=document.createElement("button");btn.className="btn btn-secondary w-100";btn.textContent="Tutup";btn.onclick=()=>document.getElementById("webUpdateBox")?.remove();buttons.appendChild(btn);}setStatus(d.message||"Pembaruan gagal.",false);});
   document.addEventListener("DOMContentLoaded",()=>{const button=document.getElementById("cekUpdateButton");if(button)button.addEventListener("click",e=>{e.preventDefault();checkWebUpdate(true);});setTimeout(()=>checkWebUpdate(false),3000);});
   window.CatatanKasUpdate={check:()=>checkWebUpdate(true)};
