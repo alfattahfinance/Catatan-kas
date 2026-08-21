@@ -1,6 +1,6 @@
 {
-  "version": "1.0.13",
-  "message": "Pembaruan v1.0.13: pengaturan dan logo kini disimpan per akun login agar tidak tertukar saat berganti akun, serta penyelarasan logo di seluruh halaman. Versi APK tetap 2.5.",
+  "version": "1.0.14",
+  "message": "Pembaruan v1.0.14: perbaikan pemuatan data santri agar tetap tersimpan dan tampil kembali setelah berpindah halaman, serta penyelarasan realtime Firestore berdasarkan akun login. Versi APK tetap 2.5.",
   "files": [
     "index.html",
     "app.js",
@@ -34,6 +34,7 @@
     "js/pembayaran-autocomplete.js",
     "js/jenis-keuangan.js",
     "js/general-ui.js",
+    "js/data-cleanup.js",
     "css/theme.css"
   ]
 }
