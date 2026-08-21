@@ -26,7 +26,7 @@ import java.net.URL;
 /** MainActivity + secure-ish in-app web updater. */
 public class UpdatableMainActivity extends MainActivity {
     private static final String MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
-    private static final String EMBEDDED_WEB_VERSION = "1.0.12";
+    private static final String EMBEDDED_WEB_VERSION = "1.0.20";
     private File webUpdateDir;
 
     @SuppressLint("SetJavaScriptEnabled")
