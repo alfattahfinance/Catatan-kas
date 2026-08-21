@@ -15,16 +15,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
+
       - name: Setup Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+
       - name: Read app version
         id: version
         shell: bash
@@ -37,17 +40,21 @@ jobs:
           PY
           )
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
       - name: Install Android SDK packages
         shell: bash
         run: |
           set -euo pipefail
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
       - name: Create Android project structure
         shell: bash
         run: mkdir -p app/src/main/java/com/catatankas/app app/src/main/res/values app/src/main/res/drawable app/src/main/assets
+
       - name: Create Gradle project
         shell: bash
         run: |
@@ -65,6 +72,7 @@ jobs:
           android.useAndroidX=true
           android.enableJetifier=true
           EOF
+
       - name: Create app Gradle configuration
         shell: bash
         env:
@@ -104,12 +112,33 @@ jobs:
           }
           EOF
           printf '%s\n' '# No custom rules.' > app/proguard-rules.pro
-      - name: Copy web application
+
+      - name: Copy complete web application
         shell: bash
         run: |
           set -euo pipefail
-          for f in *.html *.js *.css *.json *.png *.jpg *.jpeg; do [ -f "$f" ] && cp "$f" app/src/main/assets/ || true; done
-          for d in js css assets images img; do [ -d "$d" ] && cp -r "$d" app/src/main/assets/ || true; done
+          # Keep the repository web app structure intact so relative imports,
+          # Firebase modules, images, fonts and nested assets are not lost.
+          rsync -a --exclude='.git/' --exclude='.github/' --exclude='app/' --exclude='output/' ./ app/src/main/assets/
+          test -f app/src/main/assets/index.html
+          test -f app/src/main/assets/firebase-config.js
+          test -f app/src/main/assets/app.js
+
+      - name: Verify critical web files
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            index.html login.html register.html
+            santri.html pembayaran.html pengeluaran.html laporan.html
+            dashboard-excel.html pengaturan.html
+            app.js firebase-config.js
+          )
+          for f in "${required[@]}"; do
+            test -f "app/src/main/assets/$f" || { echo "Missing required file: $f"; exit 1; }
+          done
+          echo "Critical web files verified."
+
       - name: Create Android resources
         shell: bash
         run: |
@@ -120,6 +149,7 @@ jobs:
           cat > app/src/main/res/drawable/ic_launcher.xml <<'EOF'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#198754" android:pathData="M0,0L108,0L108,108L0,108Z"/><path android:fillColor="#FFFFFF" android:pathData="M27,27L81,27L81,81L27,81Z"/></vector>
           EOF
+
       - name: Create Android manifest and activity
         shell: bash
         run: |
@@ -136,38 +166,80 @@ jobs:
           EOF
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
           package com.catatankas.app;
+
           import android.app.Activity;
           import android.os.Bundle;
           import android.view.ViewGroup;
           import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebResourceResponse;
           import android.webkit.WebSettings;
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
+          import androidx.webkit.WebViewAssetLoader;
+
           public class MainActivity extends Activity {
             private WebView webView;
+            private WebViewAssetLoader assetLoader;
+
             @Override public void onCreate(Bundle b) {
-              super.onCreate(b); webView=new WebView(this); webView.setLayoutParams(new ViewGroup.LayoutParams(-1,-1)); setContentView(webView);
-              WebSettings s=webView.getSettings(); s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setDatabaseEnabled(true); s.setAllowFileAccess(true); s.setAllowContentAccess(true); s.setUseWideViewPort(false); s.setLoadWithOverviewMode(false); s.setSupportZoom(false); s.setBuiltInZoomControls(false); s.setDisplayZoomControls(false);
-              webView.setWebViewClient(new WebViewClient()); webView.setWebChromeClient(new WebChromeClient()); webView.loadUrl("file:///android_asset/index.html");
+              super.onCreate(b);
+              webView = new WebView(this);
+              webView.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
+              setContentView(webView);
+
+              assetLoader = new WebViewAssetLoader.Builder()
+                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
+
+              WebSettings s = webView.getSettings();
+              s.setJavaScriptEnabled(true);
+              s.setDomStorageEnabled(true);
+              s.setDatabaseEnabled(true);
+              s.setAllowFileAccess(false);
+              s.setAllowContentAccess(false);
+              s.setUseWideViewPort(false);
+              s.setLoadWithOverviewMode(false);
+              s.setSupportZoom(false);
+              s.setBuiltInZoomControls(false);
+              s.setDisplayZoomControls(false);
+              s.setMediaPlaybackRequiresUserGesture(false);
+
+              webView.setWebViewClient(new WebViewClient() {
+                @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                  return assetLoader.shouldInterceptRequest(request.getUrl());
+                }
+              });
+              webView.setWebChromeClient(new WebChromeClient());
+              webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
             }
-            @Override public void onBackPressed(){ if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed(); }
-            @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}
+
+            @Override public void onBackPressed() {
+              if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+            }
+
+            @Override protected void onDestroy() {
+              if (webView != null) webView.destroy();
+              super.onDestroy();
+            }
           }
           EOF
+
       - name: Build Debug APK
         run: gradle --no-daemon clean assembleDebug --stacktrace
+
       - name: Prepare APK artifact
         shell: bash
         env:
           APP_VERSION: ${{ steps.version.outputs.version }}
         run: |
+          set -euo pipefail
           mkdir -p output
           cp app/build/outputs/apk/debug/app-debug.apk "output/Keuangan-v${APP_VERSION}.apk"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Keuangan-v${{ steps.version.outputs.version }}
           path: output/Keuangan-v${{ steps.version.outputs.version }}.apk
           if-no-files-found: error
-
-# FINAL BUILD VERIFICATION TRIGGER
