@@ -1,12 +1,10 @@
 (function () {
     "use strict";
-
     const SETTINGS_KEY = "pengaturanAplikasi";
     const THEME_KEY = "themeMode";
     const LOGO_KEY = "logoDashboard";
     const DEFAULT_LOGO_FILE = "logo-catatan-kas.jpg";
     const FALLBACK_LOGO_FILE = "icon-192.png";
-
     function accountKey(base) { const uid = String(window.currentFirebaseUid || window.currentFirebaseUser?.uid || "").trim(); return uid ? `${base}_${uid}` : base; }
     function getSettings() { try { const data = JSON.parse(localStorage.getItem(accountKey(SETTINGS_KEY)) || "{}"); return data && typeof data === "object" ? data : {}; } catch (_) { return {}; } }
     function saveSettings(settings) { try { localStorage.setItem(accountKey(SETTINGS_KEY), JSON.stringify(settings)); } catch (_) {} }
@@ -26,24 +24,10 @@
     function startThemeManager() { applyTheme(getSavedTheme(), false); setupThemeToggle(); setupSystemThemeListener(); setupLogoSync(); }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startThemeManager, { once: true }); else startThemeManager();
     window.themeManager = { getTheme: getSavedTheme, setTheme: applyTheme, toggle: toggleTheme, init: startThemeManager, resolve: resolveTheme, getLogo, applyLogo };
-
-    function loadSantriImport() {
-        if (!document.getElementById("tabelSantri") || document.getElementById("importSantriLoader")) return;
-        const s = document.createElement("script");
-        s.id = "importSantriLoader";
-        s.type = "module";
-        s.src = "js/santri-import.js";
-        document.body.appendChild(s);
-    }
+    function loadSantriImport() { if (!document.getElementById("tabelSantri") || document.getElementById("importSantriLoader")) return; const s = document.createElement("script"); s.id = "importSantriLoader"; s.type = "module"; s.src = "js/santri-import.js"; document.body.appendChild(s); }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", loadSantriImport, { once: true }); else loadSantriImport();
-
     import("./js/jenis-keuangan.js").catch(() => {});
-
-    // Laporan memakai transaksi yang sama dengan Riwayat. Aktifkan aksi edit/hapus hanya di halaman laporan.
-    function loadReportActions() {
-        if (!/laporan\.html$/i.test(location.pathname) || window.__ckReportActionsLoaded) return;
-        window.__ckReportActionsLoaded = true;
-        import("./laporan-actions.js").catch(err => console.error("Gagal memuat aksi laporan:", err));
-    }
+    function loadReportActions() { if (!/laporan\.html$/i.test(location.pathname) || window.__ckReportActionsLoaded) return; window.__ckReportActionsLoaded = true; import("./laporan-actions.js").catch(err => console.error("Gagal memuat aksi laporan:", err)); }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", loadReportActions, { once: true }); else loadReportActions();
+    import("./firebase-config.js").then(({auth}) => import("https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js").then(({onAuthStateChanged}) => { onAuthStateChanged(auth, user => { window.currentFirebaseUid = user?.uid || ""; window.currentFirebaseUser = user || null; applyTheme(getSavedTheme(), false); applyLogo(); window.dispatchEvent(new CustomEvent("accountDataReady", { detail: { uid: user?.uid || null } })); }); })).catch(() => {});
 })();
