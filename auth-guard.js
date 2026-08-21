@@ -10,6 +10,7 @@ const DEFAULT_LOGO="logo-catatan-kas.jpg";
 const LOGO_KEY="logoDashboard";
 const SETTINGS_KEY="pengaturanAplikasi";
 const TYPES_KEY="jenisKeuanganCustom";
+const PENDING_KEY="pengaturanAplikasiPending";
 const LOCAL_ACCOUNT_KEYS=[SETTINGS_KEY,"daftarSantri",LOGO_KEY,TYPES_KEY];
 let akunLokalAktif=null;
 let cloudProfileReady=false;
@@ -20,6 +21,9 @@ function readJson(key,fallback={}){try{return JSON.parse(localStorage.getItem(ke
 function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(_){} }
 function readTypes(user){try{const scoped=localStorage.getItem(`${TYPES_KEY}_${user.uid}`);if(scoped!==null)return JSON.parse(scoped);const legacy=localStorage.getItem(TYPES_KEY);return legacy?JSON.parse(legacy):[]}catch(_){return[]}}
 function writeTypes(user,types){try{const value=JSON.stringify(Array.isArray(types)?types:[]);localStorage.setItem(`${TYPES_KEY}_${user.uid}`,value);localStorage.setItem(TYPES_KEY,value)}catch(_){} }
+function readPending(){try{const raw=localStorage.getItem(PENDING_KEY);if(!raw)return null;const p=JSON.parse(raw);return p&&p.data?p:null}catch(_){return null}}
+function markPending(){try{const data={settings:readJson(SETTINGS_KEY,{}),logo:localStorage.getItem(LOGO_KEY)||"",types:akunLokalAktif?readTypes(akunLokalAktif):[],savedAt:Date.now()};localStorage.setItem(PENDING_KEY,JSON.stringify({data,savedAt:data.savedAt}))}catch(_){} }
+function clearPendingIfUnchanged(snapshot){try{const p=readPending();if(!p||!snapshot)return;const now={settings:readJson(SETTINGS_KEY,{}),logo:localStorage.getItem(LOGO_KEY)||"",types:akunLokalAktif?readTypes(akunLokalAktif):[]};if(JSON.stringify(now)===JSON.stringify(snapshot))localStorage.removeItem(PENDING_KEY)}catch(_){} }
 
 function loadAccountLocalData(user){
   akunLokalAktif=user||null;
@@ -51,18 +55,19 @@ async function loadCloudAccountData(user){
   try{
     const ref=doc(db,"users",user.uid,"private","profile");
     const snap=await getDoc(ref);
+    const pending=readPending();
     if(snap.exists()){
       const data=snap.data()||{};
-      if(data.settings&&typeof data.settings==="object"){
+      if(data.settings&&typeof data.settings==="object"&&!pending?.data?.settings){
         writeJson(SETTINGS_KEY,data.settings);
         localStorage.setItem(`${SETTINGS_KEY}_${user.uid}`,JSON.stringify(data.settings));
       }
-      if(Array.isArray(data.types))writeTypes(user,data.types);
+      if(Array.isArray(data.types)&&!pending?.data?.types)writeTypes(user,data.types);
       if(Array.isArray(data.localStudents)){
         writeJson("daftarSantri",data.localStudents);
         localStorage.setItem(`daftarSantri_${user.uid}`,JSON.stringify(data.localStudents));
       }
-      if(typeof data.logo==="string"&&data.logo.length>0&&data.logo.length<900000){
+      if(typeof data.logo==="string"&&data.logo.length>0&&data.logo.length<900000&&!pending?.data?.logo){
         localStorage.setItem(LOGO_KEY,data.logo);
         localStorage.setItem(`${LOGO_KEY}_${user.uid}`,data.logo);
       }
@@ -71,23 +76,24 @@ async function loadCloudAccountData(user){
     }
     cloudProfileReady=true;
     window.dispatchEvent(new CustomEvent("accountDataReady",{detail:{uid:user.uid}}));
+    if(readPending())scheduleCloudSave();
   }catch(error){
     console.error("Gagal memuat data akun dari Firestore:",error);
     cloudProfileReady=true;
+    if(readPending())scheduleCloudSave();
   }
 }
 
 async function saveCloudAccountData(user,options={}){
   if(!user||!cloudProfileReady&&!options.createOnly)return;
+  const snapshot={settings:readJson(SETTINGS_KEY,{}),logo:localStorage.getItem(LOGO_KEY)||"",types:readTypes(user)};
   try{
     saveAccountLocalData(user);
-    const settings=readJson(SETTINGS_KEY,{});
-    const types=readTypes(user);
     const localStudents=readJson("daftarSantri",[]);
-    const logo=localStorage.getItem(LOGO_KEY)||"";
-    const payload={uid:user.uid,email:user.email||"",settings:settings&&typeof settings==="object"?settings:{},types:Array.isArray(types)?types:[],localStudents:Array.isArray(localStudents)?localStudents:[],updatedAt:serverTimestamp()};
-    if(typeof logo==="string"&&logo.length>0&&logo.length<900000)payload.logo=logo;
+    const payload={uid:user.uid,email:user.email||"",settings:snapshot.settings&&typeof snapshot.settings==="object"?snapshot.settings:{},types:Array.isArray(snapshot.types)?snapshot.types:[],localStudents:Array.isArray(localStudents)?localStudents:[],updatedAt:serverTimestamp()};
+    if(typeof snapshot.logo==="string"&&snapshot.logo.length>0&&snapshot.logo.length<900000)payload.logo=snapshot.logo;
     await setDoc(doc(db,"users",user.uid,"private","profile"),payload,{merge:true});
+    clearPendingIfUnchanged(snapshot);
   }catch(error){console.error("Gagal menyimpan data akun ke Firestore:",error)}
 }
 
@@ -96,7 +102,7 @@ function scheduleCloudSave(){if(!akunLokalAktif||!cloudProfileReady)return;clear
 function isValidLogo(value){if(!value||typeof value!=="string")return false;const v=value.trim();if(!v)return false;if(/^(?:\.\/)?assets\/logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v))return false;if(/^\/assets\/logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v))return false;return /^data:image\//i.test(v)||/^https?:\/\//i.test(v)||/^blob:/i.test(v)||/^(?:\.\/)?[\w./-]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(v)}
 function getConfiguredLogo(){try{const directLogo=localStorage.getItem(LOGO_KEY);if(isValidLogo(directLogo))return directLogo;const settings=readJson(SETTINGS_KEY,{});const settingsLogo=settings.logoDashboard||settings.logo||settings.logoUrl;if(isValidLogo(settingsLogo))return settingsLogo}catch(error){console.warn("Gagal membaca pengaturan logo:",error)}return DEFAULT_LOGO}
 function applyPageLogo(){const logo=getConfiguredLogo();const selectors=["#laporanLogo","#logo",".ck-logo",".app-logo",".logo","#logoDashboard","#dashboardLogo","#previewLogoDashboard","#logoPreviewV2","#logoPreview","img[alt='Logo Dashboard']","img[alt='Logo aplikasi']","img[alt='Logo Catatan Kas']","[data-dashboard-logo]"];document.querySelectorAll(selectors.join(",")).forEach(img=>{if(!(img instanceof HTMLImageElement))return;img.onerror=()=>{img.onerror=null;img.src=new URL(DEFAULT_LOGO,document.baseURI).href};img.src=logo;img.removeAttribute("srcset");img.removeAttribute("data-src");img.alt=img.alt||"Logo Catatan Kas"})}
-function setupLogoEvents(){applyPageLogo();window.addEventListener("logoDashboardChanged",()=>{saveAccountLocalData(akunLokalAktif);scheduleCloudSave();applyPageLogo()});window.addEventListener("pageshow",applyPageLogo);window.addEventListener("focus",applyPageLogo);window.addEventListener("storage",event=>{if(event.key===LOGO_KEY||event.key===SETTINGS_KEY||event.key===TYPES_KEY){applyPageLogo();scheduleCloudSave()}});document.addEventListener("DOMContentLoaded",applyPageLogo,{once:true});setTimeout(applyPageLogo,100);setTimeout(applyPageLogo,500);setTimeout(applyPageLogo,1200)}
+function setupLogoEvents(){applyPageLogo();window.addEventListener("logoDashboardChanged",()=>{markPending();saveAccountLocalData(akunLokalAktif);scheduleCloudSave();applyPageLogo()});window.addEventListener("pageshow",applyPageLogo);window.addEventListener("focus",applyPageLogo);window.addEventListener("storage",event=>{if(event.key===LOGO_KEY||event.key===SETTINGS_KEY||event.key===TYPES_KEY){applyPageLogo();markPending();scheduleCloudSave()}});document.addEventListener("DOMContentLoaded",applyPageLogo,{once:true});setTimeout(applyPageLogo,100);setTimeout(applyPageLogo,500);setTimeout(applyPageLogo,1200)}
 setupLogoEvents();
 
 onAuthStateChanged(auth,async user=>{
@@ -114,7 +120,7 @@ onAuthStateChanged(auth,async user=>{
   if(location.pathname.toLowerCase().endsWith("dashboard-excel.html")||location.href.toLowerCase().includes("dashboard-excel.html"))import("./dashboard-excel-fix.js").catch(error=>console.error("Dashboard Excel gagal dimuat:",error));
 });
 
-window.addEventListener("settingsChanged",()=>{saveAccountLocalData(akunLokalAktif);scheduleCloudSave()});
-window.addEventListener("jenisKeuanganBerubah",()=>{saveAccountLocalData(akunLokalAktif);scheduleCloudSave()});
+window.addEventListener("settingsChanged",()=>{markPending();saveAccountLocalData(akunLokalAktif);scheduleCloudSave()});
+window.addEventListener("jenisKeuanganBerubah",()=>{markPending();saveAccountLocalData(akunLokalAktif);scheduleCloudSave()});
 window.addEventListener("daftarSantriBerubah",()=>{saveAccountLocalData(akunLokalAktif);scheduleCloudSave()});
 window.addEventListener("accountDataReady",()=>{applyPageLogo()});
