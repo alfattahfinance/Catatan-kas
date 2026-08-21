@@ -1,107 +1,18 @@
 import { db, auth } from "./firebase-config.js";
-import { doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-
-let currentUser = null;
-const esc = v => String(v ?? "").replace(/[&<>\"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
-const amount = x => Number(x?.nominal ?? x?.jumlah ?? x?.nilai ?? x?.total ?? 0) || 0;
-const type = x => String(x?.jenis ?? x?.kategori ?? "Lainnya");
-const name = x => String(x?.namaSantri ?? x?.nama_santri ?? x?.nama ?? x?.keterangan ?? "-");
-
-function parseDate(v) {
-  if (v?.toDate) return v.toDate();
-  if (typeof v === "string") { const d = new Date(v); if (!isNaN(d)) return d; }
-  return null;
-}
-
-function addActions() {
-  const tbody = document.getElementById("rows");
-  if (!tbody) return;
-  tbody.querySelectorAll("tr").forEach(row => {
-    if (row.dataset.reportActions === "1") return;
-    const cells = row.querySelectorAll("td");
-    if (cells.length < 5) return;
-    const id = row.dataset.transactionId;
-    const collection = row.dataset.transactionCollection;
-    if (!id || !collection) return;
-    row.dataset.reportActions = "1";
-    const cell = document.createElement("td");
-    cell.className = "text-nowrap";
-    cell.innerHTML = `<button type="button" class="btn btn-sm btn-outline-primary me-1" data-report-edit="1" title="Edit"><i class="bi bi-pencil"></i></button><button type="button" class="btn btn-sm btn-outline-danger" data-report-delete="1" title="Hapus"><i class="bi bi-trash"></i></button>`;
-    row.appendChild(cell);
-  });
-}
-
-async function getOwn(id, collectionName) {
-  if (!currentUser) throw new Error("Silakan login terlebih dahulu.");
-  const snap = await getDoc(doc(db, collectionName, id));
-  if (!snap.exists()) throw new Error("Transaksi tidak ditemukan.");
-  const data = snap.data();
-  if (data.uid && data.uid !== currentUser.uid) throw new Error("Transaksi ini bukan milik akun Anda.");
-  return data;
-}
-
-async function editTransaction(row) {
-  try {
-    const collectionName = row.dataset.transactionCollection;
-    const id = row.dataset.transactionId;
-    const data = await getOwn(id, collectionName);
-    const oldAmount = amount(data);
-    const oldType = type(data);
-    const oldName = name(data);
-    const oldDate = data.tanggal || "";
-    const label = collectionName === "payments" ? "Pemasukan" : "Pengeluaran";
-    const nominal = prompt(`Edit nominal ${label}:`, String(oldAmount));
-    if (nominal === null) return;
-    const n = Number(String(nominal).replace(/[^0-9]/g, ""));
-    if (!n || n < 0) return alert("Nominal tidak valid.");
-    const jenis = prompt("Edit jenis/kategori:", oldType);
-    if (jenis === null || !jenis.trim()) return;
-    const keterangan = prompt("Edit keterangan/nama:", oldName);
-    if (keterangan === null || !keterangan.trim()) return;
-    const tanggal = prompt("Edit tanggal (YYYY-MM-DD):", oldDate);
-    if (tanggal === null) return;
-    await updateDoc(doc(db, collectionName, id), {
-      nominal: n,
-      jumlah: n,
-      jenis: jenis.trim(),
-      kategori: jenis.trim(),
-      nama: keterangan.trim(),
-      namaSantri: keterangan.trim(),
-      nama_santri: keterangan.trim(),
-      keterangan: keterangan.trim(),
-      tanggal: tanggal || oldDate,
-      updatedAt: new Date()
-    });
-    alert("Transaksi berhasil diperbarui. Laporan dan riwayat akan mengikuti perubahan.");
-    window.dispatchEvent(new Event("dataKeuanganBerubah"));
-  } catch (e) { console.error(e); alert(e.message || "Gagal mengedit transaksi."); }
-}
-
-async function deleteTransaction(row) {
-  try {
-    const collectionName = row.dataset.transactionCollection;
-    const id = row.dataset.transactionId;
-    const data = await getOwn(id, collectionName);
-    if (!confirm(`Hapus transaksi ${name(data)} sebesar Rp ${amount(data).toLocaleString("id-ID")}?\n\nTransaksi akan dihapus dari riwayat dan otomatis tidak dihitung lagi dalam laporan.`)) return;
-    await deleteDoc(doc(db, collectionName, id));
-    alert("Transaksi berhasil dihapus. Laporan akan mengikuti riwayat transaksi.");
-    window.dispatchEvent(new Event("dataKeuanganBerubah"));
-  } catch (e) { console.error(e); alert(e.message || "Gagal menghapus transaksi."); }
-}
-
-document.addEventListener("click", e => {
-  const edit = e.target.closest("[data-report-edit]");
-  const del = e.target.closest("[data-report-delete]");
-  if (edit) { e.preventDefault(); editTransaction(edit.closest("tr")); }
-  if (del) { e.preventDefault(); deleteTransaction(del.closest("tr")); }
-});
-
-const observer = new MutationObserver(() => addActions());
-function start() {
-  currentUser = auth.currentUser;
-  const tbody = document.getElementById("rows");
-  if (tbody) observer.observe(tbody, { childList: true, subtree: true });
-  addActions();
-}
-onAuthStateChanged(auth, user => { currentUser = user || null; if (currentUser) start(); });
+let currentUser=null, transactions=[];
+const amount=x=>Number(x?.nominal??x?.jumlah??x?.nilai??x?.total??0)||0;
+const type=x=>String(x?.jenis??x?.kategori??"");
+const name=x=>String(x?.namaSantri??x?.nama_santri??x?.nama??x?.keterangan??"-");
+function dateValue(x){const v=x?.tanggal??x?.createdAt??x?.timestamp??x?.date;if(v?.toDate)return v.toDate();if(typeof v==='string'){const d=new Date(v);if(!isNaN(d))return d}return null}
+function dateText(x){const d=dateValue(x);return d?d.toLocaleDateString('id-ID'):'-'}
+async function loadTransactions(){if(!currentUser)return;const [p,e]=await Promise.all([getDocs(query(collection(db,'payments'),where('uid','==',currentUser.uid))),getDocs(query(collection(db,'expenses'),where('uid','==',currentUser.uid)))]);transactions=[...p.docs.map(d=>({id:d.id,collection:'payments',...d.data()})),...e.docs.map(d=>({id:d.id,collection:'expenses',...d.data()}))]}
+function mapRows(){const tbody=document.getElementById('rows');if(!tbody)return;const used=new Set();tbody.querySelectorAll('tr').forEach(row=>{if(row.dataset.transactionId)return;const c=row.querySelectorAll('td');if(c.length<5)return;const date=c[0].textContent.trim(),typ=c[2].textContent.trim().toLowerCase(),desc=c[3].textContent.trim(),n=Number(c[4].textContent.replace(/[^0-9]/g,''))||0;const found=transactions.find(x=>!used.has(x.id)&&dateText(x)===date&&type(x).trim().toLowerCase()===typ&&name(x).trim()===desc&&amount(x)===n);if(!found)return;used.add(found.id);row.dataset.transactionId=found.id;row.dataset.transactionCollection=found.collection;if(!row.dataset.reportActions){row.dataset.reportActions='1';const cell=document.createElement('td');cell.className='text-nowrap';cell.innerHTML='<button type="button" class="btn btn-sm btn-outline-primary me-1" data-report-edit title="Edit"><i class="bi bi-pencil"></i></button><button type="button" class="btn btn-sm btn-outline-danger" data-report-delete title="Hapus"><i class="bi bi-trash"></i></button>';row.appendChild(cell)}})}
+async function own(id,c){if(!currentUser)throw new Error('Silakan login terlebih dahulu.');const s=await getDoc(doc(db,c,id));if(!s.exists())throw new Error('Transaksi tidak ditemukan.');if(s.data()?.uid&&s.data().uid!==currentUser.uid)throw new Error('Transaksi ini bukan milik akun Anda.');return s.data()}
+async function edit(row){try{const c=row.dataset.transactionCollection,id=row.dataset.transactionId,d=await own(id,c),n=prompt('Edit nominal:',String(amount(d)));if(n===null)return;const nominal=Number(String(n).replace(/[^0-9]/g,''));if(!nominal)return alert('Nominal tidak valid.');const j=prompt('Edit jenis/kategori:',type(d));if(j===null||!j.trim())return;const k=prompt('Edit keterangan/nama:',name(d));if(k===null||!k.trim())return;const t=prompt('Edit tanggal (YYYY-MM-DD):',String(d.tanggal||''));if(t===null)return;await updateDoc(doc(db,c,id),{nominal,jumlah:nominal,jenis:j.trim(),kategori:j.trim(),nama:k.trim(),namaSantri:k.trim(),nama_santri:k.trim(),keterangan:k.trim(),tanggal:t||d.tanggal,updatedAt:new Date()});alert('Transaksi diperbarui. Riwayat dan laporan akan mengikuti data terbaru.');await loadTransactions()}catch(e){console.error(e);alert(e.message||'Gagal mengedit transaksi.')}}
+async function remove(row){try{const c=row.dataset.transactionCollection,id=row.dataset.transactionId,d=await own(id,c);if(!confirm(`Hapus transaksi ${name(d)} sebesar Rp ${amount(d).toLocaleString('id-ID')}?\n\nData laporan akan otomatis berubah.`))return;await deleteDoc(doc(db,c,id));alert('Transaksi dihapus. Laporan mengikuti riwayat terbaru.');await loadTransactions()}catch(e){console.error(e);alert(e.message||'Gagal menghapus transaksi.')}}
+document.addEventListener('click',e=>{const ed=e.target.closest('[data-report-edit]'),del=e.target.closest('[data-report-delete]');if(ed){e.preventDefault();edit(ed.closest('tr'))}else if(del){e.preventDefault();remove(del.closest('tr'))}});
+const observer=new MutationObserver(()=>mapRows());
+function start(){loadTransactions().then(()=>{const tbody=document.getElementById('rows');if(tbody)observer.observe(tbody,{childList:true,subtree:true});mapRows()}).catch(console.error)}
+onAuthStateChanged(auth,u=>{currentUser=u||null;if(currentUser)start()});
