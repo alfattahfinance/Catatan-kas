@@ -1,6 +1,6 @@
 {
-  "version": "1.0.12",
-  "message": "Pembaruan v1.0.12: pemisahan data peserta didik berdasarkan akun login, perbaikan import Excel/CSV agar tidak mencampur data antar-akun, dan penyelarasan mesin update. Versi APK tetap 2.5.",
+  "version": "1.0.13",
+  "message": "Pembaruan v1.0.13: pengaturan dan logo kini disimpan per akun login agar tidak tertukar saat berganti akun, serta penyelarasan logo di seluruh halaman. Versi APK tetap 2.5.",
   "files": [
     "index.html",
     "app.js",
