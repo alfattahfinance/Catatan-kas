@@ -1,134 +1,15 @@
 import { db, auth } from "./firebase-config.js";
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, query, where, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-
-const $ = id => document.getElementById(id);
-const esc = value => String(value ?? "").replace(/[&<>\"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
-let userAktif = null;
-let unsubscribe = null;
-
-function muatLogoDashboardSantri() {
-    let logo = "assets/logo-catatan-kas.jpg";
-    try { logo = localStorage.getItem("logoDashboard") || logo; } catch (_) {}
-    document.querySelectorAll(".app-logo,.ck-logo,#logoDashboard,#dashboardLogo,#logoPreviewV2,#logoPreview,img[alt='Logo Dashboard'],img[alt='Logo aplikasi'],[data-dashboard-logo]").forEach(img => {
-        if (img?.tagName === "IMG") { img.src = logo; img.removeAttribute("srcset"); }
-    });
-}
-
-function kosongkanFormSantri() {
-    ["nama","kelas","wali","idSantri"].forEach(id => { if ($(id)) $(id).value = ""; });
-    const btn = document.querySelector("button[onclick*='simpanSantri'],#btnSimpanSantri");
-    if (btn) btn.innerHTML = "Simpan Peserta Didik";
-}
-
-function refresh() {
-    try { localStorage.setItem("catatanKasDataBerubah", String(Date.now())); } catch (_) {}
-    window.dispatchEvent(new CustomEvent("daftarSantriBerubah"));
-    window.dispatchEvent(new CustomEvent("dataKeuanganBerubah"));
-}
-
-function renderSantri(snap) {
-    const daftarEl = $("daftarSantri");
-    if (!daftarEl) return;
-    const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (!list.length) {
-        daftarEl.innerHTML = `<li class="list-group-item text-center text-muted py-3">Belum ada data peserta didik.</li>`;
-        return;
-    }
-    daftarEl.innerHTML = list.map((item, index) => `
-        <li class="list-group-item d-flex justify-content-between align-items-center py-3 gap-2">
-            <div class="flex-grow-1"><b class="d-block text-dark">${index + 1}. ${esc(item.nama)}</b><small class="text-muted">Kelas: ${esc(item.kelas || "-")} • Wali: ${esc(item.wali || "-")}</small></div>
-            <div class="d-flex gap-1"><button type="button" class="btn btn-outline-primary btn-sm" data-santri-action="edit" data-id="${esc(item.id)}"><i class="bi bi-pencil"></i></button><button type="button" class="btn btn-outline-danger btn-sm" data-santri-action="delete" data-id="${esc(item.id)}"><i class="bi bi-trash"></i></button></div>
-        </li>`).join("");
-}
-
-async function loadSantri() {
-    const daftarEl = $("daftarSantri");
-    if (!daftarEl) return;
-    if (!userAktif) {
-        daftarEl.innerHTML = `<li class="list-group-item text-center text-muted py-3">Silakan login terlebih dahulu.</li>`;
-        return;
-    }
-    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
-    daftarEl.innerHTML = `<li class="list-group-item text-center text-muted py-3">Memuat data peserta didik...</li>`;
-    const q = query(collection(db, "santri"), where("uid", "==", userAktif.uid));
-    try {
-        const first = await getDocs(q);
-        if (userAktif?.uid) renderSantri(first);
-        unsubscribe = onSnapshot(q, snap => {
-            if (auth.currentUser?.uid === userAktif?.uid) renderSantri(snap);
-        }, error => {
-            console.error("Santri realtime error:", error);
-            daftarEl.innerHTML = `<li class="list-group-item text-center text-danger py-3">Gagal memuat data peserta didik.<br><small>${esc(error?.message || "Firestore error")}</small></li>`;
-        });
-    } catch (error) {
-        console.error("Santri initial load error:", error);
-        daftarEl.innerHTML = `<li class="list-group-item text-center text-danger py-3">Gagal memuat data peserta didik.<br><small>${esc(error?.message || "Firestore error")}</small></li>`;
-    }
-}
-
-window.simpanSantri = async function () {
-    if (!userAktif) return alert("Silakan login terlebih dahulu.");
-    const nama = $("nama")?.value.trim() || "";
-    const kelas = $("kelas")?.value.trim() || "-";
-    const wali = $("wali")?.value.trim() || "-";
-    const id = $("idSantri")?.value || "";
-    if (!nama) return alert("Silakan isi nama peserta didik.");
-    try {
-        if (id) {
-            const ref = doc(db, "santri", id);
-            const old = await getDoc(ref);
-            if (!old.exists() || old.data()?.uid !== userAktif.uid) return alert("Data ini bukan milik akun Anda.");
-            await updateDoc(ref, { nama, kelas, wali, updatedAt: serverTimestamp(), uid: userAktif.uid });
-            alert("Data peserta didik berhasil diperbarui.");
-        } else {
-            await addDoc(collection(db, "santri"), { nama, kelas, wali, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), uid: userAktif.uid, akunEmail: userAktif.email || "" });
-            alert("Peserta didik berhasil ditambahkan.");
-        }
-        kosongkanFormSantri(); refresh();
-    } catch (error) { console.error(error); alert("Gagal menyimpan data peserta didik.\n\n" + (error.message || error)); }
-};
-
-window.editSantri = async function (id) {
-    if (!userAktif) return alert("Silakan login terlebih dahulu.");
-    try {
-        const snap = await getDoc(doc(db, "santri", id));
-        if (!snap.exists() || snap.data()?.uid !== userAktif.uid) return alert("Data peserta didik tidak ditemukan pada akun ini.");
-        const data = snap.data();
-        if ($("nama")) $("nama").value = data.nama || "";
-        if ($("kelas")) $("kelas").value = data.kelas || "";
-        if ($("wali")) $("wali").value = data.wali || "";
-        if ($("idSantri")) $("idSantri").value = id;
-        const btn = document.querySelector("button[onclick*='simpanSantri'],#btnSimpanSantri");
-        if (btn) btn.innerHTML = "Simpan Perubahan";
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (error) { console.error(error); alert("Gagal membuka data peserta didik.\n\n" + (error.message || error)); }
-};
-
-window.hapusSantri = async function (id) {
-    if (!userAktif) return alert("Silakan login terlebih dahulu.");
-    if (!confirm("Hapus data peserta didik ini?\n\nData yang dihapus tidak dapat dikembalikan.")) return;
-    try {
-        const ref = doc(db, "santri", id);
-        const snap = await getDoc(ref);
-        if (!snap.exists() || snap.data()?.uid !== userAktif.uid) return alert("Data peserta didik tidak ditemukan pada akun ini.");
-        await deleteDoc(ref);
-        if ($("idSantri")?.value === id) kosongkanFormSantri();
-        alert("Peserta didik berhasil dihapus."); refresh();
-    } catch (error) { console.error(error); alert("Gagal menghapus data peserta didik.\n\n" + (error.message || error)); }
-};
-
-document.addEventListener("click", event => {
-    const btn = event.target.closest("[data-santri-action]");
-    if (!btn) return;
-    event.preventDefault(); event.stopPropagation();
-    const id = btn.dataset.id;
-    if (!id) return;
-    if (btn.dataset.santriAction === "edit") window.editSantri(id);
-    if (btn.dataset.santriAction === "delete") window.hapusSantri(id);
-});
-
-window.addEventListener("logoDashboardChanged", muatLogoDashboardSantri);
-window.addEventListener("storage", e => { if (e.key === "logoDashboard") muatLogoDashboardSantri(); });
-document.addEventListener("DOMContentLoaded", muatLogoDashboardSantri);
-onAuthStateChanged(auth, user => { userAktif = user || null; loadSantri(); });
+const $=id=>document.getElementById(id);const esc=v=>String(v??"").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));let userAktif=null,unsubscribe=null;
+function logoDashboard(){return window.CatatanKasSettings?.getLogo?.()||"logo-catatan-kas.jpg"}
+function muatLogo(){const logo=logoDashboard();document.querySelectorAll(".app-logo,.ck-logo,#logoDashboard,#dashboardLogo,#logoPreviewV2,#logoPreview,img[alt='Logo Dashboard'],img[alt='Logo aplikasi'],[data-dashboard-logo]").forEach(img=>{if(img?.tagName==="IMG"){img.src=logo;img.removeAttribute("srcset")}})}
+function kosongkan(){["nama","kelas","wali","idSantri"].forEach(id=>{if($(id))$(id).value=""});const b=document.querySelector("button[onclick*='simpanSantri'],#btnSimpanSantri");if(b)b.innerHTML="Simpan Peserta Didik"}
+function refresh(){try{localStorage.setItem("catatanKasDataBerubah",String(Date.now()))}catch(_){}window.dispatchEvent(new CustomEvent("daftarSantriBerubah"));window.dispatchEvent(new CustomEvent("dataKeuanganBerubah"))}
+function render(snap){const el=$("daftarSantri");if(!el)return;const list=snap.docs.map(d=>({id:d.id,...d.data()}));if(!list.length){el.innerHTML='<li class="list-group-item text-center text-muted py-3">Belum ada data peserta didik.</li>';return}el.innerHTML=list.map((x,i)=>`<li class="list-group-item d-flex justify-content-between align-items-center py-3 gap-2"><div class="flex-grow-1"><b class="d-block text-dark">${i+1}. ${esc(x.nama)}</b><small class="text-muted">Kelas: ${esc(x.kelas||"-")} • Wali: ${esc(x.wali||"-")}</small></div><div class="d-flex gap-1"><button type="button" class="btn btn-outline-primary btn-sm" data-santri-action="edit" data-id="${esc(x.id)}"><i class="bi bi-pencil"></i></button><button type="button" class="btn btn-outline-danger btn-sm" data-santri-action="delete" data-id="${esc(x.id)}"><i class="bi bi-trash"></i></button></div></li>`).join("")}
+async function load(){const el=$("daftarSantri");if(!el)return;if(!userAktif){el.innerHTML='<li class="list-group-item text-center text-muted py-3">Silakan login terlebih dahulu.</li>';return}if(unsubscribe){unsubscribe();unsubscribe=null}el.innerHTML='<li class="list-group-item text-center text-muted py-3">Memuat data peserta didik...</li>';const q=query(collection(db,"santri"),where("uid","==",userAktif.uid));try{const first=await getDocs(q);if(auth.currentUser?.uid===userAktif.uid)render(first);unsubscribe=onSnapshot(q,s=>{if(auth.currentUser?.uid===userAktif.uid)render(s)},e=>{el.innerHTML=`<li class="list-group-item text-center text-danger py-3">Gagal memuat data peserta didik.<br><small>${esc(e?.message||"Firestore error")}</small></li>`})}catch(e){el.innerHTML=`<li class="list-group-item text-center text-danger py-3">Gagal memuat data peserta didik.<br><small>${esc(e?.message||"Firestore error")}</small></li>`}}
+window.simpanSantri=async()=>{if(!userAktif)return alert("Silakan login terlebih dahulu.");const nama=$("nama")?.value.trim()||"",kelas=$("kelas")?.value.trim()||"-",wali=$("wali")?.value.trim()||"-",id=$("idSantri")?.value||"";if(!nama)return alert("Silakan isi nama peserta didik.");try{if(id){const ref=doc(db,"santri",id),old=await getDoc(ref);if(!old.exists()||old.data()?.uid!==userAktif.uid)return alert("Data ini bukan milik akun Anda.");await updateDoc(ref,{nama,kelas,wali,updatedAt:serverTimestamp(),uid:userAktif.uid});alert("Data peserta didik berhasil diperbarui.")}else{await addDoc(collection(db,"santri"),{nama,kelas,wali,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),uid:userAktif.uid,akunEmail:userAktif.email||""});alert("Peserta didik berhasil ditambahkan.")}kosongkan();refresh()}catch(e){alert("Gagal menyimpan data peserta didik.\n\n"+(e.message||e))}};
+window.editSantri=async id=>{if(!userAktif)return alert("Silakan login terlebih dahulu.");try{const s=await getDoc(doc(db,"santri",id));if(!s.exists()||s.data()?.uid!==userAktif.uid)return alert("Data peserta didik tidak ditemukan pada akun ini.");const d=s.data();if($("nama"))$("nama").value=d.nama||"";if($("kelas"))$("kelas").value=d.kelas||"";if($("wali"))$("wali").value=d.wali||"";if($("idSantri"))$("idSantri").value=id;const b=document.querySelector("button[onclick*='simpanSantri'],#btnSimpanSantri");if(b)b.innerHTML="Simpan Perubahan";window.scrollTo({top:0,behavior:"smooth"})}catch(e){alert("Gagal membuka data peserta didik.\n\n"+(e.message||e))}};
+window.hapusSantri=async id=>{if(!userAktif)return alert("Silakan login terlebih dahulu.");if(!confirm("Hapus data peserta didik ini?\n\nData yang dihapus tidak dapat dikembalikan."))return;try{const ref=doc(db,"santri",id),s=await getDoc(ref);if(!s.exists()||s.data()?.uid!==userAktif.uid)return alert("Data peserta didik tidak ditemukan pada akun ini.");await deleteDoc(ref);if($("idSantri")?.value===id)kosongkan();alert("Peserta didik berhasil dihapus.");refresh()}catch(e){alert("Gagal menghapus data peserta didik.\n\n"+(e.message||e))}};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-santri-action]");if(!b)return;e.preventDefault();e.stopPropagation();b.dataset.santriAction==="edit"?window.editSantri(b.dataset.id):window.hapusSantri(b.dataset.id)});
+window.addEventListener("logoDashboardChanged",muatLogo);window.addEventListener("accountSettingsReady",muatLogo);document.addEventListener("DOMContentLoaded",muatLogo);onAuthStateChanged(auth,u=>{userAktif=u||null;load()});
