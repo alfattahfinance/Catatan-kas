@@ -150,8 +150,8 @@ jobs:
               WebSettings s=webView.getSettings(); s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setDatabaseEnabled(true); s.setAllowFileAccess(true); s.setAllowContentAccess(true); s.setUseWideViewPort(false); s.setLoadWithOverviewMode(false); s.setSupportZoom(false); s.setBuiltInZoomControls(false); s.setDisplayZoomControls(false);
               webView.setWebViewClient(new WebViewClient()); webView.setWebChromeClient(new WebChromeClient()); webView.loadUrl("file:///android_asset/index.html");
             }
-            @Override public void onBackPressed(){ if(webView!=null&&webView.canGoBack()) webView.goBack(); else super.onBackPressed(); }
-            @Override protected void onDestroy(){ if(webView!=null)webView.destroy(); super.onDestroy(); }
+            @Override public void onBackPressed(){ if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed(); }
+            @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}
           }
           EOF
       - name: Build Debug APK
@@ -169,3 +169,5 @@ jobs:
           name: Keuangan-v${{ steps.version.outputs.version }}
           path: output/Keuangan-v${{ steps.version.outputs.version }}.apk
           if-no-files-found: error
+
+# FINAL BUILD VERIFICATION TRIGGER
