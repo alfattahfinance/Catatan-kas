@@ -119,18 +119,42 @@ jobs:
           set -euo pipefail
           rsync -a --exclude='.git/' --exclude='.github/' --exclude='app/' --exclude='output/' ./ app/src/main/assets/
           test -f app/src/main/assets/index.html
+          test -f app/src/main/assets/login.html
+          test -f app/src/main/assets/register.html
           test -f app/src/main/assets/firebase-config.js
+          test -f app/src/main/assets/auth-guard.js
           test -f app/src/main/assets/app.js
+          test -f app/src/main/assets/logo-catatan-kas.jpg
 
       - name: Verify critical web files
         shell: bash
         run: |
           set -euo pipefail
-          required=(index.html login.html register.html santri.html pembayaran.html pengeluaran.html laporan.html dashboard-excel.html app.js firebase-config.js)
+          required=(index.html login.html register.html santri.html pembayaran.html pengeluaran.html laporan.html dashboard-excel.html pengaturan.html rekap.html app.js auth-guard.js firebase-config.js logo-sync.js)
           for f in "${required[@]}"; do
             test -f "app/src/main/assets/$f" || { echo "Missing required file: $f"; exit 1; }
           done
-          echo "Critical web files verified."
+          for d in css js; do
+            test -d "app/src/main/assets/$d" || { echo "Missing required directory: $d"; exit 1; }
+          done
+          echo "Critical web files and directories verified."
+
+      - name: Add auth guard to protected pages in APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('app/src/main/assets')
+          public={'login.html','register.html'}
+          marker='<script type="module" src="auth-guard.js"></script>'
+          for page in root.glob('*.html'):
+              if page.name in public: continue
+              text=page.read_text(encoding='utf-8')
+              if marker not in text:
+                  text=text.replace('</body>', marker+'\n</body>', 1)
+                  page.write_text(text,encoding='utf-8')
+          PY
 
       - name: Create Android resources
         shell: bash
@@ -177,7 +201,7 @@ jobs:
               assetLoader=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
               WebSettings s=webView.getSettings(); s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setDatabaseEnabled(true); s.setAllowFileAccess(false); s.setAllowContentAccess(false); s.setSupportZoom(false); s.setBuiltInZoomControls(false); s.setDisplayZoomControls(false);
               webView.setWebViewClient(new WebViewClient(){ @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){return assetLoader.shouldInterceptRequest(r.getUrl());} });
-              webView.setWebChromeClient(new WebChromeClient()); webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+              webView.setWebChromeClient(new WebChromeClient()); webView.loadUrl("https://appassets.androidplatform.net/assets/login.html");
             }
             @Override public void onBackPressed(){if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed();}
             @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}
