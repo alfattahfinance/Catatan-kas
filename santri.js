@@ -1,6 +1,6 @@
 // DATA PESERTA DIDIK - Firebase Firestore
 import { db, auth } from "./firebase-config.js";
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
@@ -228,7 +228,7 @@ async function importBanyakSantri() {
         const incoming = await bacaFileImport(file);
         if (!incoming.length) throw new Error("File tidak berisi nama peserta didik yang dapat diimpor.");
 
-        const snapshot = await getDocs(collection(db, "santri"));
+        const snapshot = await getDocs(query(collection(db, "santri"), where("uid", "==", auth.currentUser.uid)));
         const existing = new Set(snapshot.docs.map(d => normalisasiNama(d.data()?.nama)).filter(Boolean));
         const seen = new Set(existing);
         const unique = [];
