@@ -1,10 +1,11 @@
 import { db, auth } from "./firebase-config.js";
-import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { collection, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
 const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 let santri = [], payments = [];
+let stopSantri = null, stopPayments = null;
 
 const amount = x => Number(x?.nominal ?? x?.jumlah ?? x?.nilai ?? x?.total ?? 0) || 0;
 const name = x => String(x?.namaSantri ?? x?.nama_santri ?? x?.nama ?? x?.keterangan ?? "").trim();
@@ -20,6 +21,10 @@ function dateOf(x) {
     const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(v) ? v + "T00:00:00" : v);
     if (!Number.isNaN(d.getTime())) return d;
   }
+  if (typeof v === "number") {
+    const d = new Date(v);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
   return null;
 }
 
@@ -27,6 +32,12 @@ function names() {
   const set = new Set();
   [...santri, ...payments].forEach(x => { const n = name(x); if (n) set.add(n); });
   return [...set].sort((a,b) => a.localeCompare(b, "id"));
+}
+
+function clearView() {
+  santri = [];
+  payments = [];
+  render();
 }
 
 function render() {
@@ -69,16 +80,35 @@ function errorBox(title, e) {
   document.body.prepend(el);
 }
 
-function start() {
-  onSnapshot(collection(db, "santri"), snap => { santri = snap.docs.map(d => ({id:d.id, ...d.data()})); render(); }, e => errorBox("Data santri tidak dapat dimuat.", e));
-  onSnapshot(collection(db, "payments"), snap => { payments = snap.docs.map(d => ({id:d.id, ...d.data()})); render(); }, e => errorBox("Data pembayaran tidak dapat dimuat.", e));
+function stopListeners() {
+  if (stopSantri) { stopSantri(); stopSantri = null; }
+  if (stopPayments) { stopPayments(); stopPayments = null; }
+}
+
+function start(user) {
+  stopListeners();
+  clearView();
+  if (!user?.uid) return;
+
+  const santriQuery = query(collection(db, "santri"), where("uid", "==", user.uid));
+  const paymentsQuery = query(collection(db, "payments"), where("uid", "==", user.uid));
+
+  stopSantri = onSnapshot(santriQuery, snap => {
+    santri = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    render();
+  }, e => errorBox("Data santri tidak dapat dimuat.", e));
+
+  stopPayments = onSnapshot(paymentsQuery, snap => {
+    payments = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    render();
+  }, e => errorBox("Data pembayaran tidak dapat dimuat.", e));
 }
 
 function boot() {
   ["cari","tahun","jenis"].forEach(id => $(id)?.addEventListener(id === "cari" ? "input" : "change", render));
-  start();
 }
 
+boot();
 onAuthStateChanged(auth, user => {
-  if (user) boot();
+  start(user);
 });
