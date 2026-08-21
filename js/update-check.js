@@ -1,7 +1,7 @@
 /* CATATAN KAS - IN-APP WEB UPDATE */
 (function () {
   "use strict";
-  const WEB_VERSION = "1.0.9";
+  const WEB_VERSION = "1.0.12";
   const MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
   function versionNumber(v) { return String(v || "0").replace(/^v/i, "").split(".").map(n => parseInt(n, 10) || 0).reduce((a, n) => a * 1000 + n, 0); }
   function currentVersion() { try { return localStorage.getItem("keuanganWebVersion") || WEB_VERSION; } catch (_) { return WEB_VERSION; } }
