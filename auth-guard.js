@@ -17,28 +17,33 @@ let cloudSaveTimer=null;
 
 function accountKey(base){return akunLokalAktif?.uid?`${base}_${akunLokalAktif.uid}`:base}
 function readJson(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch(_){return fallback}}
-function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(_){}}
+function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(_){} }
+function readTypes(user){try{const scoped=localStorage.getItem(`${TYPES_KEY}_${user.uid}`);if(scoped!==null)return JSON.parse(scoped);const legacy=localStorage.getItem(TYPES_KEY);return legacy?JSON.parse(legacy):[]}catch(_){return[]}}
+function writeTypes(user,types){try{const value=JSON.stringify(Array.isArray(types)?types:[]);localStorage.setItem(`${TYPES_KEY}_${user.uid}`,value);localStorage.setItem(TYPES_KEY,value)}catch(_){} }
 
 function loadAccountLocalData(user){
   akunLokalAktif=user||null;
   cloudProfileReady=false;
   if(!user)return;
-  for(const base of LOCAL_ACCOUNT_KEYS){
+  for(const base of [SETTINGS_KEY,"daftarSantri",LOGO_KEY]){
     const scoped=localStorage.getItem(`${base}_${user.uid}`);
     if(scoped!==null)localStorage.setItem(base,scoped);
     else if(base===SETTINGS_KEY)localStorage.setItem(base,"{}");
     else if(base==="daftarSantri")localStorage.setItem(base,"[]");
-    else if(base===TYPES_KEY)localStorage.setItem(base,"[]");
     else if(base===LOGO_KEY)localStorage.removeItem(base);
   }
+  const scopedTypes=localStorage.getItem(`${TYPES_KEY}_${user.uid}`);
+  if(scopedTypes!==null)writeTypes(user,readTypes(user));
+  else if(!localStorage.getItem(TYPES_KEY))writeTypes(user,[]);
 }
 
 function saveAccountLocalData(user){
   if(!user)return;
-  for(const base of LOCAL_ACCOUNT_KEYS){
+  for(const base of [SETTINGS_KEY,"daftarSantri",LOGO_KEY]){
     const value=localStorage.getItem(base);
     if(value!==null)localStorage.setItem(`${base}_${user.uid}`,value);
   }
+  writeTypes(user,readTypes(user));
 }
 
 async function loadCloudAccountData(user){
@@ -52,10 +57,7 @@ async function loadCloudAccountData(user){
         writeJson(SETTINGS_KEY,data.settings);
         localStorage.setItem(`${SETTINGS_KEY}_${user.uid}`,JSON.stringify(data.settings));
       }
-      if(Array.isArray(data.types)){
-        writeJson(TYPES_KEY,data.types);
-        localStorage.setItem(`${TYPES_KEY}_${user.uid}`,JSON.stringify(data.types));
-      }
+      if(Array.isArray(data.types))writeTypes(user,data.types);
       if(Array.isArray(data.localStudents)){
         writeJson("daftarSantri",data.localStudents);
         localStorage.setItem(`daftarSantri_${user.uid}`,JSON.stringify(data.localStudents));
@@ -71,7 +73,6 @@ async function loadCloudAccountData(user){
     window.dispatchEvent(new CustomEvent("accountDataReady",{detail:{uid:user.uid}}));
   }catch(error){
     console.error("Gagal memuat data akun dari Firestore:",error);
-    // Tetap gunakan cache UID lokal agar aplikasi tidak kehilangan tampilan ketika offline.
     cloudProfileReady=true;
   }
 }
@@ -81,30 +82,16 @@ async function saveCloudAccountData(user,options={}){
   try{
     saveAccountLocalData(user);
     const settings=readJson(SETTINGS_KEY,{});
-    const types=readJson(TYPES_KEY,[]);
+    const types=readTypes(user);
     const localStudents=readJson("daftarSantri",[]);
     const logo=localStorage.getItem(LOGO_KEY)||"";
-    const payload={
-      uid:user.uid,
-      email:user.email||"",
-      settings:settings&&typeof settings==="object"?settings:{},
-      types:Array.isArray(types)?types:[],
-      localStudents:Array.isArray(localStudents)?localStudents:[],
-      updatedAt:serverTimestamp()
-    };
-    // Data URI logo dapat besar; hanya simpan jika masih aman untuk satu dokumen Firestore.
+    const payload={uid:user.uid,email:user.email||"",settings:settings&&typeof settings==="object"?settings:{},types:Array.isArray(types)?types:[],localStudents:Array.isArray(localStudents)?localStudents:[],updatedAt:serverTimestamp()};
     if(typeof logo==="string"&&logo.length>0&&logo.length<900000)payload.logo=logo;
     await setDoc(doc(db,"users",user.uid,"private","profile"),payload,{merge:true});
-  }catch(error){
-    console.error("Gagal menyimpan data akun ke Firestore:",error);
-  }
+  }catch(error){console.error("Gagal menyimpan data akun ke Firestore:",error)}
 }
 
-function scheduleCloudSave(){
-  if(!akunLokalAktif||!cloudProfileReady)return;
-  clearTimeout(cloudSaveTimer);
-  cloudSaveTimer=setTimeout(()=>saveCloudAccountData(akunLokalAktif),300);
-}
+function scheduleCloudSave(){if(!akunLokalAktif||!cloudProfileReady)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>saveCloudAccountData(akunLokalAktif),300)}
 
 function isValidLogo(value){if(!value||typeof value!=="string")return false;const v=value.trim();if(!v)return false;if(/^(?:\.\/)?assets\/logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v))return false;if(/^\/assets\/logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v))return false;return /^data:image\//i.test(v)||/^https?:\/\//i.test(v)||/^blob:/i.test(v)||/^(?:\.\/)?[\w./-]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(v)}
 function getConfiguredLogo(){try{const directLogo=localStorage.getItem(LOGO_KEY);if(isValidLogo(directLogo))return directLogo;const settings=readJson(SETTINGS_KEY,{});const settingsLogo=settings.logoDashboard||settings.logo||settings.logoUrl;if(isValidLogo(settingsLogo))return settingsLogo}catch(error){console.warn("Gagal membaca pengaturan logo:",error)}return DEFAULT_LOGO}
@@ -115,14 +102,10 @@ setupLogoEvents();
 onAuthStateChanged(auth,async user=>{
   if(!user){
     if(akunLokalAktif){saveAccountLocalData(akunLokalAktif);await saveCloudAccountData(akunLokalAktif)}
-    akunLokalAktif=null;
-    cloudProfileReady=false;
-    window.location.replace("login.html");
-    return;
+    akunLokalAktif=null;cloudProfileReady=false;window.location.replace("login.html");return;
   }
   loadAccountLocalData(user);
-  window.currentFirebaseUser=user;
-  window.currentFirebaseUid=user.uid;
+  window.currentFirebaseUser=user;window.currentFirebaseUid=user.uid;
   console.log("Pengguna sudah login:",user.email,user.uid);
   applyPageLogo();
   window.dispatchEvent(new CustomEvent("accountReady",{detail:{uid:user.uid,email:user.email||""}}));
