@@ -1,10 +1,12 @@
 // DATA PESERTA DIDIK - Firebase Firestore
 import { db, auth } from "./firebase-config.js";
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? "").replace(/[&<>\"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+let userAktif = null;
+let unsubscribe = null;
 
 function muatLogoDashboardSantri() {
     let logo = "assets/logo-catatan-kas.jpg";
@@ -13,308 +15,8 @@ function muatLogoDashboardSantri() {
         if (img?.tagName === "IMG") { img.src = logo; img.removeAttribute("srcset"); }
     });
 }
-window.addEventListener("logoDashboardChanged", muatLogoDashboardSantri);
-window.addEventListener("storage", e => { if (e.key === "logoDashboard") muatLogoDashboardSantri(); });
 
-// ============================================================
-// IMPORT BANYAK PESERTA DIDIK - Excel, CSV/TXT, atau PDF
-// Kolom Excel/CSV yang dikenali: Nama, Kelas, Wali.
-// PDF: paling aman jika satu nama peserta didik berada pada satu baris.
-// Untuk PDF tabel, sistem mencoba membaca kolom sederhana tanpa mengubah
-// data yang sudah ada.
-// ============================================================
-let xlsxLoaderPromise = null;
-let pdfLoaderPromise = null;
-
-function normalisasiHeader(value) {
-    return String(value ?? "")
-        .trim()
-        .toLowerCase()
-        .replace(/[\s_\-]+/g, "")
-        .replace(/[()]/g, "");
-}
-
-function nilaiKolom(row, headers, aliases, fallbackIndex) {
-    for (const alias of aliases) {
-        const key = normalisasiHeader(alias);
-        const index = headers.findIndex(h => normalisasiHeader(h) === key);
-        if (index >= 0) return String(row[index] ?? "").trim();
-    }
-    return String(row[fallbackIndex] ?? "").trim();
-}
-
-function parseCSV(text) {
-    const rows = [];
-    let row = [], cell = "", quoted = false;
-    for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        const next = text[i + 1];
-        if (ch === '"') {
-            if (quoted && next === '"') { cell += '"'; i++; }
-            else quoted = !quoted;
-        } else if (ch === ',' && !quoted) {
-            row.push(cell); cell = "";
-        } else if ((ch === '\n' || ch === '\r') && !quoted) {
-            if (ch === '\r' && next === '\n') i++;
-            row.push(cell); cell = "";
-            if (row.some(v => String(v).trim() !== "")) rows.push(row);
-            row = [];
-        } else {
-            cell += ch;
-        }
-    }
-    row.push(cell);
-    if (row.some(v => String(v).trim() !== "")) rows.push(row);
-    return rows;
-}
-
-function rowsToSantri(rows) {
-    if (!rows.length) return [];
-    const first = rows[0].map(v => String(v ?? "").trim());
-    const headerNames = first.map(normalisasiHeader);
-    const hasHeader = headerNames.some(h => [
-        "nama", "namasantri", "name", "santri", "siswa", "siswi", "pesertadidik", "kelas", "class", "wali", "orangtua", "walisantri"
-    ].includes(h));
-    const headers = hasHeader ? first : ["Nama", "Kelas", "Wali"];
-    const dataRows = hasHeader ? rows.slice(1) : rows;
-
-    return dataRows.map(row => ({
-        nama: nilaiKolom(row, headers, ["Nama", "Nama Santri", "Nama Siswa", "Nama Peserta Didik", "Name", "Santri", "Siswa"], 0),
-        kelas: nilaiKolom(row, headers, ["Kelas", "Class"], 1) || "-",
-        wali: nilaiKolom(row, headers, ["Wali", "Wali Santri", "Orang Tua", "OrangTua", "Wali Murid"], 2) || "-"
-    })).filter(item => item.nama);
-}
-
-function loadXLSX() {
-    if (window.XLSX) return Promise.resolve(window.XLSX);
-    if (xlsxLoaderPromise) return xlsxLoaderPromise;
-    xlsxLoaderPromise = new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-        script.onload = () => window.XLSX ? resolve(window.XLSX) : reject(new Error("Library Excel tidak tersedia."));
-        script.onerror = () => reject(new Error("Gagal memuat pembaca Excel. Pastikan internet aktif."));
-        document.head.appendChild(script);
-    });
-    return xlsxLoaderPromise;
-}
-
-function loadPDFJS() {
-    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
-    if (pdfLoaderPromise) return pdfLoaderPromise;
-    pdfLoaderPromise = new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
-        script.type = "module";
-        script.onload = async () => {
-            try {
-                // pdf.js versi module CDN tidak selalu mengekspos global; gunakan import()
-                const lib = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
-                window.pdfjsLib = lib;
-                resolve(lib);
-            } catch (error) { reject(error); }
-        };
-        script.onerror = () => reject(new Error("Gagal memuat pembaca PDF. Pastikan internet aktif."));
-        document.head.appendChild(script);
-    });
-    return pdfLoaderPromise;
-}
-
-async function parsePDF(file) {
-    const pdfjs = await loadPDFJS();
-    const buffer = await file.arrayBuffer();
-    const pdf = await pdfjs.getDocument({ data: buffer }).promise;
-    const rows = [];
-
-    for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
-        const page = await pdf.getPage(pageNo);
-        const content = await page.getTextContent();
-        const items = (content.items || []).filter(x => String(x.str || "").trim());
-        const lines = [];
-        let current = [];
-        let lastY = null;
-
-        for (const item of items) {
-            const y = item.transform?.[5] ?? 0;
-            if (lastY !== null && Math.abs(y - lastY) > 4) {
-                if (current.length) lines.push(current.join(" ").trim());
-                current = [];
-            }
-            current.push(String(item.str || "").trim());
-            lastY = y;
-        }
-        if (current.length) lines.push(current.join(" ").trim());
-        lines.filter(Boolean).forEach(line => rows.push([line]));
-    }
-
-    const ignored = /^(no\.?|nomor|nama|nama santri|nama siswa|peserta didik|daftar santri|daftar siswa|kelas|wali|orang tua|halaman|page|jumlah|total)\b/i;
-    const clean = rows.map(r => String(r[0] || "").replace(/^\s*\d+[.)\-:]?\s*/, "").replace(/\s+/g, " ").trim())
-        .filter(line => line && !ignored.test(line) && line.length >= 2 && !/^\d+$/.test(line));
-
-    return [...new Map(clean.map(name => [normalisasiNama(name), { nama: name, kelas: "-", wali: "-" }])).values()];
-}
-
-async function bacaFileImport(file) {
-    const namaFile = String(file.name || "").toLowerCase();
-    if (namaFile.endsWith(".pdf")) return parsePDF(file);
-    if (namaFile.endsWith(".csv") || namaFile.endsWith(".txt")) {
-        return rowsToSantri(parseCSV(await file.text()));
-    }
-    if (namaFile.endsWith(".xlsx") || namaFile.endsWith(".xls")) {
-        const XLSX = await loadXLSX();
-        const buffer = await file.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        if (!sheet) return [];
-        return rowsToSantri(XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }));
-    }
-    throw new Error("Format file tidak didukung. Gunakan .xlsx, .xls, .csv, .txt, atau .pdf.");
-}
-
-function buatUIImportSantri() {
-    if (document.getElementById("importSantriCard")) return;
-    const anchor = document.getElementById("daftarSantri")?.closest(".custom-card") || document.getElementById("daftarSantri")?.parentElement;
-    if (!anchor?.parentElement) return;
-
-    const card = document.createElement("div");
-    card.id = "importSantriCard";
-    card.className = "card custom-card mb-4";
-    card.innerHTML = `
-        <div class="card-body">
-            <h5 class="mb-2"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Import Banyak Peserta Didik</h5>
-            <p class="text-muted small mb-3">Pilih Excel, CSV/TXT, atau PDF untuk memasukkan banyak nama sekaligus. Excel/CSV: <b>Nama</b>, <b>Kelas</b>, <b>Wali</b>. PDF paling aman jika satu nama berada pada satu baris.</p>
-            <input id="fileImportSantri" class="form-control mb-2" type="file" accept=".xlsx,.xls,.csv,.txt,.pdf,text/csv,application/pdf">
-            <div id="importSantriStatus" class="small text-muted mb-2"></div>
-            <button id="btnImportSantri" type="button" class="btn btn-success w-100">
-                <i class="bi bi-cloud-upload me-1"></i> Import & Simpan Banyak Peserta Didik
-            </button>
-            <button id="btnTemplateSantri" type="button" class="btn btn-outline-secondary w-100 mt-2">
-                <i class="bi bi-download me-1"></i> Download Template CSV
-            </button>
-        </div>`;
-    anchor.parentElement.insertBefore(card, anchor);
-
-    $("fileImportSantri")?.addEventListener("change", async e => {
-        const file = e.target.files?.[0];
-        const status = $("importSantriStatus");
-        if (!file || !status) return;
-        status.classList.remove("text-danger");
-        status.textContent = "Membaca file...";
-        try {
-            const list = await bacaFileImport(file);
-            status.textContent = list.length ? `Ditemukan ${list.length} data peserta didik. Tekan tombol Import untuk menyimpan.` : "Tidak ditemukan data nama peserta didik.";
-            status.dataset.count = String(list.length);
-        } catch (error) {
-            console.error(error);
-            status.textContent = error.message || "Gagal membaca file.";
-            status.classList.add("text-danger");
-        }
-    });
-
-    $("btnImportSantri")?.addEventListener("click", importBanyakSantri);
-    $("btnTemplateSantri")?.addEventListener("click", downloadTemplateSantri);
-}
-
-async function importBanyakSantri() {
-    if (!auth.currentUser) return alert("Silakan login terlebih dahulu.");
-    const file = $("fileImportSantri")?.files?.[0];
-    if (!file) return alert("Pilih file Excel, CSV, TXT, atau PDF terlebih dahulu.");
-
-    const button = $("btnImportSantri");
-    const status = $("importSantriStatus");
-    const oldText = button?.innerHTML;
-    if (button) { button.disabled = true; button.innerHTML = "<span class=\"spinner-border spinner-border-sm me-1\"></span> Memproses..."; }
-
-    try {
-        const incoming = await bacaFileImport(file);
-        if (!incoming.length) throw new Error("File tidak berisi nama peserta didik yang dapat diimpor.");
-
-        const snapshot = await getDocs(query(collection(db, "santri"), where("uid", "==", auth.currentUser.uid)));
-        const existing = new Set(snapshot.docs.map(d => normalisasiNama(d.data()?.nama)).filter(Boolean));
-        const seen = new Set(existing);
-        const unique = [];
-        let duplicates = 0;
-
-        for (const item of incoming) {
-            const key = normalisasiNama(item.nama);
-            if (!key || seen.has(key)) { duplicates++; continue; }
-            seen.add(key);
-            unique.push(item);
-        }
-
-        if (!unique.length) {
-            alert(`Tidak ada nama baru untuk disimpan. ${duplicates} data sudah ada atau duplikat.`);
-            return;
-        }
-
-        let saved = 0;
-        for (let i = 0; i < unique.length; i += 500) {
-            const batch = writeBatch(db);
-            unique.slice(i, i + 500).forEach(item => {
-                const ref = doc(collection(db, "santri"));
-                batch.set(ref, {
-                    nama: item.nama,
-                    kelas: item.kelas || "-",
-                    wali: item.wali || "-",
-                    createdAt: serverTimestamp(),
-                    uid: auth.currentUser.uid
-                });
-            });
-            await batch.commit();
-            saved += Math.min(500, unique.length - i);
-        }
-
-        if (status) status.textContent = `${saved} peserta didik berhasil disimpan${duplicates ? ` • ${duplicates} dilewati` : ""}.`;
-        alert(`${saved} peserta didik berhasil diimpor.${duplicates ? `\n${duplicates} data dilewati karena nama sudah ada/duplikat.` : ""}`);
-        $("fileImportSantri").value = "";
-        await muatDataSantri();
-    } catch (error) {
-        console.error(error);
-        alert("Gagal mengimpor data peserta didik.\n\n" + (error.message || error));
-    } finally {
-        if (button) { button.disabled = false; button.innerHTML = oldText; }
-    }
-}
-
-function normalisasiNama(value) {
-    return String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
-}
-
-function downloadTemplateSantri() {
-    const csv = "Nama,Kelas,Wali\nAhmad,1,Abdullah\nAli,1,Hasan\n";
-    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "template-daftar-peserta-didik.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-}
-
-window.simpanSantri = async function () {
-    if (!auth.currentUser) return alert("Silakan login terlebih dahulu.");
-    const nama = $("nama")?.value.trim() || "";
-    const kelas = $("kelas")?.value.trim() || "-";
-    const wali = $("wali")?.value.trim() || "-";
-    const id = $("idSantri")?.value || "";
-    if (!nama) return alert("Silakan isi nama peserta didik.");
-    try {
-        if (id) {
-            await updateDoc(doc(db, "santri", id), { nama, kelas, wali, updatedAt: serverTimestamp() });
-            alert("Data peserta didik berhasil diperbarui.");
-        } else {
-            await addDoc(collection(db, "santri"), { nama, kelas, wali, createdAt: serverTimestamp(), uid: auth.currentUser.uid });
-            alert("Peserta didik berhasil ditambahkan.");
-        }
-        kosongkanFormSantri();
-        await muatDataSantri();
-    } catch (error) {
-        console.error(error);
-        alert("Gagal menyimpan data peserta didik.\n\n" + (error.message || error));
-    }
-};
-
+function normalisasiNama(value) { return String(value ?? "").trim().toLowerCase().replace(/\s+/g, " "); }
 function kosongkanFormSantri() {
     if ($("nama")) $("nama").value = "";
     if ($("kelas")) $("kelas").value = "";
@@ -323,14 +25,69 @@ function kosongkanFormSantri() {
     const btn = document.querySelector("button[onclick*='simpanSantri'],#btnSimpanSantri");
     if (btn) btn.innerHTML = "Simpan Peserta Didik";
 }
+function refresh() {
+    try { localStorage.setItem("catatanKasDataBerubah", String(Date.now())); } catch (_) {}
+    window.dispatchEvent(new CustomEvent("daftarSantriBerubah"));
+    window.dispatchEvent(new CustomEvent("dataKeuanganBerubah"));
+}
+
+async function loadSantri() {
+    const daftarEl = $("daftarSantri");
+    if (!daftarEl) return;
+    if (!userAktif) { daftarEl.innerHTML = `<li class="list-group-item text-center text-muted py-3">Silakan login terlebih dahulu.</li>`; return; }
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    daftarEl.innerHTML = `<li class="list-group-item text-center text-muted py-3">Memuat data peserta didik...</li>`;
+    try {
+        const q = query(collection(db, "santri"), where("uid", "==", userAktif.uid));
+        unsubscribe = (await import("https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js")).onSnapshot(q, snap => {
+            const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            if (!list.length) {
+                daftarEl.innerHTML = `<li class="list-group-item text-center text-muted py-3">Belum ada data peserta didik.</li>`;
+                return;
+            }
+            daftarEl.innerHTML = list.map((item, index) => `
+                <li class="list-group-item d-flex justify-content-between align-items-center py-3 gap-2">
+                    <div class="flex-grow-1"><b class="d-block text-dark">${index + 1}. ${esc(item.nama)}</b><small class="text-muted">Kelas: ${esc(item.kelas || "-")} • Wali: ${esc(item.wali || "-")}</small></div>
+                    <div class="d-flex gap-1"><button type="button" class="btn btn-outline-primary btn-sm" data-santri-action="edit" data-id="${esc(item.id)}"><i class="bi bi-pencil"></i></button><button type="button" class="btn btn-outline-danger btn-sm" data-santri-action="delete" data-id="${esc(item.id)}"><i class="bi bi-trash"></i></button></div>
+                </li>`).join("");
+        }, error => {
+            console.error(error);
+            daftarEl.innerHTML = `<li class="list-group-item text-center text-danger py-3">Gagal memuat data peserta didik.</li>`;
+        });
+    } catch (error) {
+        console.error(error);
+        daftarEl.innerHTML = `<li class="list-group-item text-center text-danger py-3">Gagal memuat data peserta didik.</li>`;
+    }
+}
+
+window.simpanSantri = async function () {
+    if (!userAktif) return alert("Silakan login terlebih dahulu.");
+    const nama = $("nama")?.value.trim() || "";
+    const kelas = $("kelas")?.value.trim() || "-";
+    const wali = $("wali")?.value.trim() || "-";
+    const id = $("idSantri")?.value || "";
+    if (!nama) return alert("Silakan isi nama peserta didik.");
+    try {
+        if (id) {
+            const ref = doc(db, "santri", id);
+            const old = await (await import("https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js")).getDoc(ref);
+            if (!old.exists() || old.data()?.uid !== userAktif.uid) return alert("Data ini bukan milik akun Anda.");
+            await updateDoc(ref, { nama, kelas, wali, updatedAt: serverTimestamp() });
+            alert("Data peserta didik berhasil diperbarui.");
+        } else {
+            await addDoc(collection(db, "santri"), { nama, kelas, wali, createdAt: serverTimestamp(), uid: userAktif.uid });
+            alert("Peserta didik berhasil ditambahkan.");
+        }
+        kosongkanFormSantri(); refresh();
+    } catch (error) { console.error(error); alert("Gagal menyimpan data peserta didik.\n\n" + (error.message || error)); }
+};
 
 window.editSantri = async function (id) {
-    if (!auth.currentUser) return alert("Silakan login terlebih dahulu.");
+    if (!userAktif) return alert("Silakan login terlebih dahulu.");
     try {
-        const snap = await getDocs(collection(db, "santri"));
-        const found = snap.docs.find(d => d.id === id);
-        if (!found) return alert("Data peserta didik tidak ditemukan.");
-        const data = found.data();
+        const snap = await (await import("https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js")).getDoc(doc(db, "santri", id));
+        if (!snap.exists() || snap.data()?.uid !== userAktif.uid) return alert("Data peserta didik tidak ditemukan pada akun ini.");
+        const data = snap.data();
         if ($("nama")) $("nama").value = data.nama || "";
         if ($("kelas")) $("kelas").value = data.kelas || "";
         if ($("wali")) $("wali").value = data.wali || "";
@@ -338,67 +95,33 @@ window.editSantri = async function (id) {
         const btn = document.querySelector("button[onclick*='simpanSantri'],#btnSimpanSantri");
         if (btn) btn.innerHTML = "Simpan Perubahan";
         window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (error) {
-        console.error(error);
-        alert("Gagal membuka data peserta didik.\n\n" + (error.message || error));
-    }
+    } catch (error) { console.error(error); alert("Gagal membuka data peserta didik.\n\n" + (error.message || error)); }
 };
 
-async function muatDataSantri() {
-    const daftarEl = $("daftarSantri");
-    if (!daftarEl) return;
-    daftarEl.innerHTML = `<li class="list-group-item text-center text-muted py-3">Memuat data peserta didik...</li>`;
-    try {
-        const snapshot = await getDocs(collection(db, "santri"));
-        const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        if (!list.length) {
-            daftarEl.innerHTML = `<li class="list-group-item text-center text-muted py-3">Belum ada data peserta didik.</li>`;
-            return;
-        }
-        daftarEl.innerHTML = list.map((item, index) => `
-            <li class="list-group-item d-flex justify-content-between align-items-center py-3 gap-2">
-                <div class="flex-grow-1">
-                    <b class="d-block text-dark">${index + 1}. ${esc(item.nama)}</b>
-                    <small class="text-muted">Kelas: ${esc(item.kelas || "-")} • Wali: ${esc(item.wali || "-")}</small>
-                </div>
-                <div class="d-flex gap-1">
-                    <button type="button" class="btn btn-outline-primary btn-sm" data-santri-action="edit" data-id="${esc(item.id)}" title="Edit"><i class="bi bi-pencil"></i></button>
-                    <button type="button" class="btn btn-outline-danger btn-sm" data-santri-action="delete" data-id="${esc(item.id)}" title="Hapus"><i class="bi bi-trash"></i></button>
-                </div>
-            </li>`).join("");
-    } catch (error) {
-        console.error(error);
-        daftarEl.innerHTML = `<li class="list-group-item text-center text-danger py-3">Gagal memuat daftar peserta didik.</li>`;
-    }
-}
-
 window.hapusSantri = async function (id) {
-    if (!auth.currentUser) return alert("Silakan login terlebih dahulu.");
-    if (!window.confirm("Hapus data peserta didik ini?\n\nData yang dihapus tidak dapat dikembalikan.")) return;
+    if (!userAktif) return alert("Silakan login terlebih dahulu.");
+    if (!confirm("Hapus data peserta didik ini?\n\nData yang dihapus tidak dapat dikembalikan.")) return;
     try {
-        await deleteDoc(doc(db, "santri", id));
+        const ref = doc(db, "santri", id);
+        const snap = await (await import("https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js")).getDoc(ref);
+        if (!snap.exists() || snap.data()?.uid !== userAktif.uid) return alert("Data peserta didik tidak ditemukan pada akun ini.");
+        await deleteDoc(ref);
         if ($("idSantri")?.value === id) kosongkanFormSantri();
-        alert("Peserta didik berhasil dihapus.");
-        await muatDataSantri();
-    } catch (error) {
-        console.error(error);
-        alert("Gagal menghapus data peserta didik.\n\n" + (error.message || error));
-    }
+        alert("Peserta didik berhasil dihapus."); refresh();
+    } catch (error) { console.error(error); alert("Gagal menghapus data peserta didik.\n\n" + (error.message || error)); }
 };
 
 document.addEventListener("click", event => {
     const btn = event.target.closest("[data-santri-action]");
     if (!btn) return;
-    event.preventDefault();
-    event.stopPropagation();
+    event.preventDefault(); event.stopPropagation();
     const id = btn.dataset.id;
     if (!id) return;
     if (btn.dataset.santriAction === "edit") window.editSantri(id);
     if (btn.dataset.santriAction === "delete") window.hapusSantri(id);
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    muatLogoDashboardSantri();
-    buatUIImportSantri();
-});
-onAuthStateChanged(auth, user => { if (user) muatDataSantri(); });
+window.addEventListener("logoDashboardChanged", muatLogoDashboardSantri);
+window.addEventListener("storage", e => { if (e.key === "logoDashboard") muatLogoDashboardSantri(); });
+document.addEventListener("DOMContentLoaded", () => { muatLogoDashboardSantri(); });
+onAuthStateChanged(auth, user => { userAktif = user || null; loadSantri(); });
