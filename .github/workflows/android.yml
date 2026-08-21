@@ -4,15 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - '**.html'
-      - '**.js'
-      - '**.css'
-      - '**.json'
-      - '**.png'
-      - '**.jpg'
-      - '**.jpeg'
-      - '.github/workflows/android.yml'
 
 permissions:
   contents: read
