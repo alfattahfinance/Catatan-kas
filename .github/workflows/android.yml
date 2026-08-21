@@ -117,8 +117,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Keep the repository web app structure intact so relative imports,
-          # Firebase modules, images, fonts and nested assets are not lost.
           rsync -a --exclude='.git/' --exclude='.github/' --exclude='app/' --exclude='output/' ./ app/src/main/assets/
           test -f app/src/main/assets/index.html
           test -f app/src/main/assets/firebase-config.js
@@ -128,12 +126,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          required=(
-            index.html login.html register.html
-            santri.html pembayaran.html pengeluaran.html laporan.html
-            dashboard-excel.html pengaturan.html
-            app.js firebase-config.js
-          )
+          required=(index.html login.html register.html santri.html pembayaran.html pengeluaran.html laporan.html dashboard-excel.html app.js firebase-config.js)
           for f in "${required[@]}"; do
             test -f "app/src/main/assets/$f" || { echo "Missing required file: $f"; exit 1; }
           done
@@ -166,7 +159,6 @@ jobs:
           EOF
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'EOF'
           package com.catatankas.app;
-
           import android.app.Activity;
           import android.os.Bundle;
           import android.view.ViewGroup;
@@ -177,51 +169,18 @@ jobs:
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
           import androidx.webkit.WebViewAssetLoader;
-
           public class MainActivity extends Activity {
             private WebView webView;
             private WebViewAssetLoader assetLoader;
-
             @Override public void onCreate(Bundle b) {
-              super.onCreate(b);
-              webView = new WebView(this);
-              webView.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
-              setContentView(webView);
-
-              assetLoader = new WebViewAssetLoader.Builder()
-                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                .build();
-
-              WebSettings s = webView.getSettings();
-              s.setJavaScriptEnabled(true);
-              s.setDomStorageEnabled(true);
-              s.setDatabaseEnabled(true);
-              s.setAllowFileAccess(false);
-              s.setAllowContentAccess(false);
-              s.setUseWideViewPort(false);
-              s.setLoadWithOverviewMode(false);
-              s.setSupportZoom(false);
-              s.setBuiltInZoomControls(false);
-              s.setDisplayZoomControls(false);
-              s.setMediaPlaybackRequiresUserGesture(false);
-
-              webView.setWebViewClient(new WebViewClient() {
-                @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                  return assetLoader.shouldInterceptRequest(request.getUrl());
-                }
-              });
-              webView.setWebChromeClient(new WebChromeClient());
-              webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+              super.onCreate(b); webView=new WebView(this); webView.setLayoutParams(new ViewGroup.LayoutParams(-1,-1)); setContentView(webView);
+              assetLoader=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
+              WebSettings s=webView.getSettings(); s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setDatabaseEnabled(true); s.setAllowFileAccess(false); s.setAllowContentAccess(false); s.setSupportZoom(false); s.setBuiltInZoomControls(false); s.setDisplayZoomControls(false);
+              webView.setWebViewClient(new WebViewClient(){ @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){return assetLoader.shouldInterceptRequest(r.getUrl());} });
+              webView.setWebChromeClient(new WebChromeClient()); webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
             }
-
-            @Override public void onBackPressed() {
-              if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
-            }
-
-            @Override protected void onDestroy() {
-              if (webView != null) webView.destroy();
-              super.onDestroy();
-            }
+            @Override public void onBackPressed(){if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed();}
+            @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}
           }
           EOF
 
