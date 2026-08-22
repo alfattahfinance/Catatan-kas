@@ -1,4 +1,4 @@
-/* Bridge Export Excel untuk APK Python/Chaquopy. Web/Updatable tetap memakai exporter JavaScript. */
+/* Bridge Export Excel untuk APK Python/Chaquopy. */
 import { auth, db } from '../firebase-config.js';
 import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js';
@@ -8,12 +8,19 @@ async function exportPython(){
   if(!window.AndroidPython||typeof window.AndroidPython.exportExcel!=='function'){status('Python belum tersedia di APK ini.',false);return}
   const user=auth.currentUser;if(!user){status('Silakan login terlebih dahulu.',false);return}
   try{
-    status('Membuat Excel dengan Python...');
+    status('Membuat Excel dengan Python + openpyxl...');
     const snap=await getDocs(query(collection(db,'payments'),where('uid','==',user.uid)));
     const transaksi=snap.docs.map(d=>({id:d.id,...d.data()}));
     const payload=JSON.stringify({transaksi,tahun:Number($('tahun')?.value)||new Date().getFullYear()});
     const filename=window.AndroidPython.exportExcel(payload);
-    if(filename)status('✓ Python Excel berhasil: '+filename);else status('Python gagal membuat file Excel.',false);
+    if(!filename){status('Python gagal membuat file Excel.',false);return}
+    status('✓ Excel tersimpan di Download: '+filename);
+    setTimeout(()=>{
+      if(typeof window.AndroidPython.openLastExcel==='function'){
+        const opened=window.AndroidPython.openLastExcel();
+        if(!opened)status('✓ Excel tersimpan di Download: '+filename);
+      }
+    },300);
   }catch(e){console.error(e);status('Gagal Export Excel: '+(e?.message||e),false)}
 }
 function connectButton(){
