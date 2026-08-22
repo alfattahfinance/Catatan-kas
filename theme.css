@@ -1,3 +1,5 @@
+/* PATCH 2026-08-22: cegah flash putih saat perpindahan halaman pada mode gelap. */
+html{background:#121716!important}
 /* =====================================================
    TEMA GLOBAL CATATAN KAS
    SAGE GREEN + SOFT GOLD / CREAM
