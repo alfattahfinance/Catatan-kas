@@ -1,15 +1,15 @@
 """
 Catatan Kas - Rekap Pembayaran Perorang
-Modul Python mandiri. Tidak mengubah aplikasi utama.
-
-Input : daftar transaksi pembayaran berbentuk dict/list JSON.
-Output: rekap per santri, status pembayaran per bulan, dan bulan terakhir bayar.
+Dipakai oleh Dashboard Excel dan dapat dijalankan langsung di Android melalui Chaquopy.
 """
 from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime
 from typing import Any, Iterable
+import base64
+import io
+import json
 
 BULAN = [
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -23,18 +23,16 @@ def _tanggal(value: Any) -> datetime | None:
     if isinstance(value, datetime):
         return value
     if isinstance(value, (int, float)):
-        # Firebase timestamp biasanya berupa detik.
         try:
             return datetime.fromtimestamp(value / 1000 if value > 10_000_000_000 else value)
         except (ValueError, OSError):
             return None
     if isinstance(value, str):
         s = value.strip().replace("Z", "+00:00")
-        for parser in (datetime.fromisoformat,):
-            try:
-                return parser(s).replace(tzinfo=None)
-            except ValueError:
-                pass
+        try:
+            return datetime.fromisoformat(s).replace(tzinfo=None)
+        except ValueError:
+            pass
         for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y"):
             try:
                 return datetime.strptime(s, fmt)
@@ -59,15 +57,9 @@ def _ambil_nama(t: dict[str, Any]) -> str:
 
 
 def rekap_pembayaran(transaksi: Iterable[dict[str, Any]], tahun: int | None = None) -> list[dict[str, Any]]:
-    """Membuat satu baris rekap untuk setiap santri.
-
-    Transaksi dikelompokkan berdasarkan nama santri dan bulan tanggal transaksi.
-    Jika tahun diberikan, hanya transaksi pada tahun tersebut yang dihitung.
-    """
     data: dict[str, set[int]] = defaultdict(set)
     terakhir: dict[str, datetime] = {}
     total: dict[str, float] = defaultdict(float)
-
     for t in transaksi:
         if not isinstance(t, dict):
             continue
@@ -95,10 +87,8 @@ def rekap_pembayaran(transaksi: Iterable[dict[str, Any]], tahun: int | None = No
 
 
 def simpan_excel(rekap: list[dict[str, Any]], path: str) -> None:
-    """Simpan rekap ke Excel. openpyxl hanya diperlukan saat fungsi ini dipanggil."""
     from openpyxl import Workbook
     from openpyxl.styles import Alignment, Font
-
     wb = Workbook()
     ws = wb.active
     ws.title = "Rekap Pembayaran"
@@ -120,8 +110,38 @@ def simpan_excel(rekap: list[dict[str, Any]], path: str) -> None:
     wb.save(path)
 
 
+def export_excel_base64(payload_json: str) -> str:
+    """Dipanggil Java/Android: menerima JSON transaksi + tahun, mengembalikan XLSX base64."""
+    payload = json.loads(payload_json or "{}")
+    transaksi = payload.get("transaksi", [])
+    tahun = payload.get("tahun")
+    tahun = int(tahun) if tahun not in (None, "") else None
+    hasil = rekap_pembayaran(transaksi, tahun)
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Rekap Pembayaran"
+    headers = ["Santri", *BULAN, "Jumlah Bulan", "Sudah Bayar Sampai", "Total Bayar"]
+    ws.append(headers)
+    for row in hasil:
+        jumlah_bulan = sum(row.get(b) == "✓" for b in BULAN)
+        ws.append([row.get("Santri", ""), *[row.get(b, "—") for b in BULAN], jumlah_bulan,
+                   row.get("Bulan Terakhir", "Belum bayar"), row.get("Total Pembayaran", 0)])
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center")
+    ws.freeze_panes = "B2"
+    ws.auto_filter.ref = ws.dimensions
+    for col in ws.columns:
+        letter = col[0].column_letter
+        ws.column_dimensions[letter].width = min(max(max(len(str(c.value or "")) for c in col) + 2, 10), 24)
+    buf = io.BytesIO()
+    wb.save(buf)
+    return base64.b64encode(buf.getvalue()).decode("ascii")
+
+
 if __name__ == "__main__":
-    # Contoh pemakaian lokal; aplikasi utama belum diubah.
     contoh = [
         {"namaSantri": "Ahmad", "tanggal": "2026-01-10", "jumlah": 100000},
         {"namaSantri": "Ahmad", "tanggal": "2026-02-10", "jumlah": 100000},
