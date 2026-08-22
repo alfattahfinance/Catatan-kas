@@ -1,4 +1,4 @@
-name: Build Keuangan APK - Updatable Web
+name: Build Keuangan APK - Updatable Python Excel
 
 on:
   workflow_dispatch:
@@ -8,8 +8,6 @@ on:
       - 'UpdatableMainActivity.java'
       - 'web-update.json'
       - 'firebase-config.js'
-      - 'firestore.rules'
-      - 'index.html'
       - '*.html'
       - '*.js'
       - '*.css'
@@ -21,6 +19,7 @@ on:
       - '*.png'
       - '*.jpg'
       - '*.jpeg'
+      - 'python/**'
       - '.github/workflows/build-updatable-apk.yml'
 
 permissions:
@@ -28,178 +27,133 @@ permissions:
 
 jobs:
   build:
-    name: Build Keuangan APK (Updatable)
+    name: Build Keuangan APK (Updatable + Python Excel)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
+          cache: gradle
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
       - name: Setup Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
       - name: Install Android SDK
         run: |
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
       - name: Prepare Android project
         shell: bash
         run: |
           set -euo pipefail
           rm -rf app build.gradle settings.gradle gradle.properties
-          mkdir -p app/src/main/java/com/catatankas/app app/src/main/res/values app/src/main/res/drawable app/src/main/assets
-
-          find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' \) -exec cp -f {} app/src/main/assets/ \;
-          for dir in js css assets images img; do
-            if [ -d "$dir" ]; then
-              mkdir -p "app/src/main/assets/$dir"
-              cp -a "$dir/." "app/src/main/assets/$dir/"
-            fi
-          done
-          for img in *.png *.jpg *.jpeg; do
-            [ -f "$img" ] && cp -f "$img" app/src/main/assets/ || true
-          done
-
+          mkdir -p app/src/main/java/com/catatankas/app app/src/main/res/values app/src/main/res/drawable app/src/main/assets app/src/main/python
+          rsync -a --exclude='.git/' --exclude='.github/' --exclude='app/' --exclude='output/' ./ app/src/main/assets/
+          cp python/rekap_pembayaran.py app/src/main/python/rekap_pembayaran.py
+          cp UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           test -s icon-192.png
-          cp -f icon-192.png app/src/main/res/drawable/ic_keuangan.png
-          cp -f UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-
-          cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
-          package com.catatankas.app;
-          import android.app.Activity;
-          import android.content.Intent;
-          import android.net.Uri;
-          import android.os.Bundle;
-          import android.view.ViewGroup;
-          import android.webkit.ValueCallback;
-          import android.webkit.WebChromeClient;
-          import android.webkit.WebResourceRequest;
-          import android.webkit.WebResourceResponse;
-          import android.webkit.WebSettings;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-          import androidx.webkit.WebViewAssetLoader;
-          public class MainActivity extends Activity {
-            protected WebView webView;
-            protected static final int FILE_CHOOSER_REQUEST=1001;
-            private ValueCallback<Uri[]> pendingFileCallback;
-            @Override protected void onCreate(Bundle b){
-              super.onCreate(b);
-              webView=new WebView(this);
-              webView.setLayoutParams(new ViewGroup.LayoutParams(-1,-1));
-              setContentView(webView);
-              WebSettings s=webView.getSettings();
-              s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setDatabaseEnabled(true);
-              s.setAllowFileAccess(true); s.setAllowContentAccess(true);
-              final WebViewAssetLoader l=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
-              webView.setWebViewClient(new WebViewClient(){
-                @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){WebResourceResponse x=l.shouldInterceptRequest(r.getUrl());return x!=null?x:super.shouldInterceptRequest(v,r);}
-              });
-              webView.setWebChromeClient(new WebChromeClient(){
-                @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> c,FileChooserParams p){
-                  pendingFileCallback=c; Intent i=p.createIntent(); i.setType("image/*"); i.addCategory(Intent.CATEGORY_OPENABLE);
-                  try{startActivityForResult(i,FILE_CHOOSER_REQUEST);return true;}catch(Exception e){pendingFileCallback=null;c.onReceiveValue(null);return false;}
-                }
-              });
-              webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-            }
-            @Override protected void onActivityResult(int r,int c,Intent d){super.onActivityResult(r,c,d);if(r==FILE_CHOOSER_REQUEST&&pendingFileCallback!=null){Uri[] x=null;if(c==RESULT_OK&&d!=null&&d.getData()!=null)x=new Uri[]{d.getData()};pendingFileCallback.onReceiveValue(x);pendingFileCallback=null;}}
-            @Override public void onBackPressed(){if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed();}
-            @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}
-          }
-          JAVA
-
+          cp icon-192.png app/src/main/res/drawable/ic_keuangan.png
           cat > settings.gradle <<'GRADLE'
           import org.gradle.api.initialization.resolve.RepositoriesMode
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
           rootProject.name='Keuangan'; include ':app'
           GRADLE
-
           cat > build.gradle <<'GRADLE'
-          plugins { id 'com.android.application' version '8.7.3' apply false }
+          plugins { id 'com.android.application' version '8.7.3' apply false; id 'com.chaquo.python' version '17.0.0' apply false }
           GRADLE
-
           cat > gradle.properties <<'PROPS'
-          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          org.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8
           android.useAndroidX=true
-          android.enableJetifier=false
+          android.enableJetifier=true
           PROPS
-
           cat > app/build.gradle <<'GRADLE'
-          plugins { id 'com.android.application' }
+          plugins { id 'com.android.application'; id 'com.chaquo.python' }
           android {
             namespace 'com.catatankas.app'
             compileSdk 35
-            defaultConfig { applicationId 'com.catatankas.app'; minSdk 24; targetSdk 35; versionCode 20500; versionName '2.5' }
+            defaultConfig {
+              applicationId 'com.catatankas.app'
+              minSdk 24
+              targetSdk 35
+              versionCode 20500
+              versionName '2.5'
+              ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }
+            }
             buildTypes { debug { minifyEnabled false }; release { minifyEnabled false; shrinkResources false } }
             compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
           }
-          dependencies { implementation 'androidx.webkit:webkit:1.13.0' }
+          chaquopy { defaultConfig { version='3.10'; buildPython 'python'; pip { install 'openpyxl==3.1.5' } } }
+          dependencies {
+            implementation 'androidx.activity:activity:1.10.1'
+            implementation 'androidx.appcompat:appcompat:1.7.0'
+            implementation 'androidx.webkit:webkit:1.13.0'
+          }
           GRADLE
-
-          cat > app/src/main/AndroidManifest.xml <<'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <uses-permission android:name="android.permission.INTERNET"/>
-            <application android:allowBackup="true" android:label="Keuangan" android:icon="@drawable/ic_keuangan" android:roundIcon="@drawable/ic_keuangan" android:theme="@style/AppTheme" android:resizeableActivity="true">
-              <activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
-                <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
-              </activity>
-            </application>
-          </manifest>
-          XML
-
           cat > app/src/main/res/values/styles.xml <<'XML'
-          <?xml version="1.0" encoding="utf-8"?><resources><style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#198754</item><item name="android:navigationBarColor">#000000</item><item name="android:statusBarColor">#000000</item></style></resources>
+          <?xml version="1.0" encoding="utf-8"?><resources><style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#198754</item><item name="android:navigationBarColor">#121212</item><item name="android:statusBarColor">#121212</item></style></resources>
           XML
-
-      - name: Verify project and updater
+          cat > app/src/main/AndroidManifest.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:allowBackup="true" android:usesCleartextTraffic="true" android:label="Keuangan" android:theme="@style/AppTheme" android:icon="@drawable/ic_keuangan" android:resizeableActivity="true"><activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
+          XML
+      - name: Create Python bridge MainActivity
+        shell: bash
+        run: |
+          cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
+          package com.catatankas.app;
+          import android.app.Activity; import android.content.ContentValues; import android.os.Build; import android.os.Bundle; import android.os.Environment; import android.provider.MediaStore; import android.util.Base64; import android.webkit.JavascriptInterface; import android.webkit.WebChromeClient; import android.webkit.WebResourceRequest; import android.webkit.WebResourceResponse; import android.webkit.WebSettings; import android.webkit.WebView; import android.view.ViewGroup; import androidx.webkit.WebViewAssetLoader; import com.chaquo.python.Python; import com.chaquo.python.android.AndroidPlatform; import java.io.File; import java.io.FileOutputStream; import java.io.OutputStream;
+          public class MainActivity extends Activity {
+            protected WebView webView; private Python python;
+            @Override protected void onCreate(Bundle b){ super.onCreate(b); if(!Python.isStarted()) Python.start(new AndroidPlatform(this)); python=Python.getInstance(); webView=new WebView(this); webView.setLayoutParams(new ViewGroup.LayoutParams(-1,-1)); setContentView(webView); WebSettings s=webView.getSettings(); s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setDatabaseEnabled(true); s.setAllowFileAccess(false); s.setAllowContentAccess(false); final WebViewAssetLoader l=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build(); webView.addJavascriptInterface(new PythonExcelBridge(),"AndroidPython"); webView.setWebViewClient(new android.webkit.WebViewClient(){ @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){WebResourceResponse x=l.shouldInterceptRequest(r.getUrl()); return x!=null?x:super.shouldInterceptRequest(v,r);} }); webView.setWebChromeClient(new WebChromeClient()); webView.loadUrl("https://appassets.androidplatform.net/assets/login.html"); }
+            private class PythonExcelBridge { @JavascriptInterface public String exportExcel(String payload){ try{ String b64=python.getModule("rekap_pembayaran").callAttr("export_excel_base64",payload).toJava(String.class); byte[] data=Base64.decode(b64,Base64.DEFAULT); String filename="Rekap-Pembayaran-"+System.currentTimeMillis()+".xlsx"; saveDownload(filename,data); return filename; }catch(Exception e){android.util.Log.e("PythonExcel","Export gagal",e);return "";} } }
+            private void saveDownload(String filename,byte[] data)throws Exception{ if(Build.VERSION.SDK_INT>=29){ ContentValues v=new ContentValues(); v.put(MediaStore.Downloads.DISPLAY_NAME,filename); v.put(MediaStore.Downloads.MIME_TYPE,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"); v.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS); android.net.Uri u=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,v); if(u==null)throw new IllegalStateException("Gagal membuat file Download"); try(OutputStream o=getContentResolver().openOutputStream(u)){o.write(data);} } else { File d=getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS); if(d==null)throw new IllegalStateException("Folder Download tidak tersedia"); if(!d.exists())d.mkdirs(); try(FileOutputStream o=new FileOutputStream(new File(d,filename))){o.write(data);} } }
+            @Override public void onBackPressed(){if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed();} @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}
+          }
+          JAVA
+      - name: Enable Python Excel and theme on Dashboard Excel
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app/src/main/assets/dashboard-excel.html'); s=p.read_text(encoding='utf-8')
+          a='<script type="module" src="js/dashboard-excel-python.js"></script>'
+          if a not in s:s=s.replace('</body>',a+'\n</body>',1)
+          if '<script src="theme.js"></script>' not in s:s=s.replace('</head>','<script src="theme.js"></script></head>',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify Python, updater and Excel bridge
         run: |
           set -euo pipefail
-          required=(
-            app/src/main/java/com/catatankas/app/MainActivity.java
-            app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-            app/src/main/assets/index.html
-            app/src/main/assets/web-update.json
-            app/src/main/assets/js/update-check.js
-            app/src/main/assets/js/pengaturan.js
-            app/src/main/assets/logo-sync.js
-            app/src/main/assets/pengaturan.html
-            app/src/main/AndroidManifest.xml
-            app/src/main/res/drawable/ic_keuangan.png
-          )
-          for f in "${required[@]}"; do test -s "$f" || { echo "MISSING OR EMPTY: $f"; exit 1; }; done
+          test -s app/src/main/python/rekap_pembayaran.py
           grep -q 'AndroidWebUpdater' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          grep -q 'EMBEDDED_WEB_VERSION' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          grep -q 'logoDashboard' app/src/main/assets/js/pengaturan.js
-          echo 'PROJECT + UPDATER + LOGO VERIFICATION OK'
-
+          grep -q 'com.chaquo.python' build.gradle
+          grep -q 'openpyxl==3.1.5' app/build.gradle
+          grep -q "ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }" app/build.gradle
+          grep -q 'AndroidPython' app/src/main/java/com/catatankas/app/MainActivity.java
+          grep -q 'dashboard-excel-python.js' app/src/main/assets/dashboard-excel.html
+          grep -q 'theme.js' app/src/main/assets/dashboard-excel.html
+          echo 'UPDATABLE + CHAQUOPY + PYTHON EXCEL VERIFICATION OK'
       - name: Build Debug APK
-        run: gradle --no-daemon --stacktrace :app:assembleDebug
-
-      - name: Verify APK output
+        run: gradle --no-daemon clean assembleDebug --stacktrace
+      - name: Prepare APK artifact
         run: |
           set -euo pipefail
-          test -s app/build/outputs/apk/debug/app-debug.apk
           mkdir -p output
-          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-v2.5.apk
-          ls -lh output/Keuangan-v2.5.apk
-
+          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-Updatable-Python-Excel-v2.5.apk
+          ls -lh output/Keuangan-Updatable-Python-Excel-v2.5.apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Keuangan-APK-Updatable-Web-v2.5
-          path: output/Keuangan-v2.5.apk
+          name: Keuangan-Updatable-Python-Excel-v2.5
+          path: output/Keuangan-Updatable-Python-Excel-v2.5.apk
           if-no-files-found: error
