@@ -1,30 +1,36 @@
-/* Optional Python bridge for the APK. The Dashboard Excel page now has a shared Export Excel button which also works in the normal/updatable APK through SheetJS. */
-import { auth } from '../firebase-config.js';
+/* Bridge Export Excel untuk APK Python/Chaquopy. Web/Updatable tetap memakai exporter JavaScript. */
+import { auth, db } from '../firebase-config.js';
+import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js';
 
-function addButton(){
-  // dashboard-excel.html already contains the shared Export Excel button.
-  // Do not create a second button in the Python APK build.
-  const existing=document.getElementById('browserExportExcel');
-  if(existing) return;
-  if(document.getElementById('pythonExportExcel')) return;
-  const section=document.querySelector('.cardx');
-  if(!section) return;
-  const btn=document.createElement('button'); btn.id='pythonExportExcel'; btn.type='button';
-  btn.className='btn btn-success btn-sm mt-2';
-  btn.innerHTML='<i class="bi bi-file-earmark-excel me-1"></i>Export Excel';
-  btn.addEventListener('click',()=>{
-    if(window.AndroidPython&&typeof window.AndroidPython.exportExcel==='function'){
-      const year=Number(document.getElementById('tahun')?.value)||new Date().getFullYear();
-      const type=document.getElementById('jenis')?.value||'Semua';
-      const user=auth.currentUser;
-      if(!user){alert('Silakan login terlebih dahulu.');return;}
-      // The shared browser exporter is preferred; this fallback only exists for legacy pages.
-      alert('Gunakan tombol Export Excel setelah halaman selesai memuat.');
-    }
-  });
-  section.appendChild(btn);
+const $=id=>document.getElementById(id);
+function status(msg,ok=true){const e=$('excelStatus');if(e){e.textContent=msg;e.style.color=ok?'#198754':'#dc3545';}}
+async function exportPython(){
+  if(!window.AndroidPython||typeof window.AndroidPython.exportExcel!=='function'){status('Python belum tersedia di APK ini.',false);return;}
+  const user=auth.currentUser;if(!user){status('Silakan login terlebih dahulu.',false);return;}
+  try{
+    status('Membuat Excel dengan Python...');
+    const snap=await getDocs(query(collection(db,'payments'),where('uid','==',user.uid)));
+    const transaksi=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const payload=JSON.stringify({transaksi,tahun:Number($('tahun')?.value)||new Date().getFullYear()});
+    const filename=window.AndroidPython.exportExcel(payload);
+    if(filename){status('Excel berhasil dibuat oleh Python: '+filename);}
+    else status('Python gagal membuat file Excel.',false);
+  }catch(e){console.error(e);status('Gagal Export Excel: '+(e?.message||e),false);}
 }
-
-onAuthStateChanged(()=>addButton());
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addButton); else addButton();
+function connectButton(){
+  const b=$('browserExportExcel');
+  if(!b||!window.AndroidPython)return false;
+  if(b.dataset.pythonConnected==='1')return true;
+  b.dataset.pythonConnected='1';
+  b.onclick=null;
+  b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();exportPython();},true);
+  const label=b.querySelector('i');
+  b.title='Export Excel menggunakan Python';
+  b.setAttribute('data-python-export','true');
+  status('Python Excel siap');
+  return true;
+}
+function init(){connectButton();setTimeout(connectButton,250);setTimeout(connectButton,1000);}
+onAuthStateChanged(()=>init());
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
