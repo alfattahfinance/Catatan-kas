@@ -101,6 +101,10 @@ jobs:
                   targetSdk 35
                   versionCode ${VERSION_CODE}
                   versionName '${APP_VERSION}'
+                  // Keep native ABI configuration explicit for Chaquopy/native Python builds.
+                  ndk {
+                      abiFilters 'arm64-v8a', 'armeabi-v7a'
+                  }
               }
               buildTypes { release { minifyEnabled false; shrinkResources false; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' } }
               compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
