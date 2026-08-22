@@ -164,7 +164,7 @@ jobs:
         run: |
           cat > app/src/main/res/values/styles.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-          <resources><style name="AppTheme" parent="style/Theme.AppCompat.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#198754</item><item name="android:navigationBarColor">#121212</item><item name="android:statusBarColor">#121212</item></style></resources>
+          <resources><style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#198754</item><item name="android:navigationBarColor">#121212</item><item name="android:statusBarColor">#121212</item></style></resources>
           EOF
           cat > app/src/main/res/drawable/ic_launcher.xml <<'EOF'
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#198754" android:pathData="M0,0L108,0L108,108L0,108Z"/><path android:fillColor="#FFFFFF" android:pathData="M27,27L81,27L81,81L27,81Z"/></vector>
