@@ -1,39 +1,58 @@
 /* Bridge Export Excel untuk APK Python/Chaquopy. */
-import { auth, db } from '../firebase-config.js';
-import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
+import { auth } from '../firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js';
 const $=id=>document.getElementById(id);
+let readyListener=false;
 function status(msg,ok=true){const e=$('excelStatus');if(e){e.textContent=msg;e.style.color=ok?'#198754':'#dc3545';e.style.fontWeight='700'}}
-async function exportPython(){
+function collectRows(){
+  const rows=[];
+  document.querySelectorAll('#body tr').forEach(tr=>{
+    const td=tr.querySelectorAll('td');
+    if(td.length<16)return;
+    const bulan=[];for(let i=1;i<=12;i++)bulan.push(td[i].textContent.trim());
+    rows.push({nama:td[0].textContent.trim(),bulan,jumlah_bulan:td[13].textContent.trim(),sudah_bayar_sampai:td[14].textContent.trim(),total_bayar:td[15].textContent.replace(/[^0-9-]/g,'')});
+  });
+  return rows;
+}
+function installResultListener(){
+  if(readyListener)return;readyListener=true;
+  window.addEventListener('pythonExcelReady',e=>{
+    const d=e.detail||{};
+    if(!d.base64){status('Python gagal menghasilkan Excel.',false);return}
+    const filename=d.filename||'Rekap-Pembayaran.xlsx';
+    if(window.AndroidWebUpdater&&typeof window.AndroidWebUpdater.saveExcelBase64==='function'){
+      const saved=window.AndroidWebUpdater.saveExcelBase64(d.base64,filename);
+      if(saved){status('✓ Excel tersimpan di Download: '+saved);setTimeout(()=>{if(typeof window.AndroidWebUpdater.openLastExcel==='function')window.AndroidWebUpdater.openLastExcel()},300)}
+      else status('Python berhasil membuat Excel, tetapi file gagal disimpan.',false);
+    }else status('Penyimpanan Excel Android belum tersedia.',false);
+  });
+  window.addEventListener('pythonExcelError',e=>status('Gagal Export Excel: '+((e.detail||{}).message||'Kesalahan Python'),false));
+}
+function exportPython(){
+  installResultListener();
   if(!window.AndroidPython||typeof window.AndroidPython.exportExcel!=='function'){status('Python belum tersedia di APK ini.',false);return}
-  const user=auth.currentUser;if(!user){status('Silakan login terlebih dahulu.',false);return}
+  if(!auth.currentUser){status('Silakan login terlebih dahulu.',false);return}
+  const rows=collectRows();
+  if(!rows.length){status('Tidak ada data untuk diekspor.',false);return}
   try{
+    const year=Number($('tahun')?.value)||new Date().getFullYear();
+    const filename='Rekap-Pembayaran-'+year+'.xlsx';
     status('Membuat Excel dengan Python + openpyxl...');
-    const snap=await getDocs(query(collection(db,'payments'),where('uid','==',user.uid)));
-    const transaksi=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const payload=JSON.stringify({transaksi,tahun:Number($('tahun')?.value)||new Date().getFullYear()});
-    const filename=window.AndroidPython.exportExcel(payload);
-    if(!filename){status('Python gagal membuat file Excel.',false);return}
-    status('✓ Excel tersimpan di Download: '+filename);
-    setTimeout(()=>{
-      if(typeof window.AndroidPython.openLastExcel==='function'){
-        const opened=window.AndroidPython.openLastExcel();
-        if(!opened)status('✓ Excel tersimpan di Download: '+filename);
-      }
-    },300);
+    window.AndroidPython.exportExcel(JSON.stringify(rows),filename);
   }catch(e){console.error(e);status('Gagal Export Excel: '+(e?.message||e),false)}
 }
 function connectButton(){
   const b=$('browserExportExcel');
   if(!b||!window.AndroidPython)return false;
   if(b.dataset.pythonConnected==='1')return true;
-  b.dataset.pythonConnected='1';b.onclick=null;
+  b.dataset.pythonConnected='1';
   b.innerHTML='<i class="bi bi-file-earmark-excel me-1"></i>Export Excel <span style="font-size:.6rem;opacity:.9">(Python)</span>';
   b.title='Export Excel menggunakan Python + openpyxl';
+  b.onclick=null;
   b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();exportPython()},true);
-  status('✓ Python Excel siap (openpyxl)');
+  status('✓ Python + openpyxl siap');
   return true;
 }
-function init(){connectButton();setTimeout(connectButton,250);setTimeout(connectButton,1000)}
+function init(){installResultListener();connectButton();setTimeout(connectButton,250);setTimeout(connectButton,1000);setTimeout(connectButton,2000)}
 onAuthStateChanged(()=>init());
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
