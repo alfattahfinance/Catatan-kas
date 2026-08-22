@@ -20,26 +20,42 @@
   }
 
   function localStudents(uid){
-    try{
-      const d=JSON.parse(localStorage.getItem(accountKey(uid))||'[]');
-      return Array.isArray(d)?d:[];
-    }catch(_){return[]}
+    try{const d=JSON.parse(localStorage.getItem(accountKey(uid))||'[]');return Array.isArray(d)?d:[]}
+    catch(_){return[]}
   }
   function saveLocal(uid,data){
     localStorage.setItem(accountKey(uid),JSON.stringify(data));
-    // santri.html versi lama membaca key ini; isinya selalu disalin dari akun aktif.
     localStorage.setItem('daftarSantri',JSON.stringify(data));
   }
   function readGlobal(){
-    try{const d=JSON.parse(localStorage.getItem('daftarSantri')||'[]');return Array.isArray(d)?d:[]}catch(_){return[]}
+    try{const d=JSON.parse(localStorage.getItem('daftarSantri')||'[]');return Array.isArray(d)?d:[]}
+    catch(_){return[]}
   }
 
   function generalizeLabels(){
-    const map=[['Pembayaran Santri','Pembayaran'],['Data Santri','Data Peserta Didik'],['Daftar Santri','Daftar Peserta Didik'],['Tambah Santri Baru','Tambah Peserta Didik'],['Tambah Santri','Tambah Peserta Didik'],['Kelola data santri pondok','Kelola data peserta didik'],['Nama Santri','Nama Siswa / Peserta Didik'],['Nama santri / keterangan','Nama siswa / peserta didik / keterangan']];
+    const map=[['Pembayaran Santri','Pembayaran'],['Data Santri','Data Peserta Didik'],['Daftar Santri','Daftar Peserta Didik'],['Tambah Santri Baru','Tambah Peserta Didik'],['Tambah Santri','Tambah Peserta Didik'],['Kelola data santri pondok','Kelola data peserta didik'],['Nama Santri','Nama Peserta Didik'],['Nama santri / keterangan','Nama peserta didik / keterangan']];
     document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,small,label,button,a,span,th').forEach(el=>{
       if(el.dataset.ckGeneralized==='1')return;
       let t=el.textContent;map.forEach(([a,b])=>{t=t.replaceAll(a,b)});
       if(t!==el.textContent){el.textContent=t;el.dataset.ckGeneralized='1'}
+    });
+  }
+
+  /* Perubahan KHUSUS halaman Peserta Didik: hanya label/placeholder/judul. */
+  function fixStudentLabels(){
+    if(!isStudentPage())return;
+    const title=document.querySelector('title');
+    if(title)title.textContent='Peserta Didik | Catatan Kas';
+    document.querySelectorAll('input,textarea').forEach(el=>{
+      const p=el.getAttribute('placeholder');
+      if(p)el.setAttribute('placeholder',p.replace(/nama\s+santri/gi,'nama peserta didik').replace(/masukkan\s+nama\s+santri/gi,'masukkan nama peserta didik'));
+      const a=el.getAttribute('aria-label');
+      if(a)el.setAttribute('aria-label',a.replace(/nama\s+santri/gi,'nama peserta didik'));
+    });
+    document.querySelectorAll('.nama-santri').forEach(el=>el.classList.add('nama-peserta-didik'));
+    document.querySelectorAll('.kelas-santri').forEach(el=>el.classList.add('kelas-peserta-didik'));
+    document.querySelectorAll('.ck-bottom a,.bottom a,.bottom-nav a,.bottom-navigation a,.navbar-bottom a').forEach(a=>{
+      a.childNodes.forEach(n=>{if(n.nodeType===3)n.textContent=n.textContent.replace(/\bSantri\b/gi,'Peserta Didik')});
     });
   }
 
@@ -79,9 +95,7 @@
     throw new Error('Gunakan file Excel (.xlsx/.xls) atau CSV.');
   }
 
-  function renderFromLocal(){
-    try{window.tampilkanSantri?.()}catch(e){console.warn('Render santri:',e)}
-  }
+  function renderFromLocal(){try{window.tampilkanSantri?.()}catch(e){console.warn('Render santri:',e)}}
 
   async function loadCloud(user){
     if(!isStudentPage()||!user)return;
@@ -89,13 +103,12 @@
     const q=f.query(f.collection(f.db,'santri'),f.where('uid','==',user.uid));
     const snap=await f.getDocs(q);
     const data=snap.docs.map(d=>({id:d.id,firestoreId:d.id,...d.data()})).sort((a,b)=>key(a.nama).localeCompare(key(b.nama),'id'));
-    syncBusy=true;saveLocal(user.uid,data);syncBusy=false;renderFromLocal();
+    syncBusy=true;saveLocal(user.uid,data);syncBusy=false;renderFromLocal();fixStudentLabels();
   }
 
   async function pushLocalToCloud(user){
     if(!isStudentPage()||!user||syncBusy)return;
-    const local=readGlobal();
-    if(!Array.isArray(local))return;
+    const local=readGlobal();if(!Array.isArray(local))return;
     const f=await firebase();
     const q=f.query(f.collection(f.db,'santri'),f.where('uid','==',user.uid));
     const snap=await f.getDocs(q);
@@ -106,29 +119,21 @@
       if(!x?.nama)continue;
       const existing=(x.firestoreId&&byId.get(x.firestoreId))||byName.get(key(x.nama));
       const payload={nama:norm(x.nama),kelas:norm(x.kelas)||'-',wali:norm(x.wali)||'-',hp:norm(x.hp)||'',uid:user.uid,updatedAt:f.serverTimestamp()};
-      if(existing)batch.set(existing.ref,payload,{merge:true});
-      else {const ref=f.doc(f.collection(f.db,'santri'));batch.set(ref,{...payload,createdAt:f.serverTimestamp()})}
+      if(existing)batch.set(existing.ref,payload,{merge:true});else{const ref=f.doc(f.collection(f.db,'santri'));batch.set(ref,{...payload,createdAt:f.serverTimestamp()})}
       changed=true;
     }
-    if(changed)await batch.commit();
-    await loadCloud(user);
+    if(changed)await batch.commit();await loadCloud(user);
   }
 
   async function importToFirestore(items){
     if(!cloudUser)throw new Error('Silakan login terlebih dahulu.');
     const f=await firebase();
     const q=f.query(f.collection(f.db,'santri'),f.where('uid','==',cloudUser.uid));
-    const snap=await f.getDocs(q);
-    const seen=new Set(snap.docs.map(d=>key(d.data()?.nama)).filter(Boolean));
+    const snap=await f.getDocs(q);const seen=new Set(snap.docs.map(d=>key(d.data()?.nama)).filter(Boolean));
     const unique=[];let skipped=0;
     for(const x of items){const k=key(x.nama);if(!k||seen.has(k)){skipped++;continue}seen.add(k);unique.push(x)}
-    for(let i=0;i<unique.length;i+=450){
-      const batch=f.writeBatch(f.db);
-      unique.slice(i,i+450).forEach(x=>{const ref=f.doc(f.collection(f.db,'santri'));batch.set(ref,{nama:x.nama,kelas:x.kelas||'-',wali:x.wali||'-',hp:x.hp||'',uid:cloudUser.uid,createdAt:f.serverTimestamp()})});
-      await batch.commit();
-    }
-    await loadCloud(cloudUser);
-    return {added:unique.length,skipped};
+    for(let i=0;i<unique.length;i+=450){const batch=f.writeBatch(f.db);unique.slice(i,i+450).forEach(x=>{const ref=f.doc(f.collection(f.db,'santri'));batch.set(ref,{nama:x.nama,kelas:x.kelas||'-',wali:x.wali||'-',hp:x.hp||'',uid:cloudUser.uid,createdAt:f.serverTimestamp()})});await batch.commit()}
+    await loadCloud(cloudUser);return{added:unique.length,skipped};
   }
 
   function addBulkCard(){
@@ -146,25 +151,15 @@
 
   async function startStudentSync(){
     if(!isStudentPage())return;
-    try{
-      const f=await firebase();
-      f.onAuthStateChanged(f.auth,async user=>{
-        cloudUser=user||null;
-        if(!user)return;
-        try{await loadCloud(user)}catch(e){console.error('Sinkronisasi santri:',e);const cached=localStudents(user.uid);if(cached.length){saveLocal(user.uid,cached);renderFromLocal()}}
-      });
-    }catch(e){console.error('Firebase santri:',e)}
+    try{const f=await firebase();f.onAuthStateChanged(f.auth,async user=>{cloudUser=user||null;if(!user)return;try{await loadCloud(user)}catch(e){console.error('Sinkronisasi santri:',e);const cached=localStudents(user.uid);if(cached.length){saveLocal(user.uid,cached);renderFromLocal()}}})}catch(e){console.error('Firebase santri:',e)}
   }
 
-  window.addEventListener('daftarSantriBerubah',async e=>{
-    generalizeLabels();
-    if(syncBusy||e?.detail?.source==='cloud-import')return;
-    if(cloudUser){try{await pushLocalToCloud(cloudUser)}catch(err){console.error('Sinkronisasi perubahan santri:',err)}}
-  });
+  window.addEventListener('daftarSantriBerubah',async e=>{generalizeLabels();fixStudentLabels();if(syncBusy||e?.detail?.source==='cloud-import')return;if(cloudUser){try{await pushLocalToCloud(cloudUser)}catch(err){console.error('Sinkronisasi perubahan santri:',err)}}});
 
   async function start(){
     generalizeLabels();
     if(isStudentPage()){
+      fixStudentLabels();
       if(!addBulkCard())setTimeout(start,300);
       startStudentSync();
     }
