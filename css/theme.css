@@ -1,9 +1,9 @@
 /* =====================================================
    TEMA GLOBAL CATATAN KAS
    SAGE GREEN + SOFT GOLD / CREAM
-   Animasi 18 detik — Dashboard, Santri, Laporan, dan halaman lain.
+   Animasi 18 detik — Dashboard, Peserta Didik, Laporan, dan halaman lain.
 ===================================================== */
-html,body{min-height:100%}
+html,body{min-height:100%;background-color:#121716!important}
 html:not(.dark-mode),html:not(.dark-mode) body{background-color:#f6f0df!important}
 html:not(.dark-mode) body{background-image:radial-gradient(circle at 12% 18%,rgba(168,191,163,.48),transparent 32%),radial-gradient(circle at 88% 22%,rgba(216,194,122,.38),transparent 34%),radial-gradient(circle at 52% 88%,rgba(205,198,174,.32),transparent 38%),linear-gradient(135deg,#a8bfa3 0%,#e7e3d4 48%,#f6f0df 100%)!important;background-size:180% 180%,180% 180%,180% 180%,220% 220%!important;background-position:0% 30%,100% 20%,45% 100%,0% 50%!important;background-attachment:fixed!important;animation:ckSageGold 18s ease-in-out infinite alternate!important}
 @keyframes ckSageGold{0%{background-position:0% 30%,100% 20%,45% 100%,0% 50%}50%{background-position:45% 70%,55% 55%,80% 35%,55% 50%}100%{background-position:100% 15%,0% 80%,20% 10%,100% 50%}}
