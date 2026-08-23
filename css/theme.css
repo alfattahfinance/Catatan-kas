@@ -55,3 +55,5 @@ html:not(.dark-mode) .ck-bottom a.active{color:#198754!important;font-weight:700
    ===================================================== */
 body{transition:opacity .15s ease-out!important}
 body.ck-page-leaving{opacity:0!important;transition:opacity .15s ease-out!important;pointer-events:none!important}
+
+/* Build trigger: keep latest splash/navigation fixes in the next APK. */
