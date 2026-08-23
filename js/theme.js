@@ -41,19 +41,37 @@
     });
   }
 
-  /* Paksa label navigasi halaman Peserta Didik tetap konsisten. */
+  /*
+   * Navigasi bawah halaman Peserta Didik.
+   * Sumber HTML lama masih memiliki teks "Santri" pada link santri.html.
+   * Jangan hanya mengandalkan penggantian teks umum karena WebView/cache
+   * dapat memuat HTML lama. Targetkan link halaman ini secara langsung.
+   */
   function normalizeStudentBottomNav(){
     if(!isStudentPage())return;
-    const selector='.ck-bottom a,.bottom a,.bottom-nav a,.bottom-navigation a,.navbar-bottom a';
-    document.querySelectorAll(selector).forEach(a=>{
-      const walker=document.createTreeWalker(a,NodeFilter.SHOW_TEXT);
-      const nodes=[];let n;
-      while((n=walker.nextNode()))nodes.push(n);
-      nodes.forEach(textNode=>{
-        const before=textNode.nodeValue||'';
-        const after=before.replace(/\bSantri\b/gi,'Peserta Didik');
-        if(after!==before)textNode.nodeValue=after;
-      });
+
+    const links=document.querySelectorAll(
+      '.ck-bottom a[href="santri.html"],'+
+      '.bottom a[href="santri.html"],'+
+      '.bottom-nav a[href="santri.html"],'+
+      '.bottom-navigation a[href="santri.html"],'+
+      '.navbar-bottom a[href="santri.html"]'
+    );
+
+    links.forEach(a=>{
+      const label=a.querySelector('span');
+      if(label){
+        label.textContent='Peserta Didik';
+      }else{
+        const walker=document.createTreeWalker(a,NodeFilter.SHOW_TEXT);
+        const nodes=[];let n;
+        while((n=walker.nextNode()))nodes.push(n);
+        nodes.forEach(textNode=>{
+          const before=textNode.nodeValue||'';
+          const after=before.replace(/\bSantri\b/gi,'Peserta Didik');
+          if(after!==before)textNode.nodeValue=after;
+        });
+      }
     });
   }
 
@@ -68,7 +86,6 @@
     observer.observe(root,{childList:true,subtree:true,characterData:true});
   }
 
-  /* Perubahan KHUSUS halaman Peserta Didik: hanya label/placeholder/judul. */
   function fixStudentLabels(){
     if(!isStudentPage())return;
     const title=document.querySelector('title');
