@@ -72,12 +72,13 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClientCompat(){
             @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){return assetLoader.shouldInterceptRequest(r.getUrl());}
             @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if(u==null)return false;String url=u.toString().toLowerCase();if(url.contains("github.com")||url.contains("githubusercontent.com")||url.endsWith(".apk")){openExternalUrl(u);return true}if(!url.startsWith("https://appassets.androidplatform.net/")&&!url.startsWith("http://appassets.androidplatform.net/")){openExternalUrl(u);return true}return false;}
-            @Override public void onPageFinished(WebView v,String url){super.onPageFinished(v,url);v.evaluateJavascript("(function(){try{var s=document.getElementById('ckLandscapeScrollFix');if(!s){s=document.createElement('style');s.id='ckLandscapeScrollFix';s.textContent='html,body{overflow-y:auto!important;height:auto!important;min-height:100%!important;}body{overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}';document.head.appendChild(s)}}catch(e){}})();",null);}
+            @Override public void onPageFinished(WebView v,String url){super.onPageFinished(v,url);v.evaluateJavascript("(function(){try{var s=document.getElementById('ckLandscapeScrollFix');if(!s){s=document.createElement('style');s.id='ckLandscapeScrollFix';s.textContent='html,body{overflow-y:auto!important;height:auto!important;min-height:100%!important;}body{overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}';document.head.appendChild(s)}}catch(e){}})();}
         });
         webView.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){if(filePathCallback!=null)filePathCallback.onReceiveValue(null);filePathCallback=callback;Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("image/*");i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);try{startActivityForResult(i,FILE_CHOOSER_REQUEST);return true}catch(Exception e){filePathCallback=null;return false}}});
         registerDownloadReceiver();
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){@Override public void handleOnBackPressed(){if(webView!=null&&webView.getVisibility()==View.VISIBLE&&webView.canGoBack())webView.goBack();else if(splashView!=null&&splashView.getVisibility()==View.VISIBLE){}else finish();}});
-        splashHandler.postDelayed(()->{webView.setVisibility(View.VISIBLE);if(splashView!=null){root.removeView(splashView);splashView=null;}webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");},1850);
+        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+        splashHandler.postDelayed(()->{webView.setVisibility(View.VISIBLE);if(splashView!=null)splashView.animate().alpha(0f).setDuration(420).withEndAction(()->{if(splashView!=null){root.removeView(splashView);splashView=null;}}).start();},1450);
     }
 
     private void setupSplash(){
@@ -99,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
         content.animate().alpha(1f).setStartDelay(120).setDuration(500).start();
         title.animate().alpha(1f).setStartDelay(360).setDuration(500).start();
         subtitle.animate().alpha(1f).setStartDelay(520).setDuration(500).start();
-        splashHandler.postDelayed(()->splashView.animate().alpha(0f).setDuration(420).start(),1450);
     }
     private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
     @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode!=FILE_CHOOSER_REQUEST||filePathCallback==null)return;Uri[] results=null;if(resultCode==RESULT_OK&&data!=null&&data.getData()!=null)results=new Uri[]{data.getData()};filePathCallback.onReceiveValue(results);filePathCallback=null;}
