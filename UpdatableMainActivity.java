@@ -97,7 +97,7 @@ public class UpdatableMainActivity extends MainActivity {
     private int dpSplash(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
 
     private static class ViewParentCleaner{
-        static void removeSiblingsExceptWebView(WebView web){try{ViewParent p=web.getParent();if(p instanceof ViewGroup){ViewGroup g=(ViewGroup)p;for(int i=g.getChildCount()-1;i>=0;i--){View c=g.getChildAt(i);if(c!=web)g.removeViewAt(i);}}}catch(Exception ignored){}}
+        static void removeSiblingsExceptWebView(WebView web){try{android.view.ViewParent p=web.getParent();if(p instanceof ViewGroup){ViewGroup g=(ViewGroup)p;for(int i=g.getChildCount()-1;i>=0;i--){View c=g.getChildAt(i);if(c!=web)g.removeViewAt(i);}}}catch(Exception ignored){}}
     }
 
     public class AndroidWebUpdater {
