@@ -80,7 +80,7 @@ public class UpdatableMainActivity extends MainActivity {
         overlay.addView(content,new android.widget.FrameLayout.LayoutParams(-1,-2,Gravity.CENTER));
         android.widget.ImageView logo=new android.widget.ImageView(this);
         logo.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-        try(InputStream in=getAssets().open("logo-catatan-kas.jpg")){Bitmap b=BitmapFactory.decodeStream(in);if(b!=null)logo.setImageBitmap(b);}catch(Exception ignored){}
+        try(InputStream in=getAssets().open("icon-192.png")){Bitmap b=BitmapFactory.decodeStream(in);if(b!=null)logo.setImageBitmap(b);}catch(Exception ignored){}
         int logoSize=Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)));
         content.addView(logo,new android.widget.LinearLayout.LayoutParams(logoSize,logoSize));
         android.widget.TextView title=new android.widget.TextView(this);
