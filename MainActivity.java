@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver downloadReceiver;
     private FrameLayout root;
     private View splashView;
-    private final Handler splashHandler=new Handler(Looper.getMainLooper());
+    private final android.os.Handler splashHandler=new android.os.Handler(android.os.Looper.getMainLooper());
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override protected void onCreate(Bundle savedInstanceState){
