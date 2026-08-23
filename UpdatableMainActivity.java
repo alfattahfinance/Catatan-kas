@@ -5,6 +5,8 @@ import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -12,21 +14,20 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import androidx.webkit.WebViewAssetLoader;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 /** MainActivity + secure-ish in-app web updater. */
 public class UpdatableMainActivity extends MainActivity {
@@ -41,7 +42,7 @@ public class UpdatableMainActivity extends MainActivity {
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(APP_BG));
-        showReliableSplash();
+        showModernSplash();
         if(webView!=null){webView.setBackgroundColor(APP_BG);webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);}
         webUpdateDir=new File(getFilesDir(),"web_update");if(!webUpdateDir.exists())webUpdateDir.mkdirs();
         if(webView!=null)webView.addJavascriptInterface(new AndroidWebUpdater(),"AndroidWebUpdater");
@@ -52,21 +53,49 @@ public class UpdatableMainActivity extends MainActivity {
         });
     }
 
-    private void showReliableSplash(){
-        final android.view.ViewGroup decor=(android.view.ViewGroup)getWindow().getDecorView();
-        final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);overlay.setBackgroundColor(APP_BG);
-        android.widget.LinearLayout box=new android.widget.LinearLayout(this);box.setOrientation(android.widget.LinearLayout.VERTICAL);box.setGravity(android.view.Gravity.CENTER);box.setPadding(dpSplash(28),dpSplash(28),dpSplash(28),dpSplash(28));
-        android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(18,55,45),Color.rgb(27,39,35)});bg.setCornerRadius(dpSplash(24));box.setBackground(bg);
-        android.widget.TextView logo=new android.widget.TextView(this);logo.setText("✓");logo.setTextColor(Color.WHITE);logo.setTextSize(34);logo.setGravity(android.view.Gravity.CENTER);logo.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);
-        android.graphics.drawable.GradientDrawable lb=new android.graphics.drawable.GradientDrawable();lb.setShape(android.graphics.drawable.GradientDrawable.OVAL);lb.setColor(Color.rgb(25,135,84));logo.setBackground(lb);box.addView(logo,new android.widget.LinearLayout.LayoutParams(dpSplash(76),dpSplash(76)));
-        android.widget.TextView title=new android.widget.TextView(this);title.setText("Keuangan");title.setTextColor(Color.WHITE);title.setTextSize(27);title.setGravity(android.view.Gravity.CENTER);title.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);title.setPadding(0,dpSplash(16),0,0);box.addView(title,new android.widget.LinearLayout.LayoutParams(-1,-2));
-        android.widget.TextView sub=new android.widget.TextView(this);sub.setText("Kelola keuangan lebih mudah");sub.setTextColor(Color.rgb(195,215,205));sub.setTextSize(12);sub.setGravity(android.view.Gravity.CENTER);sub.setPadding(0,dpSplash(4),0,dpSplash(22));box.addView(sub,new android.widget.LinearLayout.LayoutParams(-1,-2));
-        android.widget.TextView status=new android.widget.TextView(this);status.setText("Menyiapkan aplikasi...");status.setTextColor(Color.rgb(220,230,225));status.setTextSize(11);status.setGravity(android.view.Gravity.CENTER);box.addView(status,new android.widget.LinearLayout.LayoutParams(-1,-2));
-        overlay.addView(box,new android.widget.FrameLayout.LayoutParams(-1,dpSplash(300),android.view.Gravity.CENTER));decor.addView(overlay,new android.view.ViewGroup.LayoutParams(-1,-1));
-        logo.setScaleX(.45f);logo.setScaleY(.45f);logo.setAlpha(0f);box.setAlpha(0f);logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(550).setInterpolator(new android.view.animation.OvershootInterpolator()).start();box.animate().alpha(1f).setStartDelay(180).setDuration(500).start();
-        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(()->status.setText("Memuat antarmuka..."),650);new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(()->status.setText("Menyiapkan data..."),1050);new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(()->status.setText("Hampir siap..."),1400);new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(()->overlay.animate().alpha(0f).setDuration(300).withEndAction(()->decor.removeView(overlay)).start(),1850);
+    private void showModernSplash(){
+        if(webView==null)return;
+        ViewParentCleaner.removeSiblingsExceptWebView(webView);
+        webView.setVisibility(View.INVISIBLE);
+        final ViewGroup rootGroup=(ViewGroup)webView.getParent();
+        if(rootGroup==null)return;
+        final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);
+        overlay.setBackgroundColor(Color.rgb(37,103,93));
+        rootGroup.addView(overlay,new android.widget.FrameLayout.LayoutParams(-1,-1));
+        android.widget.LinearLayout content=new android.widget.LinearLayout(this);
+        content.setOrientation(android.widget.LinearLayout.VERTICAL);
+        content.setGravity(Gravity.CENTER_HORIZONTAL);
+        content.setPadding(dpSplash(28),dpSplash(28),dpSplash(28),dpSplash(28));
+        overlay.addView(content,new android.widget.FrameLayout.LayoutParams(-1,-2,Gravity.CENTER));
+        android.widget.ImageView logo=new android.widget.ImageView(this);
+        logo.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        try(InputStream in=getAssets().open("logo-catatan-kas.jpg")){Bitmap b=BitmapFactory.decodeStream(in);if(b!=null)logo.setImageBitmap(b);}catch(Exception ignored){}
+        android.graphics.drawable.GradientDrawable logoBorder=new android.graphics.drawable.GradientDrawable();
+        logoBorder.setColor(Color.TRANSPARENT);logoBorder.setCornerRadius(dpSplash(34));logoBorder.setStroke(dpSplash(1),Color.argb(55,255,255,255));
+        logo.setBackground(logoBorder);logo.setClipToOutline(true);
+        content.addView(logo,new android.widget.LinearLayout.LayoutParams(dpSplash(190),dpSplash(190)));
+        android.widget.TextView title=new android.widget.TextView(this);
+        title.setText("Keuangan");title.setTextColor(Color.WHITE);title.setTextSize(28);title.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);title.setGravity(Gravity.CENTER);title.setPadding(0,dpSplash(22),0,0);
+        content.addView(title,new android.widget.LinearLayout.LayoutParams(-1,-2));
+        android.widget.TextView subtitle=new android.widget.TextView(this);
+        subtitle.setText("Catatan keuangan lebih mudah");subtitle.setTextColor(Color.rgb(224,246,240));subtitle.setTextSize(13);subtitle.setGravity(Gravity.CENTER);subtitle.setPadding(0,dpSplash(6),0,0);
+        content.addView(subtitle,new android.widget.LinearLayout.LayoutParams(-1,-2));
+        content.setAlpha(0f);logo.setAlpha(0f);logo.setScaleX(.78f);logo.setScaleY(.78f);title.setAlpha(0f);subtitle.setAlpha(0f);
+        logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(650).setInterpolator(new android.view.animation.OvershootInterpolator(1.2f)).start();
+        content.animate().alpha(1f).setStartDelay(120).setDuration(500).start();
+        title.animate().alpha(1f).setStartDelay(360).setDuration(500).start();
+        subtitle.animate().alpha(1f).setStartDelay(520).setDuration(500).start();
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(()->{
+            webView.setVisibility(View.VISIBLE);
+            webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+            overlay.animate().alpha(0f).setDuration(450).withEndAction(()->rootGroup.removeView(overlay)).start();
+        },2550);
     }
     private int dpSplash(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
+
+    private static class ViewParentCleaner{
+        static void removeSiblingsExceptWebView(WebView web){try{ViewParent p=web.getParent();if(p instanceof ViewGroup){ViewGroup g=(ViewGroup)p;for(int i=g.getChildCount()-1;i>=0;i--){View c=g.getChildAt(i);if(c!=web)g.removeViewAt(i);}}}catch(Exception ignored){}}
+    }
 
     public class AndroidWebUpdater {
         @JavascriptInterface public String saveExcelBase64(String base64,String filename){try{if(base64==null||base64.isEmpty())throw new Exception("Data Excel kosong.");String safe=filename==null||filename.trim().isEmpty()?"Rekap-Pembayaran.xlsx":filename.replaceAll("[^A-Za-z0-9._-]","_");if(!safe.toLowerCase().endsWith(".xlsx"))safe+=".xlsx";byte[] data=Base64.decode(base64,Base64.DEFAULT);if(data.length==0)throw new Exception("File Excel kosong.");if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q){ContentValues values=new ContentValues();values.put(MediaStore.Downloads.DISPLAY_NAME,safe);values.put(MediaStore.Downloads.MIME_TYPE,EXCEL_MIME);values.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS);values.put(MediaStore.Downloads.IS_PENDING,1);Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);if(uri==null)throw new Exception("Tidak dapat membuat file di Download.");try(OutputStream out=getContentResolver().openOutputStream(uri)){if(out==null)throw new Exception("Tidak dapat membuka file Download.");out.write(data);out.flush();}ContentValues done=new ContentValues();done.put(MediaStore.Downloads.IS_PENDING,0);getContentResolver().update(uri,done,null,null);lastExcelUri=uri;return safe;}File dir=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);if(dir==null)throw new Exception("Folder Download tidak tersedia.");if(!dir.exists()&&!dir.mkdirs())throw new Exception("Folder Download tidak dapat dibuat.");File f=new File(dir,safe);try(FileOutputStream out=new FileOutputStream(f)){out.write(data);out.flush();}lastExcelUri=Uri.fromFile(f);return safe;}catch(Exception e){e.printStackTrace();return "";}}
