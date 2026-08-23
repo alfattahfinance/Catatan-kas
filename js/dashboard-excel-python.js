@@ -18,41 +18,40 @@ function installResultListener(){
   if(readyListener)return;readyListener=true;
   window.addEventListener('pythonExcelReady',e=>{
     const d=e.detail||{};
-    if(!d.base64){status('Python gagal menghasilkan Excel.',false);return}
+    if(!d.base64){status('Excel gagal dibuat.',false);return}
     const filename=d.filename||'Rekap-Pembayaran.xlsx';
     if(window.AndroidWebUpdater&&typeof window.AndroidWebUpdater.saveExcelBase64==='function'){
       const saved=window.AndroidWebUpdater.saveExcelBase64(d.base64,filename);
-      if(saved){status('✓ Excel tersimpan di Download: '+saved);setTimeout(()=>{if(typeof window.AndroidWebUpdater.openLastExcel==='function')window.AndroidWebUpdater.openLastExcel()},300)}
-      else status('Python berhasil membuat Excel, tetapi file gagal disimpan.',false);
+      if(saved){status('✓ Excel tersimpan di Download.',true);setTimeout(()=>{if(typeof window.AndroidWebUpdater.openLastExcel==='function')window.AndroidWebUpdater.openLastExcel()},300)}
+      else status('Excel berhasil dibuat tetapi gagal disimpan.',false);
     }else status('Penyimpanan Excel Android belum tersedia.',false);
   });
-  window.addEventListener('pythonExcelError',e=>status('Gagal Export Excel: '+((e.detail||{}).message||'Kesalahan Python'),false));
+  window.addEventListener('pythonExcelError',e=>status('Export Excel gagal: '+((e.detail||{}).message||'Kesalahan Python'),false));
 }
 function exportPython(){
   installResultListener();
-  if(!window.AndroidPython||typeof window.AndroidPython.exportExcel!=='function'){status('Python belum tersedia di APK ini.',false);return}
-  if(!auth.currentUser){status('Silakan login terlebih dahulu.',false);return}
+  if(!window.AndroidPython||typeof window.AndroidPython.exportExcel!=='function'){status('Export Excel belum tersedia di APK ini.',false);return}
   const rows=collectRows();
   if(!rows.length){status('Tidak ada data untuk diekspor.',false);return}
   try{
     const year=Number($('tahun')?.value)||new Date().getFullYear();
     const filename='Rekap-Pembayaran-'+year+'.xlsx';
-    status('Membuat Excel dengan Python + openpyxl...');
+    status('Membuat file Excel...');
     window.AndroidPython.exportExcel(JSON.stringify(rows),filename);
-  }catch(e){console.error(e);status('Gagal Export Excel: '+(e?.message||e),false)}
+  }catch(e){console.error(e);status('Export Excel gagal: '+(e?.message||e),false)}
 }
 function connectButton(){
   const b=$('browserExportExcel');
   if(!b||!window.AndroidPython)return false;
   if(b.dataset.pythonConnected==='1')return true;
   b.dataset.pythonConnected='1';
-  b.innerHTML='<i class="bi bi-file-earmark-excel me-1"></i>Export Excel <span style="font-size:.6rem;opacity:.9">(Python)</span>';
-  b.title='Export Excel menggunakan Python + openpyxl';
+  b.innerHTML='<i class="bi bi-file-earmark-excel me-1"></i>Export Excel';
+  b.title='Export data ke file Excel';
   b.onclick=null;
   b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();exportPython()},true);
-  status('✓ Python + openpyxl siap');
+  const statusEl=$('excelStatus');if(statusEl)statusEl.textContent='';
   return true;
 }
-function init(){installResultListener();connectButton();setTimeout(connectButton,250);setTimeout(connectButton,1000);setTimeout(connectButton,2000)}
+function init(){installResultListener();connectButton();setTimeout(connectButton,250);setTimeout(connectButton,1000);setTimeout(connectButton,2000);setTimeout(connectButton,4000)}
 onAuthStateChanged(()=>init());
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
