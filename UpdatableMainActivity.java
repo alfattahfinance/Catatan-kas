@@ -58,7 +58,7 @@ public class UpdatableMainActivity extends MainActivity {
 
     private void showModernSplash(){
         if(webView==null)return;
-        ViewParentCleaner.removeSiblingsExceptWebView(webView);
+        ViewParentCleaner.hideSiblingsExceptWebView(webView);
         webView.setVisibility(View.INVISIBLE);
         final ViewGroup rootGroup=(ViewGroup)webView.getParent();
         if(rootGroup==null)return;
@@ -97,7 +97,7 @@ public class UpdatableMainActivity extends MainActivity {
     private int dpSplash(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
 
     private static class ViewParentCleaner{
-        static void removeSiblingsExceptWebView(WebView web){try{android.view.ViewParent p=web.getParent();if(p instanceof ViewGroup){ViewGroup g=(ViewGroup)p;for(int i=g.getChildCount()-1;i>=0;i--){View c=g.getChildAt(i);if(c!=web)g.removeViewAt(i);}}}catch(Exception ignored){}}
+        static void hideSiblingsExceptWebView(WebView web){try{android.view.ViewParent p=web.getParent();if(p instanceof ViewGroup){ViewGroup g=(ViewGroup)p;for(int i=g.getChildCount()-1;i>=0;i--){View c=g.getChildAt(i);if(c!=web)c.setVisibility(View.GONE);}}}catch(Exception ignored){}}
     }
 
     public class AndroidWebUpdater {
