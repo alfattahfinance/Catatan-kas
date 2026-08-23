@@ -98,11 +98,28 @@
     };
   }
 
+  // WebView-safe navigation for the Peserta Didik page.
+  // Keep the normal href as the primary route, but explicitly navigate on click
+  // so the APK cannot leave this one bottom-nav item unresponsive.
+  function ensureStudentNavigation() {
+    if (window.__ckStudentNavigationFixed) return;
+    window.__ckStudentNavigationFixed = true;
+    document.addEventListener('click', event => {
+      const link = event.target instanceof Element ? event.target.closest('a[href="santri.html"]') : null;
+      if (!link || link.dataset.ckStudentNav === '1') return;
+      link.dataset.ckStudentNav = '1';
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.assign(new URL('santri.html', document.baseURI).href);
+    }, true);
+  }
+
   function run() {
     replaceTextNodes(document.body);
     updateVisibleAttributes();
     ensureJenisKeuangan();
     improveExcelDownload();
+    ensureStudentNavigation();
     if (location.pathname.endsWith('dashboard-excel.html')) setTimeout(improveExcelDownload, 500);
   }
 
@@ -112,12 +129,7 @@
     run();
   }
 
-  /*
-   * Observe only newly inserted DOM nodes.
-   * Do NOT observe characterData here: changing a text node inside the
-   * observer creates another characterData mutation and can cause a tight
-   * mutation loop, making WebView appear frozen and blocking navigation.
-   */
+  /* Observe only newly inserted DOM nodes. Do not observe characterData. */
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       if (mutation.type !== 'childList' || !mutation.addedNodes.length) continue;
