@@ -18,7 +18,6 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -60,46 +59,33 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.rgb(18,23,22)));
         getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT);
         downloadManager=(DownloadManager)getSystemService(Context.DOWNLOAD_SERVICE);
-
-        root=new FrameLayout(this);
-        root.setBackgroundColor(Color.rgb(18,23,22));
-        webView=new WebView(this);
-        webView.setLayoutParams(new FrameLayout.LayoutParams(-1,-1));
-        root.addView(webView);
-        setContentView(root);
-        webView.setVisibility(View.INVISIBLE);
-        setupSplash();
-
+        root=new FrameLayout(this);root.setBackgroundColor(Color.rgb(18,23,22));
+        webView=new WebView(this);webView.setLayoutParams(new FrameLayout.LayoutParams(-1,-1));root.addView(webView);setContentView(root);
+        webView.setVisibility(View.INVISIBLE);setupSplash();
         WebSettings settings=webView.getSettings();
         settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setDatabaseEnabled(true);
         settings.setAllowFileAccess(false);settings.setAllowContentAccess(true);settings.setBuiltInZoomControls(false);settings.setDisplayZoomControls(false);
         settings.setSupportZoom(false);settings.setMediaPlaybackRequiresUserGesture(false);settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setUseWideViewPort(false);settings.setLoadWithOverviewMode(false);
-        webView.setBackgroundColor(Color.rgb(18,23,22));
+        webView.setBackgroundColor(Color.rgb(18,23,22));webView.setVerticalScrollBarEnabled(true);webView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         webView.addJavascriptInterface(new AndroidDownload(),"AndroidDownload");
         final WebViewAssetLoader assetLoader=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
         webView.setWebViewClient(new WebViewClientCompat(){
             @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){return assetLoader.shouldInterceptRequest(r.getUrl());}
             @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if(u==null)return false;String url=u.toString().toLowerCase();if(url.contains("github.com")||url.contains("githubusercontent.com")||url.endsWith(".apk")){openExternalUrl(u);return true}if(!url.startsWith("https://appassets.androidplatform.net/")&&!url.startsWith("http://appassets.androidplatform.net/")){openExternalUrl(u);return true}return false;}
+            @Override public void onPageFinished(WebView v,String url){super.onPageFinished(v,url);v.evaluateJavascript("(function(){try{var s=document.getElementById('ckLandscapeScrollFix');if(!s){s=document.createElement('style');s.id='ckLandscapeScrollFix';s.textContent='html,body{overflow-y:auto!important;height:auto!important;min-height:100%!important;}body{overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}';document.head.appendChild(s)}}catch(e){}})();",null);}
         });
         webView.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){if(filePathCallback!=null)filePathCallback.onReceiveValue(null);filePathCallback=callback;Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("image/*");i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);try{startActivityForResult(i,FILE_CHOOSER_REQUEST);return true}catch(Exception e){filePathCallback=null;return false}}});
         registerDownloadReceiver();
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){@Override public void handleOnBackPressed(){if(webView!=null&&webView.getVisibility()==View.VISIBLE&&webView.canGoBack())webView.goBack();else if(splashView!=null&&splashView.getVisibility()==View.VISIBLE){}else finish();}});
-
         splashHandler.postDelayed(()->{webView.setVisibility(View.VISIBLE);if(splashView!=null){root.removeView(splashView);splashView=null;}webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");},1450);
     }
 
     private void setupSplash(){
-        splashView=new LinearLayout(this);
-        LinearLayout box=(LinearLayout)splashView;
-        box.setOrientation(LinearLayout.VERTICAL);box.setGravity(Gravity.CENTER_HORIZONTAL);box.setPadding(dp(34),dp(28),dp(34),dp(28));
+        splashView=new LinearLayout(this);LinearLayout box=(LinearLayout)splashView;box.setOrientation(LinearLayout.VERTICAL);box.setGravity(Gravity.CENTER_HORIZONTAL);box.setPadding(dp(34),dp(28),dp(34),dp(28));
         GradientDrawable bg=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(18,55,45),Color.rgb(27,39,35)});bg.setCornerRadius(dp(22));box.setBackground(bg);
         FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER);lp.setMargins(dp(28),dp(28),dp(28),dp(28));root.addView(splashView,lp);
-
-        TextView mark=new TextView(this);mark.setText("✓");mark.setGravity(Gravity.CENTER);mark.setTextColor(Color.WHITE);mark.setTextSize(28);mark.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
-        GradientDrawable markBg=new GradientDrawable();markBg.setShape(GradientDrawable.OVAL);markBg.setColor(Color.rgb(25,135,84));mark.setBackground(markBg);
-        LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(dp(62),dp(62));mlp.gravity=Gravity.CENTER_HORIZONTAL;box.addView(mark,mlp);
-
+        TextView mark=new TextView(this);mark.setText("✓");mark.setGravity(Gravity.CENTER);mark.setTextColor(Color.WHITE);mark.setTextSize(28);mark.setTypeface(Typeface.DEFAULT,Typeface.BOLD);GradientDrawable markBg=new GradientDrawable();markBg.setShape(GradientDrawable.OVAL);markBg.setColor(Color.rgb(25,135,84));mark.setBackground(markBg);LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(dp(62),dp(62));mlp.gravity=Gravity.CENTER_HORIZONTAL;box.addView(mark,mlp);
         TextView title=new TextView(this);title.setText("Keuangan");title.setTextColor(Color.WHITE);title.setTextSize(25);title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);title.setGravity(Gravity.CENTER);title.setPadding(0,dp(14),0,0);box.addView(title,new LinearLayout.LayoutParams(-1,-2));
         TextView subtitle=new TextView(this);subtitle.setText("Kelola keuangan lebih mudah");subtitle.setTextColor(Color.rgb(195,215,205));subtitle.setTextSize(12);subtitle.setGravity(Gravity.CENTER);subtitle.setPadding(0,dp(3),0,dp(18));box.addView(subtitle,new LinearLayout.LayoutParams(-1,-2));
         splashStatus=new TextView(this);splashStatus.setText("Menyiapkan aplikasi...");splashStatus.setTextColor(Color.rgb(220,230,225));splashStatus.setTextSize(11);splashStatus.setGravity(Gravity.CENTER);box.addView(splashStatus,new LinearLayout.LayoutParams(-1,-2));
@@ -107,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
         splashHandler.postDelayed(()->splashProgress.setProgress(30),220);splashHandler.postDelayed(()->{splashProgress.setProgress(60);splashStatus.setText("Memuat antarmuka...");},620);splashHandler.postDelayed(()->{splashProgress.setProgress(85);splashStatus.setText("Menyiapkan data...");},980);splashHandler.postDelayed(()->{splashProgress.setProgress(100);splashStatus.setText("Hampir siap...");},1250);
     }
     private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
-
     @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode!=FILE_CHOOSER_REQUEST||filePathCallback==null)return;Uri[] results=null;if(resultCode==RESULT_OK&&data!=null&&data.getData()!=null)results=new Uri[]{data.getData()};filePathCallback.onReceiveValue(results);filePathCallback=null;}
     @Override protected void onResume(){super.onResume();if(waitingInstallPermission&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.O&&getPackageManager().canRequestPackageInstalls()){waitingInstallPermission=false;if(pendingApkFile!=null)installApk(pendingApkFile);}}
     public class AndroidDownload{@JavascriptInterface public void downloadApk(String apkUrl,String version){runOnUiThread(()->startApkDownload(apkUrl,version));}}
