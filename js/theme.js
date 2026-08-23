@@ -41,6 +41,33 @@
     });
   }
 
+  /* Paksa label navigasi halaman Peserta Didik tetap konsisten. */
+  function normalizeStudentBottomNav(){
+    if(!isStudentPage())return;
+    const selector='.ck-bottom a,.bottom a,.bottom-nav a,.bottom-navigation a,.navbar-bottom a';
+    document.querySelectorAll(selector).forEach(a=>{
+      const walker=document.createTreeWalker(a,NodeFilter.SHOW_TEXT);
+      const nodes=[];let n;
+      while((n=walker.nextNode()))nodes.push(n);
+      nodes.forEach(textNode=>{
+        const before=textNode.nodeValue||'';
+        const after=before.replace(/\bSantri\b/gi,'Peserta Didik');
+        if(after!==before)textNode.nodeValue=after;
+      });
+    });
+  }
+
+  function watchStudentBottomNav(){
+    if(window.__ckStudentBottomNavWatcher)return;
+    window.__ckStudentBottomNavWatcher=true;
+    const apply=()=>{if(isStudentPage())normalizeStudentBottomNav()};
+    apply();
+    const root=document.body||document.documentElement;
+    if(!root)return;
+    const observer=new MutationObserver(()=>apply());
+    observer.observe(root,{childList:true,subtree:true,characterData:true});
+  }
+
   /* Perubahan KHUSUS halaman Peserta Didik: hanya label/placeholder/judul. */
   function fixStudentLabels(){
     if(!isStudentPage())return;
@@ -54,9 +81,8 @@
     });
     document.querySelectorAll('.nama-santri').forEach(el=>el.classList.add('nama-peserta-didik'));
     document.querySelectorAll('.kelas-santri').forEach(el=>el.classList.add('kelas-peserta-didik'));
-    document.querySelectorAll('.ck-bottom a,.bottom a,.bottom-nav a,.bottom-navigation a,.navbar-bottom a').forEach(a=>{
-      a.childNodes.forEach(n=>{if(n.nodeType===3)n.textContent=n.textContent.replace(/\bSantri\b/gi,'Peserta Didik')});
-    });
+    normalizeStudentBottomNav();
+    watchStudentBottomNav();
   }
 
   function parseCSV(text){
