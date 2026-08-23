@@ -1,4 +1,5 @@
 import "./js/ui-fixes.js";
+import "./js/general-ui.js";
 // ======================================
 // CATATAN KAS
 // AUTH GUARD + DATA AKUN PERSISTEN
