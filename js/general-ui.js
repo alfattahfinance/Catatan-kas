@@ -112,21 +112,26 @@
     run();
   }
 
+  /*
+   * Observe only newly inserted DOM nodes.
+   * Do NOT observe characterData here: changing a text node inside the
+   * observer creates another characterData mutation and can cause a tight
+   * mutation loop, making WebView appear frozen and blocking navigation.
+   */
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
-      if (mutation.type === 'childList' && mutation.addedNodes.length) {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) replaceTextNodes(node);
-        });
-      } else if (mutation.type === 'characterData') {
-        replaceTextNodes(mutation.target.parentElement || document.body);
-      }
+      if (mutation.type !== 'childList' || !mutation.addedNodes.length) continue;
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          replaceTextNodes(node);
+          updateVisibleAttributes();
+        }
+      });
     }
-    updateVisibleAttributes();
   });
 
   const startObserver = () => {
-    if (document.body) observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    if (document.body) observer.observe(document.body, { childList: true, subtree: true });
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startObserver, { once: true });
   else startObserver();
