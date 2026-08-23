@@ -56,10 +56,36 @@
     document.body.appendChild(script);
   }
 
+  function improveExcelDownload() {
+    if (!location.pathname.endsWith('dashboard-excel.html')) return;
+    if (!window.XLSX || window.__ckExcelDownloadFixed) return;
+    window.__ckExcelDownloadFixed = true;
+    const originalWriteFile = window.XLSX.writeFile.bind(window.XLSX);
+    window.XLSX.writeFile = function (workbook, filename) {
+      try {
+        const bytes = window.XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename || 'Rekap-Pembayaran.xlsx';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
+      } catch (e) {
+        console.error('Excel download fallback failed:', e);
+        originalWriteFile(workbook, filename);
+      }
+    };
+  }
+
   function run() {
     replaceTextNodes(document.body);
     updateAttributes();
     ensureJenisKeuangan();
+    improveExcelDownload();
+    if (location.pathname.endsWith('dashboard-excel.html')) setTimeout(improveExcelDownload, 500);
   }
 
   if (document.readyState === 'loading') {
