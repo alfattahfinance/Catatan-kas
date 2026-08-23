@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
@@ -34,7 +33,7 @@ import java.net.URL;
 /** MainActivity + secure-ish in-app web updater. */
 public class UpdatableMainActivity extends MainActivity {
     private static final String MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
-    private static final String EMBEDDED_WEB_VERSION = "1.0.20";
+    private static final String EMBEDDED_WEB_VERSION = "1.0.21";
     private static final int APP_BG = Color.rgb(18, 23, 22);
     private static final String EXCEL_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private File webUpdateDir;
@@ -59,7 +58,7 @@ public class UpdatableMainActivity extends MainActivity {
                 if(!x.startsWith("https://appassets.androidplatform.net/")&&!x.startsWith("http://appassets.androidplatform.net/")){try{startActivity(new Intent(Intent.ACTION_VIEW,u));}catch(Exception ignored){}return true;} return false;
             }
         });
-        webView.reload();
+        // MainActivity menampilkan splash lalu memuat index.html. Tidak perlu reload di sini agar splash tidak dilewati.
     }
 
     public class AndroidWebUpdater {
@@ -70,59 +69,19 @@ public class UpdatableMainActivity extends MainActivity {
                 if(!safe.toLowerCase().endsWith(".xlsx"))safe+=".xlsx";
                 byte[] data=Base64.decode(base64,Base64.DEFAULT);
                 if(data.length==0)throw new Exception("File Excel kosong.");
-
                 if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q){
-                    ContentValues values=new ContentValues();
-                    values.put(MediaStore.Downloads.DISPLAY_NAME,safe);
-                    values.put(MediaStore.Downloads.MIME_TYPE,EXCEL_MIME);
-                    values.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS);
-                    values.put(MediaStore.Downloads.IS_PENDING,1);
-                    Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
-                    if(uri==null)throw new Exception("Tidak dapat membuat file di Download.");
-                    try(OutputStream out=getContentResolver().openOutputStream(uri)){
-                        if(out==null)throw new Exception("Tidak dapat membuka file Download.");
-                        out.write(data);out.flush();
-                    }
-                    ContentValues done=new ContentValues();done.put(MediaStore.Downloads.IS_PENDING,0);
-                    getContentResolver().update(uri,done,null,null);
-                    lastExcelUri=uri;
-                    return safe;
+                    ContentValues values=new ContentValues();values.put(MediaStore.Downloads.DISPLAY_NAME,safe);values.put(MediaStore.Downloads.MIME_TYPE,EXCEL_MIME);values.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS);values.put(MediaStore.Downloads.IS_PENDING,1);
+                    Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);if(uri==null)throw new Exception("Tidak dapat membuat file di Download.");
+                    try(OutputStream out=getContentResolver().openOutputStream(uri)){if(out==null)throw new Exception("Tidak dapat membuka file Download.");out.write(data);out.flush();}
+                    ContentValues done=new ContentValues();done.put(MediaStore.Downloads.IS_PENDING,0);getContentResolver().update(uri,done,null,null);lastExcelUri=uri;return safe;
                 }
-
-                // Android lama: gunakan folder Download publik agar file tidak terjebak di penyimpanan aplikasi.
-                File dir=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                if(dir==null)throw new Exception("Folder Download tidak tersedia.");
-                if(!dir.exists()&&!dir.mkdirs())throw new Exception("Folder Download tidak dapat dibuat.");
-                File f=new File(dir,safe);
-                try(FileOutputStream out=new FileOutputStream(f)){out.write(data);out.flush();}
-                lastExcelUri=Uri.fromFile(f);
-                return safe;
+                File dir=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);if(dir==null)throw new Exception("Folder Download tidak tersedia.");if(!dir.exists()&&!dir.mkdirs())throw new Exception("Folder Download tidak dapat dibuat.");File f=new File(dir,safe);try(FileOutputStream out=new FileOutputStream(f)){out.write(data);out.flush();}lastExcelUri=Uri.fromFile(f);return safe;
             }catch(Exception e){e.printStackTrace();return "";}
         }
-
-        @JavascriptInterface public boolean openLastExcel(){
-            try{
-                if(lastExcelUri==null)return false;
-                Intent i=new Intent(Intent.ACTION_VIEW);
-                i.setDataAndType(lastExcelUri,EXCEL_MIME);
-                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
-                i.setClipData(ClipData.newRawUri("Excel",lastExcelUri));
-                try{
-                    startActivity(i);
-                    return true;
-                }catch(Exception noDirectHandler){
-                    Intent chooser=Intent.createChooser(i,"Buka file Excel dengan");
-                    chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(chooser);
-                    return true;
-                }
-            }catch(Exception e){return false;}
-        }
-
+        @JavascriptInterface public boolean openLastExcel(){try{if(lastExcelUri==null)return false;Intent i=new Intent(Intent.ACTION_VIEW);i.setDataAndType(lastExcelUri,EXCEL_MIME);i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);i.setClipData(ClipData.newRawUri("Excel",lastExcelUri));try{startActivity(i);return true;}catch(Exception noDirectHandler){Intent chooser=Intent.createChooser(i,"Buka file Excel dengan");chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);startActivity(chooser);return true;}}catch(Exception e){return false;}}
         @JavascriptInterface public void checkForUpdate(){new Thread(()->{try{JSONObject m=fetchManifest();String latest=m.optString("version",EMBEDDED_WEB_VERSION);String current=getPreferences(MODE_PRIVATE).getString("web_version",EMBEDDED_WEB_VERSION);if(version(latest)>version(current))send("window.dispatchEvent(new CustomEvent('webUpdateAvailable',{detail:{version:'"+esc(latest)+"',message:'"+esc(m.optString("message","Pembaruan aplikasi tersedia."))+"'}}))");else send("window.dispatchEvent(new CustomEvent('webUpdateLatest',{detail:{version:'"+esc(current)+"'}}))");}catch(Exception e){send("window.dispatchEvent(new CustomEvent('webUpdateError',{detail:{message:'"+esc("Tidak dapat memeriksa pembaruan: "+e.getMessage())+"'}}))");}}).start();}
         @JavascriptInterface public void applyUpdate(){new Thread(()->{File tmp=null;try{JSONObject m=fetchManifest();String v=m.optString("version","");JSONArray files=m.optJSONArray("files");if(v.isEmpty()||files==null||files.length()==0)throw new Exception("Manifest pembaruan tidak lengkap.");tmp=new File(getFilesDir(),"web_update_tmp");delete(tmp);if(!tmp.mkdirs())throw new Exception("Folder update tidak dapat dibuat.");for(int i=0;i<files.length();i++){String p=files.getString(i);send("window.dispatchEvent(new CustomEvent('webUpdateProgress',{detail:{message:'Mengunduh "+esc(p)+" ("+(i+1)+"/"+files.length()+")...'}}))");download(p,v,tmp);}delete(webUpdateDir);if(!webUpdateDir.mkdirs())throw new Exception("Folder update tidak dapat dibuat.");copy(tmp,webUpdateDir);getPreferences(MODE_PRIVATE).edit().putString("web_version",v).apply();send("window.dispatchEvent(new CustomEvent('webUpdateComplete',{detail:{version:'"+esc(v)+"'}}))");}catch(Exception e){e.printStackTrace();send("window.dispatchEvent(new CustomEvent('webUpdateError',{detail:{message:'"+esc("Pembaruan gagal: "+e.getMessage())+"'}}))");}finally{if(tmp!=null)delete(tmp);}}).start();}
     }
-
     private JSONObject fetchManifest() throws Exception {HttpURLConnection c=(HttpURLConnection)new URL(MANIFEST_URL+"?t="+System.currentTimeMillis()).openConnection();c.setConnectTimeout(15000);c.setReadTimeout(30000);c.setRequestProperty("User-Agent","Keuangan-App-Updater");try{int code=c.getResponseCode();if(code<200||code>=300)throw new Exception("HTTP "+code);return new JSONObject(read(c.getInputStream()));}finally{c.disconnect();}}
     private void download(String path,String v,File root)throws Exception{String p=path.replace("\\","/");if(p.startsWith("/")||p.contains("../")||p.contains("..\\"))throw new Exception("Path update tidak aman");File cr=root.getCanonicalFile(),f=new File(cr,p).getCanonicalFile();if(!f.getPath().startsWith(cr.getPath()+File.separator))throw new Exception("Path update tidak aman");if(f.getParentFile()!=null)f.getParentFile().mkdirs();URL u=new URL("https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/"+Uri.encode(p,"/")+"?v="+Uri.encode(v));HttpURLConnection c=(HttpURLConnection)u.openConnection();c.setConnectTimeout(15000);c.setReadTimeout(60000);c.setRequestProperty("User-Agent","Keuangan-App-Updater");try{int code=c.getResponseCode();if(code<200||code>=300)throw new Exception("HTTP "+code+" untuk "+p);try(InputStream in=new BufferedInputStream(c.getInputStream());FileOutputStream out=new FileOutputStream(f)){byte[] b=new byte[8192];int n;while((n=in.read(b))!=-1)out.write(b,0,n);}}finally{c.disconnect();}}
     private String read(InputStream in)throws Exception{StringBuilder s=new StringBuilder();byte[] b=new byte[8192];int n;try(InputStream input=in){while((n=input.read(b))!=-1)s.append(new String(b,0,n,java.nio.charset.StandardCharsets.UTF_8));}return s.toString();}
@@ -131,7 +90,6 @@ public class UpdatableMainActivity extends MainActivity {
     private int version(String v){int r=0;for(String p:String.valueOf(v).replaceFirst("^[vV]","").split("\\.")){try{r=r*1000+Integer.parseInt(p.replaceAll("[^0-9]",""));}catch(Exception ignored){}}return r;}
     private String esc(String s){if(s==null)return"";return s.replace("\\","\\\\").replace("'","\\'").replace("\n"," ").replace("\r"," ");}
     private void send(String js){runOnUiThread(()->{if(webView!=null)webView.evaluateJavascript(js,null);});}
-
     private static class UpdatableAssetsPathHandler implements WebViewAssetLoader.PathHandler{
         private final File root;private final WebViewAssetLoader.AssetsPathHandler fallback;
         UpdatableAssetsPathHandler(Context c,File r){root=r;fallback=new WebViewAssetLoader.AssetsPathHandler(c);}
