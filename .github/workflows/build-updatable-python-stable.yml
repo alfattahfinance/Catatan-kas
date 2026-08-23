@@ -102,7 +102,20 @@ jobs:
           }
           GRADLE
           cat > app/src/main/res/values/styles.xml <<'XML'
-          <?xml version="1.0" encoding="utf-8"?><resources><style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#198754</item><item name="android:navigationBarColor">#121212</item><item name="android:statusBarColor">#121212</item></style></resources>
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+              <item name="android:fontFamily">sans</item>
+              <item name="android:colorAccent">#198754</item>
+              <item name="android:windowBackground">#121716</item>
+              <item name="android:windowActionModeOverlay">true</item>
+              <item name="android:windowNoTitle">true</item>
+              <item name="android:statusBarColor">#121716</item>
+              <item name="android:navigationBarColor">#121716</item>
+              <item name="android:windowLightStatusBar">false</item>
+              <item name="android:windowLightNavigationBar">false</item>
+            </style>
+          </resources>
           XML
           cat > app/src/main/AndroidManifest.xml <<'XML'
           <?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:allowBackup="true" android:usesCleartextTraffic="true" android:label="Keuangan" android:theme="@style/AppTheme" android:icon="@drawable/ic_keuangan" android:resizeableActivity="true"><activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
