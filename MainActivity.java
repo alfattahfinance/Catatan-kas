@@ -6,6 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -13,8 +15,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.View;
@@ -27,8 +27,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
@@ -37,6 +37,7 @@ import androidx.core.content.FileProvider;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
 import java.io.File;
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
     private static final int FILE_CHOOSER_REQUEST=4101;
@@ -49,8 +50,6 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver downloadReceiver;
     private FrameLayout root;
     private View splashView;
-    private ProgressBar splashProgress;
-    private TextView splashStatus;
     private final Handler splashHandler=new Handler(Looper.getMainLooper());
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -78,19 +77,29 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){if(filePathCallback!=null)filePathCallback.onReceiveValue(null);filePathCallback=callback;Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("image/*");i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);try{startActivityForResult(i,FILE_CHOOSER_REQUEST);return true}catch(Exception e){filePathCallback=null;return false}}});
         registerDownloadReceiver();
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){@Override public void handleOnBackPressed(){if(webView!=null&&webView.getVisibility()==View.VISIBLE&&webView.canGoBack())webView.goBack();else if(splashView!=null&&splashView.getVisibility()==View.VISIBLE){}else finish();}});
-        splashHandler.postDelayed(()->{webView.setVisibility(View.VISIBLE);if(splashView!=null){root.removeView(splashView);splashView=null;}webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");},1450);
+        splashHandler.postDelayed(()->{webView.setVisibility(View.VISIBLE);if(splashView!=null){root.removeView(splashView);splashView=null;}webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");},1850);
     }
 
     private void setupSplash(){
-        splashView=new LinearLayout(this);LinearLayout box=(LinearLayout)splashView;box.setOrientation(LinearLayout.VERTICAL);box.setGravity(Gravity.CENTER_HORIZONTAL);box.setPadding(dp(34),dp(28),dp(34),dp(28));
-        GradientDrawable bg=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(18,55,45),Color.rgb(27,39,35)});bg.setCornerRadius(dp(22));box.setBackground(bg);
-        FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER);lp.setMargins(dp(28),dp(28),dp(28),dp(28));root.addView(splashView,lp);
-        TextView mark=new TextView(this);mark.setText("✓");mark.setGravity(Gravity.CENTER);mark.setTextColor(Color.WHITE);mark.setTextSize(28);mark.setTypeface(Typeface.DEFAULT,Typeface.BOLD);GradientDrawable markBg=new GradientDrawable();markBg.setShape(GradientDrawable.OVAL);markBg.setColor(Color.rgb(25,135,84));mark.setBackground(markBg);LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(dp(62),dp(62));mlp.gravity=Gravity.CENTER_HORIZONTAL;box.addView(mark,mlp);
-        TextView title=new TextView(this);title.setText("Keuangan");title.setTextColor(Color.WHITE);title.setTextSize(25);title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);title.setGravity(Gravity.CENTER);title.setPadding(0,dp(14),0,0);box.addView(title,new LinearLayout.LayoutParams(-1,-2));
-        TextView subtitle=new TextView(this);subtitle.setText("Kelola keuangan lebih mudah");subtitle.setTextColor(Color.rgb(195,215,205));subtitle.setTextSize(12);subtitle.setGravity(Gravity.CENTER);subtitle.setPadding(0,dp(3),0,dp(18));box.addView(subtitle,new LinearLayout.LayoutParams(-1,-2));
-        splashStatus=new TextView(this);splashStatus.setText("Menyiapkan aplikasi...");splashStatus.setTextColor(Color.rgb(220,230,225));splashStatus.setTextSize(11);splashStatus.setGravity(Gravity.CENTER);box.addView(splashStatus,new LinearLayout.LayoutParams(-1,-2));
-        splashProgress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);splashProgress.setMax(100);splashProgress.setProgress(0);splashProgress.setIndeterminate(false);splashProgress.setPadding(0,0,0,0);LinearLayout.LayoutParams plp=new LinearLayout.LayoutParams(-1,dp(7));plp.topMargin=dp(10);box.addView(splashProgress,plp);
-        splashHandler.postDelayed(()->splashProgress.setProgress(30),220);splashHandler.postDelayed(()->{splashProgress.setProgress(60);splashStatus.setText("Memuat antarmuka...");},620);splashHandler.postDelayed(()->{splashProgress.setProgress(85);splashStatus.setText("Menyiapkan data...");},980);splashHandler.postDelayed(()->{splashProgress.setProgress(100);splashStatus.setText("Hampir siap...");},1250);
+        final int teal=Color.rgb(37,103,93);
+        splashView=new FrameLayout(this);splashView.setBackgroundColor(teal);
+        root.addView(splashView,new FrameLayout.LayoutParams(-1,-1));
+        LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setGravity(Gravity.CENTER_HORIZONTAL);content.setPadding(dp(28),dp(28),dp(28),dp(28));
+        FrameLayout.LayoutParams clp=new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER);splashView.addView(content,clp);
+
+        ImageView logo=new ImageView(this);logo.setScaleType(ImageView.ScaleType.CENTER_CROP);logo.setBackgroundColor(Color.TRANSPARENT);try(InputStream in=getAssets().open("logo-catatan-kas.jpg")){Bitmap b=BitmapFactory.decodeStream(in);if(b!=null)logo.setImageBitmap(b);}catch(Exception ignored){}
+        GradientDrawable logoFrame=new GradientDrawable();logoFrame.setColor(Color.TRANSPARENT);logoFrame.setCornerRadius(dp(34));logoFrame.setStroke(dp(1),Color.argb(45,255,255,255));logo.setBackground(logoFrame);logo.setClipToOutline(true);
+        LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(190),dp(190));ilp.gravity=Gravity.CENTER_HORIZONTAL;content.addView(logo,ilp);
+
+        TextView title=new TextView(this);title.setText("Keuangan");title.setTextColor(Color.WHITE);title.setTextSize(27);title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);title.setGravity(Gravity.CENTER);title.setPadding(0,dp(22),0,0);content.addView(title,new LinearLayout.LayoutParams(-1,-2));
+        TextView subtitle=new TextView(this);subtitle.setText("Catatan keuangan lebih mudah");subtitle.setTextColor(Color.rgb(224,246,240));subtitle.setTextSize(13);subtitle.setGravity(Gravity.CENTER);subtitle.setPadding(0,dp(6),0,0);content.addView(subtitle,new LinearLayout.LayoutParams(-1,-2));
+
+        content.setAlpha(0f);logo.setAlpha(0f);logo.setScaleX(.78f);logo.setScaleY(.78f);title.setAlpha(0f);subtitle.setAlpha(0f);
+        logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(650).setInterpolator(new android.view.animation.OvershootInterpolator(1.2f)).start();
+        content.animate().alpha(1f).setStartDelay(120).setDuration(500).start();
+        title.animate().alpha(1f).setStartDelay(360).setDuration(500).start();
+        subtitle.animate().alpha(1f).setStartDelay(520).setDuration(500).start();
+        splashHandler.postDelayed(()->splashView.animate().alpha(0f).setDuration(420).start(),1450);
     }
     private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
     @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode!=FILE_CHOOSER_REQUEST||filePathCallback==null)return;Uri[] results=null;if(resultCode==RESULT_OK&&data!=null&&data.getData()!=null)results=new Uri[]{data.getData()};filePathCallback.onReceiveValue(results);filePathCallback=null;}
