@@ -47,4 +47,11 @@ html:not(.dark-mode) .ck-bottom a.active{color:#198754!important;font-weight:700
   body{padding-bottom:calc(64px + env(safe-area-inset-bottom))!important}
   .ck-bottom{position:fixed!important;bottom:0!important;top:auto!important}
 }
-@media(prefers-reduced-motion:reduce){html:not(.dark-mode) body,html:not(.dark-mode) body::before,.ck-bottom a{animation:none!important;transition:none!important}}
+@media(prefers-reduced-motion:reduce){html:not(.dark-mode) body,html:not(.dark-mode) body::before,.ck-bottom a{animation:none!important;transition:none!important}
+}
+
+/* =====================================================
+   TRANSISI PINDAH HALAMAN — FADE SINGKAT & HALUS
+   ===================================================== */
+body{transition:opacity .15s ease-out!important}
+body.ck-page-leaving{opacity:0!important;transition:opacity .15s ease-out!important;pointer-events:none!important}
