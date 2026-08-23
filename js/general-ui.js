@@ -98,6 +98,36 @@
     };
   }
 
+  function smoothNavigate(link) {
+    if (!link || link.dataset.ckSmoothNav === '1') return;
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    let target;
+    try { target = new URL(href, document.baseURI); } catch (_) { return; }
+    if (target.origin !== location.origin) return;
+    if (!/\.html(?:$|[?#])/i.test(target.pathname)) return;
+    link.dataset.ckSmoothNav = '1';
+    document.body.classList.add('ck-page-leaving');
+    window.setTimeout(() => { window.location.assign(target.href); }, 150);
+  }
+
+  function ensureSmoothBottomNavigation() {
+    if (window.__ckSmoothBottomNavigationFixed) return;
+    window.__ckSmoothBottomNavigationFixed = true;
+    document.addEventListener('click', event => {
+      const link = event.target instanceof Element ? event.target.closest('.ck-bottom a') : null;
+      if (!link) return;
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const href = link.getAttribute('href');
+      if (!href) return;
+      const target = new URL(href, document.baseURI);
+      if (target.href === location.href) return;
+      event.preventDefault();
+      event.stopPropagation();
+      smoothNavigate(link);
+    }, true);
+  }
+
   // WebView-safe navigation for the Peserta Didik page.
   // Keep the normal href as the primary route, but explicitly navigate on click
   // so the APK cannot leave this one bottom-nav item unresponsive.
@@ -110,7 +140,10 @@
       link.dataset.ckStudentNav = '1';
       event.preventDefault();
       event.stopPropagation();
-      window.location.assign(new URL('santri.html', document.baseURI).href);
+      document.body.classList.add('ck-page-leaving');
+      window.setTimeout(() => {
+        window.location.assign(new URL('santri.html', document.baseURI).href);
+      }, 150);
     }, true);
   }
 
@@ -119,6 +152,7 @@
     updateVisibleAttributes();
     ensureJenisKeuangan();
     improveExcelDownload();
+    ensureSmoothBottomNavigation();
     ensureStudentNavigation();
     if (location.pathname.endsWith('dashboard-excel.html')) setTimeout(improveExcelDownload, 500);
   }
