@@ -136,7 +136,7 @@
     window.__ckStudentNavigationFixed = true;
     document.addEventListener('click', event => {
       const link = event.target instanceof Element ? event.target.closest('a[href="santri.html"]') : null;
-      if (!link || link.dataset.ckStudentNav === '1') return;
+      if (!link || link.dataset.ckStudentNav === '1' || link.dataset.ckSmoothNav === '1') return;
       link.dataset.ckStudentNav = '1';
       event.preventDefault();
       event.stopPropagation();
