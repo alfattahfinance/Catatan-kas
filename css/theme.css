@@ -3,7 +3,6 @@
    SAGE GREEN + SOFT GOLD / CREAM
    ===================================================== */
 html,body{min-height:100%}
-/* Tema gelap harus diterapkan sebelum isi halaman dirender, agar tidak ada kilatan putih. */
 html.dark-mode,html.dark-mode body,body.dark-mode{background:#121716!important;background-color:#121716!important;background-image:none!important;color:#f1f1f1!important;animation:none!important}
 html.dark-mode body *{border-color:#34423b}
 html.dark-mode body .custom-card,html.dark-mode body .ck-topbar,html.dark-mode body .topbar,html.dark-mode body .filter-card,html.dark-mode body .stat,html.dark-mode body .chart-card,html.dark-mode body .table-card,html.dark-mode body .card,html.dark-mode body .card-kas{background:#1e2522!important;color:#f1f1f1!important}
@@ -14,20 +13,32 @@ html.dark-mode body .table thead th{background:#242c28!important;color:#fff!impo
 html.dark-mode body .text-muted,html.dark-mode body small.text-muted{color:#aeb9b3!important}
 html.dark-mode body .modal-content,html.dark-mode body .dropdown-menu,html.dark-mode body .list-group-item{background:#1e2522!important;color:#f1f1f1!important;border-color:#3b4741!important}
 html.dark-mode body .btn-close{filter:invert(1) grayscale(1)}
-/* Mode terang tetap seperti sebelumnya. */
 html:not(.dark-mode),html:not(.dark-mode) body{background-color:#f6f0df!important}
 html:not(.dark-mode) body{background-image:radial-gradient(circle at 12% 18%,rgba(168,191,163,.48),transparent 32%),radial-gradient(circle at 88% 22%,rgba(216,194,122,.38),transparent 34%),radial-gradient(circle at 52% 88%,rgba(205,198,174,.32),transparent 38%),linear-gradient(135deg,#a8bfa3 0%,#e7e3d4 48%,#f6f0df 100%)!important;background-size:180% 180%,180% 180%,180% 180%,220% 220%!important;background-position:0% 30%,100% 20%,45% 100%,0% 50%!important;background-attachment:fixed!important;animation:ckSageGold 18s ease-in-out infinite alternate!important}
 @keyframes ckSageGold{0%{background-position:0% 30%,100% 20%,45% 100%,0% 50%}50%{background-position:45% 70%,55% 55%,80% 35%,55% 50%}100%{background-position:100% 15%,0% 80%,20% 10%,100% 50%}}
 html:not(.dark-mode) body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:-1;background:radial-gradient(circle at 28% 28%,rgba(255,244,196,.22),transparent 24%),radial-gradient(circle at 72% 72%,rgba(168,191,163,.18),transparent 28%),radial-gradient(circle at 52% 50%,rgba(214,208,187,.14),transparent 30%);background-size:160% 160%;animation:ckAmbientLight 18s ease-in-out infinite alternate}
 @keyframes ckAmbientLight{0%{transform:translate3d(-2%,-1%,0) scale(1)}50%{transform:translate3d(2%,2%,0) scale(1.04)}100%{transform:translate3d(-1%,3%,0) scale(1.02)}}
 html:not(.dark-mode) body .custom-card,html:not(.dark-mode) body .ck-topbar,html:not(.dark-mode) body .topbar,html:not(.dark-mode) body .filter-card,html:not(.dark-mode) body .stat,html:not(.dark-mode) body .chart-card,html:not(.dark-mode) body .table-card,html:not(.dark-mode) body .card,html:not(.dark-mode) body .card-kas{background:rgba(255,255,255,.84)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-/* Bar bawah seragam: hanya ukuran/tampilan navigasi yang disentuh. */
-.ck-bottom,.bottom,.bottom-nav,.bottom-navigation,.navbar-bottom{box-sizing:border-box!important;height:58px!important;min-height:58px!important;max-height:58px!important;padding:0!important}
-.ck-bottom-inner,.bottomin,.ck-bottom .nav,.bottom .nav,.bottom-nav-inner,.bottom-navigation-inner{box-sizing:border-box!important;width:100%!important;height:48px!important;min-height:48px!important;max-height:48px!important;margin:0!important;padding:0!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:0!important;align-items:stretch!important}
-.ck-bottom a,.bottom a,.bottom-nav a,.bottom-navigation a,.navbar-bottom a{box-sizing:border-box!important;width:100%!important;height:48px!important;min-height:48px!important;max-height:48px!important;margin:0!important;padding:3px 2px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;line-height:1!important}
-.ck-bottom a i,.bottom a i,.bottom-nav a i,.bottom-navigation a i,.navbar-bottom a i{display:block!important;width:auto!important;height:20px!important;min-height:20px!important;line-height:20px!important;margin:0 0 2px!important}
-.dark-mode .ck-bottom,.dark-mode .bottom,.dark-mode .bottom-nav,.dark-mode .bottom-navigation,.dark-mode .navbar-bottom{background:#1b211f!important;border-color:#34423b!important}
+
+/* =====================================================
+   BAR NAVIGASI BAWAH — STABIL & HALUS
+   Satu ukuran/posisi di semua halaman agar tidak meloncat
+   ketika berpindah halaman.
+   ===================================================== */
+.ck-bottom,.bottom,.bottom-nav,.bottom-navigation,.navbar-bottom{box-sizing:border-box!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:58px!important;min-height:58px!important;max-height:58px!important;margin:0!important;padding:0!important;z-index:10000!important;overflow:hidden!important;transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.ck-bottom-inner,.bottomin,.ck-bottom .nav,.bottom .nav,.bottom-nav-inner,.bottom-navigation-inner{box-sizing:border-box!important;width:100%!important;height:58px!important;min-height:58px!important;max-height:58px!important;margin:0!important;padding:0!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:0!important;align-items:stretch!important}
+.ck-bottom a,.bottom a,.bottom-nav a,.bottom-navigation a,.navbar-bottom a{box-sizing:border-box!important;width:100%!important;height:58px!important;min-height:58px!important;max-height:58px!important;margin:0!important;padding:5px 2px calc(5px + env(safe-area-inset-bottom))!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;line-height:1!important;text-decoration:none!important;transform:translateZ(0);transition:color .18s ease,background-color .18s ease,transform .18s ease,opacity .18s ease!important;will-change:transform!important}
+.ck-bottom a:active,.bottom a:active,.bottom-nav a:active,.bottom-navigation a:active,.navbar-bottom a:active{transform:scale(.96)!important}
+.ck-bottom a i,.bottom a i,.bottom-nav a i,.bottom-navigation a i,.navbar-bottom a i{display:block!important;width:auto!important;height:20px!important;min-height:20px!important;line-height:20px!important;margin:0 0 3px!important;transition:transform .18s ease!important}
+.ck-bottom a.active i,.bottom a.active i,.bottom-nav a.active i,.bottom-navigation a.active i,.navbar-bottom a.active i{transform:translateY(-1px)!important}
+/* Hindari isi halaman tertutup bar bawah */
+body{padding-bottom:58px!important}
+.dark-mode .ck-bottom,.dark-mode .bottom,.dark-mode .bottom-nav,.dark-mode .bottom-navigation,.dark-mode .navbar-bottom{background:#1b211f!important;border-color:#34423b!important;box-shadow:0 -3px 14px rgba(0,0,0,.22)!important}
 .dark-mode .ck-bottom a,.dark-mode .bottom a,.dark-mode .bottom-nav a,.dark-mode .bottom-navigation a,.dark-mode .navbar-bottom a{color:#a7b2ac!important}
 .dark-mode .ck-bottom a.active,.dark-mode .bottom a.active,.dark-mode .bottom-nav a.active,.dark-mode .bottom-navigation a.active,.dark-mode .navbar-bottom a.active{color:#75d6a7!important}
+html:not(.dark-mode) .ck-bottom,html:not(.dark-mode) .bottom,html:not(.dark-mode) .bottom-nav,html:not(.dark-mode) .bottom-navigation,html:not(.dark-mode) .navbar-bottom{background:rgba(255,255,255,.92)!important;border-top:1px solid rgba(70,90,78,.18)!important;box-shadow:0 -3px 14px rgba(70,90,78,.12)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html:not(.dark-mode) .ck-bottom a,html:not(.dark-mode) .bottom a,html:not(.dark-mode) .bottom-nav a,html:not(.dark-mode) .bottom-navigation a,html:not(.dark-mode) .navbar-bottom a{color:#6b746f!important}
+html:not(.dark-mode) .ck-bottom a.active,html:not(.dark-mode) .bottom a.active,html:not(.dark-mode) .bottom-nav a.active,html:not(.dark-mode) .bottom-navigation a.active,html:not(.dark-mode) .navbar-bottom a.active{color:#198754!important;font-weight:700!important}
+@media(max-width:480px){.ck-bottom a,.bottom a,.bottom-nav a,.bottom-navigation a,.navbar-bottom a{font-size:.72rem!important}.ck-bottom a i,.bottom a i,.bottom-nav a i,.bottom-navigation a i,.navbar-bottom a i{font-size:1.1rem!important}}
 @media(prefers-color-scheme:dark){html:not(.dark-mode):not(.light-mode),html:not(.dark-mode):not(.light-mode) body{background:#121716!important}}
-@media(prefers-reduced-motion:reduce){html:not(.dark-mode) body,html:not(.dark-mode) body::before{animation:none!important}}
+@media(prefers-reduced-motion:reduce){html:not(.dark-mode) body,html:not(.dark-mode) body::before,.ck-bottom a,.bottom a,.bottom-nav a,.bottom-navigation a,.navbar-bottom a{animation:none!important;transition:none!important}}
