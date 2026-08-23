@@ -1,6 +1,7 @@
 /*
  * General UI labels for the public release of Keuangan.
- * Text nodes only: icons/HTML inside buttons are preserved.
+ * IMPORTANT: this changes visible labels only. Firebase collection/field names
+ * such as "santri" are intentionally NOT renamed so existing data remains safe.
  */
 (() => {
   'use strict';
@@ -19,8 +20,17 @@
     ['Masukkan nama santri', 'Masukkan nama siswa / peserta didik'],
     ['Dashboard Keuangan Pondok', 'Dashboard Keuangan'],
     ['Santri', 'Peserta Didik'],
+    ['SANTRI', 'PESERTA DIDIK'],
     ['santri', 'peserta didik']
   ];
+
+  function replaceString(text) {
+    let result = String(text ?? '');
+    for (const [from, to] of replacements) {
+      if (result.includes(from)) result = result.replaceAll(from, to);
+    }
+    return result;
+  }
 
   function replaceTextNodes(root) {
     if (!root) return;
@@ -29,20 +39,28 @@
     let node;
     while ((node = walker.nextNode())) nodes.push(node);
     for (const textNode of nodes) {
-      let text = textNode.nodeValue || '';
-      const before = text;
-      for (const [from, to] of replacements) {
-        if (text.includes(from)) text = text.replaceAll(from, to);
-      }
-      if (text !== before) textNode.nodeValue = text;
+      const before = textNode.nodeValue || '';
+      const after = replaceString(before);
+      if (after !== before) textNode.nodeValue = after;
     }
   }
 
-  function updateAttributes() {
-    document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el => {
-      for (const [from, to] of replacements) {
-        if (el.placeholder.includes(from)) el.placeholder = el.placeholder.replaceAll(from, to);
+  function updateVisibleAttributes() {
+    document.querySelectorAll('[title],[aria-label],input[placeholder],textarea[placeholder]').forEach(el => {
+      for (const attr of ['title', 'aria-label', 'placeholder']) {
+        if (el.hasAttribute(attr)) {
+          const before = el.getAttribute(attr) || '';
+          const after = replaceString(before);
+          if (after !== before) el.setAttribute(attr, after);
+        }
       }
+    });
+
+    if (document.title) document.title = replaceString(document.title);
+    document.querySelectorAll('meta[name="description"],meta[property="og:title"],meta[property="og:description"]').forEach(el => {
+      const before = el.getAttribute('content') || '';
+      const after = replaceString(before);
+      if (after !== before) el.setAttribute('content', after);
     });
   }
 
@@ -82,7 +100,7 @@
 
   function run() {
     replaceTextNodes(document.body);
-    updateAttributes();
+    updateVisibleAttributes();
     ensureJenisKeuangan();
     improveExcelDownload();
     if (location.pathname.endsWith('dashboard-excel.html')) setTimeout(improveExcelDownload, 500);
@@ -104,7 +122,7 @@
         replaceTextNodes(mutation.target.parentElement || document.body);
       }
     }
-    updateAttributes();
+    updateVisibleAttributes();
   });
 
   const startObserver = () => {
