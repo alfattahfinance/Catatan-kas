@@ -41,15 +41,8 @@
     });
   }
 
-  /*
-   * Navigasi bawah halaman Peserta Didik.
-   * Sumber HTML lama masih memiliki teks "Santri" pada link santri.html.
-   * Jangan hanya mengandalkan penggantian teks umum karena WebView/cache
-   * dapat memuat HTML lama. Targetkan link halaman ini secara langsung.
-   */
   function normalizeStudentBottomNav(){
     if(!isStudentPage())return;
-
     const links=document.querySelectorAll(
       '.ck-bottom a[href="santri.html"],'+
       '.bottom a[href="santri.html"],'+
@@ -57,11 +50,10 @@
       '.bottom-navigation a[href="santri.html"],'+
       '.navbar-bottom a[href="santri.html"]'
     );
-
     links.forEach(a=>{
       const label=a.querySelector('span');
       if(label){
-        label.textContent='Peserta Didik';
+        if(label.textContent!=='Peserta Didik')label.textContent='Peserta Didik';
       }else{
         const walker=document.createTreeWalker(a,NodeFilter.SHOW_TEXT);
         const nodes=[];let n;
@@ -82,14 +74,17 @@
     apply();
     const root=document.body||document.documentElement;
     if(!root)return;
-    const observer=new MutationObserver(()=>apply());
-    observer.observe(root,{childList:true,subtree:true,characterData:true});
+    const observer=new MutationObserver(mutations=>{
+      if(!mutations.some(m=>m.type==='childList'&&m.addedNodes.length))return;
+      apply();
+    });
+    observer.observe(root,{childList:true,subtree:true});
   }
 
   function fixStudentLabels(){
     if(!isStudentPage())return;
     const title=document.querySelector('title');
-    if(title)title.textContent='Peserta Didik | Catatan Kas';
+    if(title&&title.textContent!=='Peserta Didik | Catatan Kas')title.textContent='Peserta Didik | Catatan Kas';
     document.querySelectorAll('input,textarea').forEach(el=>{
       const p=el.getAttribute('placeholder');
       if(p)el.setAttribute('placeholder',p.replace(/nama\s+santri/gi,'nama peserta didik').replace(/masukkan\s+nama\s+santri/gi,'masukkan nama peserta didik'));
