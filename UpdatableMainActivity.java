@@ -45,6 +45,13 @@ public class UpdatableMainActivity extends MainActivity {
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(APP_BG));
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            getWindow().setStatusBarColor(APP_BG);
+            getWindow().setNavigationBarColor(APP_BG);
+        }
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            getWindow().getDecorView().setSystemUiVisibility(0);
+        }
         showModernSplash();
         if(webView!=null){webView.setBackgroundColor(APP_BG);webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);}
         webUpdateDir=new File(getFilesDir(),"web_update");if(!webUpdateDir.exists())webUpdateDir.mkdirs();
@@ -63,7 +70,8 @@ public class UpdatableMainActivity extends MainActivity {
         final ViewGroup rootGroup=(ViewGroup)webView.getParent();
         if(rootGroup==null)return;
         final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);
-        overlay.setBackgroundColor(Color.rgb(36,102,92));
+        overlay.setBackgroundColor(APP_BG);
+        overlay.setSystemUiVisibility(0);
         rootGroup.addView(overlay,new android.widget.FrameLayout.LayoutParams(-1,-1));
         android.widget.LinearLayout content=new android.widget.LinearLayout(this);
         content.setOrientation(android.widget.LinearLayout.VERTICAL);
@@ -73,7 +81,8 @@ public class UpdatableMainActivity extends MainActivity {
         android.widget.ImageView logo=new android.widget.ImageView(this);
         logo.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
         try(InputStream in=getAssets().open("logo-catatan-kas.jpg")){Bitmap b=BitmapFactory.decodeStream(in);if(b!=null)logo.setImageBitmap(b);}catch(Exception ignored){}
-        content.addView(logo,new android.widget.LinearLayout.LayoutParams(dpSplash(185),dpSplash(185)));
+        int logoSize=Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)));
+        content.addView(logo,new android.widget.LinearLayout.LayoutParams(logoSize,logoSize));
         android.widget.TextView title=new android.widget.TextView(this);
         title.setText("Catatan Kas");title.setTextColor(Color.WHITE);title.setTextSize(27);title.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);title.setGravity(Gravity.CENTER);title.setPadding(0,dpSplash(18),0,0);
         content.addView(title,new android.widget.LinearLayout.LayoutParams(-1,-2));
