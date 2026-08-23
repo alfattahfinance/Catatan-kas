@@ -36,7 +36,7 @@ import java.net.URL;
 public class UpdatableMainActivity extends MainActivity {
     private static final String MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
     private static final String EMBEDDED_WEB_VERSION = "1.0.21";
-    private static final int APP_BG = Color.rgb(18,23,22);
+    private static final int APP_BG = Color.rgb(36,102,92);
     private static final String EXCEL_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private File webUpdateDir;
     private Uri lastExcelUri;
@@ -63,7 +63,7 @@ public class UpdatableMainActivity extends MainActivity {
         final ViewGroup rootGroup=(ViewGroup)webView.getParent();
         if(rootGroup==null)return;
         final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);
-        overlay.setBackgroundColor(Color.rgb(37,103,93));
+        overlay.setBackgroundColor(Color.rgb(36,102,92));
         rootGroup.addView(overlay,new android.widget.FrameLayout.LayoutParams(-1,-1));
         android.widget.LinearLayout content=new android.widget.LinearLayout(this);
         content.setOrientation(android.widget.LinearLayout.VERTICAL);
@@ -71,28 +71,26 @@ public class UpdatableMainActivity extends MainActivity {
         content.setPadding(dpSplash(28),dpSplash(28),dpSplash(28),dpSplash(28));
         overlay.addView(content,new android.widget.FrameLayout.LayoutParams(-1,-2,Gravity.CENTER));
         android.widget.ImageView logo=new android.widget.ImageView(this);
-        logo.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        logo.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
         try(InputStream in=getAssets().open("logo-catatan-kas.jpg")){Bitmap b=BitmapFactory.decodeStream(in);if(b!=null)logo.setImageBitmap(b);}catch(Exception ignored){}
-        android.graphics.drawable.GradientDrawable logoBorder=new android.graphics.drawable.GradientDrawable();
-        logoBorder.setColor(Color.TRANSPARENT);logoBorder.setCornerRadius(dpSplash(34));logoBorder.setStroke(dpSplash(1),Color.argb(55,255,255,255));
-        logo.setBackground(logoBorder);logo.setClipToOutline(true);
-        content.addView(logo,new android.widget.LinearLayout.LayoutParams(dpSplash(190),dpSplash(190)));
+        content.addView(logo,new android.widget.LinearLayout.LayoutParams(dpSplash(185),dpSplash(185)));
         android.widget.TextView title=new android.widget.TextView(this);
-        title.setText("Keuangan");title.setTextColor(Color.WHITE);title.setTextSize(28);title.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);title.setGravity(Gravity.CENTER);title.setPadding(0,dpSplash(22),0,0);
+        title.setText("Catatan Kas");title.setTextColor(Color.WHITE);title.setTextSize(27);title.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);title.setGravity(Gravity.CENTER);title.setPadding(0,dpSplash(18),0,0);
         content.addView(title,new android.widget.LinearLayout.LayoutParams(-1,-2));
         android.widget.TextView subtitle=new android.widget.TextView(this);
-        subtitle.setText("Catatan keuangan lebih mudah");subtitle.setTextColor(Color.rgb(224,246,240));subtitle.setTextSize(13);subtitle.setGravity(Gravity.CENTER);subtitle.setPadding(0,dpSplash(6),0,0);
+        subtitle.setText("Catatan keuangan lebih mudah");subtitle.setTextColor(Color.rgb(224,246,240));subtitle.setTextSize(13);subtitle.setGravity(Gravity.CENTER);subtitle.setPadding(0,dpSplash(7),0,0);
         content.addView(subtitle,new android.widget.LinearLayout.LayoutParams(-1,-2));
-        content.setAlpha(0f);logo.setAlpha(0f);logo.setScaleX(.78f);logo.setScaleY(.78f);title.setAlpha(0f);subtitle.setAlpha(0f);
-        logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(650).setInterpolator(new android.view.animation.OvershootInterpolator(1.2f)).start();
-        content.animate().alpha(1f).setStartDelay(120).setDuration(500).start();
-        title.animate().alpha(1f).setStartDelay(360).setDuration(500).start();
-        subtitle.animate().alpha(1f).setStartDelay(520).setDuration(500).start();
+        content.setAlpha(0f);logo.setAlpha(0f);logo.setScaleX(.82f);logo.setScaleY(.82f);title.setAlpha(0f);subtitle.setAlpha(0f);
+        android.view.animation.Interpolator smooth=new android.view.animation.DecelerateInterpolator(1.4f);
+        logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(750).setInterpolator(new android.view.animation.OvershootInterpolator(1.05f)).start();
+        content.animate().alpha(1f).setStartDelay(100).setDuration(650).setInterpolator(smooth).start();
+        title.animate().alpha(1f).setStartDelay(300).setDuration(600).setInterpolator(smooth).start();
+        subtitle.animate().alpha(1f).setStartDelay(480).setDuration(600).setInterpolator(smooth).start();
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(()->{
             webView.setVisibility(View.VISIBLE);
             webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-            overlay.animate().alpha(0f).setDuration(450).withEndAction(()->rootGroup.removeView(overlay)).start();
-        },2550);
+            overlay.animate().alpha(0f).setDuration(550).setInterpolator(smooth).withEndAction(()->rootGroup.removeView(overlay)).start();
+        },3100);
     }
     private int dpSplash(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
 
