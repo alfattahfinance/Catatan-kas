@@ -38,3 +38,14 @@
   }catch(e){console.error('Modul Pengaturan gagal:',e)}}
   initFirebase();
 })();
+
+// Istilah tampilan publik: jangan mengubah nama collection/database internal.
+(function(){
+  const replace=()=>{
+    const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const nodes=[];let n;
+    while((n=w.nextNode()))nodes.push(n);
+    nodes.forEach(x=>{x.nodeValue=x.nodeValue.replace(/\bSantri\b/g,'Peserta Didik').replace(/\bsantri\b/g,'peserta didik')});
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',replace,{once:true});else replace();
+  new MutationObserver(m=>m.forEach(x=>x.addedNodes.forEach(n=>{if(n.nodeType===1)replace()}))).observe(document.body,{childList:true,subtree:true});
+})();
