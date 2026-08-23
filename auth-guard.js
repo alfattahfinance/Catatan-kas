@@ -2,7 +2,7 @@ import "./js/ui-fixes.js";
 import "./js/general-ui.js";
 // ======================================
 // CATATAN KAS
-// AUTH GUARD + DATA AKUN PERSISTEN
+// OPTIONAL AUTH GUARD + DATA AKUN PERSISTEN
 // ======================================
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
@@ -35,8 +35,7 @@ function getConfiguredLogo(){try{const direct=localStorage.getItem(LOGO_KEY);if(
 function applyPageLogo(){const logo=getConfiguredLogo(),selectors=["#laporanLogo","#logo",".ck-logo",".app-logo",".logo","#logoDashboard","#dashboardLogo","#previewLogoDashboard","#logoPreviewV2","#logoPreview","img[alt='Logo Dashboard']","img[alt='Logo aplikasi']","img[alt='Logo Catatan Kas']","[data-dashboard-logo]"];document.querySelectorAll(selectors.join(",")).forEach(img=>{if(!(img instanceof HTMLImageElement))return;img.onerror=()=>{img.onerror=null;img.src=new URL(DEFAULT_LOGO,document.baseURI).href};img.src=logo;img.removeAttribute("srcset");img.removeAttribute("data-src")})}
 function setupLogoEvents(){applyPageLogo();window.addEventListener("logoDashboardChanged",()=>{markPending();saveAccountLocalData(akunLokalAktif);scheduleCloudSave();applyPageLogo()});window.addEventListener("pageshow",applyPageLogo);window.addEventListener("focus",applyPageLogo);document.addEventListener("DOMContentLoaded",applyPageLogo,{once:true})}
 setupLogoEvents();
-onAuthStateChanged(auth,async user=>{if(!user){akunLokalAktif=null;cloudProfileReady=false;window.location.replace("login.html");return}loadAccountLocalData(user);window.currentFirebaseUser=user;window.currentFirebaseUid=user.uid;applyPageLogo();window.dispatchEvent(new CustomEvent("accountReady",{detail:{uid:user.uid,email:user.email||""}}));await loadCloudAccountData(user);applyPageLogo()});
+onAuthStateChanged(auth,async user=>{akunLokalAktif=user||null;cloudProfileReady=false;window.currentFirebaseUser=user||null;window.currentFirebaseUid=user?.uid||null;if(user){loadAccountLocalData(user);applyPageLogo();window.dispatchEvent(new CustomEvent("accountReady",{detail:{uid:user.uid,email:user.email||""}}));await loadCloudAccountData(user);applyPageLogo()}else{applyPageLogo();window.dispatchEvent(new CustomEvent("accountReady",{detail:{uid:null,guest:true}}));window.dispatchEvent(new CustomEvent("accountDataReady",{detail:{uid:null,guest:true}}))}});
 window.addEventListener("settingsChanged",()=>{markPending();saveAccountLocalData(akunLokalAktif);scheduleCloudSave()});
 window.addEventListener("jenisKeuanganBerubah",()=>{markPending();saveAccountLocalData(akunLokalAktif);scheduleCloudSave()});
 window.addEventListener("daftarSantriBerubah",()=>{saveAccountLocalData(akunLokalAktif);scheduleCloudSave()});
-window.addEventListener("accountDataReady",applyPageLogo);
