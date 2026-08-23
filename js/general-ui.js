@@ -46,9 +46,20 @@
     });
   }
 
+  function ensureJenisKeuangan() {
+    if (window.ckJenisKeuangan) return;
+    if (!document.querySelector('#jenis, #jenisPembayaran, #jenisPengeluaran, #filterKategori, #ckDaftarJenis')) return;
+    if (document.querySelector('script[data-ck-jenis-keuangan="1"]')) return;
+    const script = document.createElement('script');
+    script.src = 'js/jenis-keuangan.js';
+    script.dataset.ckJenisKeuangan = '1';
+    document.body.appendChild(script);
+  }
+
   function run() {
     replaceTextNodes(document.body);
     updateAttributes();
+    ensureJenisKeuangan();
   }
 
   if (document.readyState === 'loading') {
