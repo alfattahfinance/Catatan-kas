@@ -22,14 +22,17 @@ import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import androidx.webkit.WebViewAssetLoader;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
-/** MainActivity + secure-ish in-app web updater. */
 public class UpdatableMainActivity extends MainActivity {
     private static final String MANIFEST_URL = "https://raw.githubusercontent.com/alfattahfinance/Catatan-kas/main/web-update.json";
     private static final String EMBEDDED_WEB_VERSION = "1.0.21";
