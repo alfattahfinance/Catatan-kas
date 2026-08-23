@@ -18,7 +18,8 @@
     ['Nama santri / keterangan', 'Nama siswa / peserta didik / keterangan'],
     ['Masukkan nama santri', 'Masukkan nama siswa / peserta didik'],
     ['Dashboard Keuangan Pondok', 'Dashboard Keuangan'],
-    ['Data Santri', 'Data Peserta Didik']
+    ['Santri', 'Peserta Didik'],
+    ['santri', 'peserta didik']
   ];
 
   function replaceTextNodes(root) {
