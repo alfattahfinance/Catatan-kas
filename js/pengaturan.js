@@ -15,7 +15,7 @@
   function bindLogo(){const input=document.getElementById('logoDashboardInput');input?.addEventListener('change',()=>{const file=input.files?.[0];if(!file)return;if(!file.type.startsWith('image/'))return alert('Pilih file gambar.');if(file.size>2*1024*1024)return alert('Ukuran logo maksimal 2 MB.');const r=new FileReader();r.onload=()=>{writeLogo(String(r.result));showLogo()};r.readAsDataURL(file)});document.getElementById('resetLogoButton')?.addEventListener('click',()=>{if(!confirm('Gunakan kembali logo bawaan?'))return;try{localStorage.removeItem(key(LOGO))}catch(_){}showLogo()});}
   async function initFirebase(){try{
     const [{db,auth},{doc,getDoc,setDoc},{onAuthStateChanged}]=await Promise.all([
-      import('../firebase-config.js'),import('https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js'),import('https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js')
+      import('./firebase-config.js'),import('https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js'),import('https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js')
     ]);
     const cloud=()=>doc(db,'users',uid());
     async function loadAccount(user){
@@ -44,7 +44,7 @@
   const replace=()=>{
     const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const nodes=[];let n;
     while((n=w.nextNode()))nodes.push(n);
-    nodes.forEach(x=>{x.nodeValue=x.nodeValue.replace(/\bSantri\b/g,'Peserta Didik').replace(/\bsantri\b/g,'peserta didik')});
+    nodes.forEach(x=>{x.nodeValue=x.nodeValue.replace(/\bSantri\b/g,'Peserta Didik').replace(/\bsantri\g/g,'peserta didik')});
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',replace,{once:true});else replace();
   new MutationObserver(m=>m.forEach(x=>x.addedNodes.forEach(n=>{if(n.nodeType===1)replace()}))).observe(document.body,{childList:true,subtree:true});
