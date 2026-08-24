@@ -1,6 +1,7 @@
 name: Build Keuangan APK - Splash Target
 
 # Final splash-only build: uses splash-logo.svg and never the old icon-192.png for the splash.
+# Triggered again after the final transparent splash logo update.
 on:
   workflow_dispatch:
   push:
@@ -79,9 +80,7 @@ jobs:
           from pathlib import Path
           p=Path('app/src/main/java/com/catatankas/app/UpdatableMainActivity.java')
           s=p.read_text(encoding='utf-8')
-          # Splash only: replace the old application icon with the dedicated transparent splash logo.
           s=s.replace('getAssets().open("icon-192.png")','getAssets().open("splash-logo.png")')
-          # Make the logo noticeably larger while keeping safe margins on portrait and landscape screens.
           old='Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)))'
           new='Math.min(dpSplash(210),Math.max(dpSplash(155),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.40f)))'
           s=s.replace(old,new)
