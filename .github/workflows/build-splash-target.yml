@@ -98,6 +98,12 @@ jobs:
           old_wave='waveText.setText("∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿");waveText.setTextColor(Color.argb(150,130,255,235));waveText.setTextSize(30);'
           new_wave='waveText.setText("〰〰〰〰〰〰〰〰〰〰〰〰〰〰");waveText.setTextColor(Color.argb(145,170,255,242));waveText.setTextSize(26);'
           s=s.replace(old_wave,new_wave)
+
+          # Perbaikan bentuk lingkaran latar belakang agar bulat sempurna (simetris)
+          # Memastikan layout lingkaran menggunakan lebar & tinggi yang sama persis (persegi)
+          s = re.sub(r'layoutParams\s*=\s*new\s+android\.widget\.FrameLayout\.LayoutParams\([^)]+\);\s*lp\.gravity\s*=\s*android\.graphics\.Gravity\.CENTER;', 
+                     'android.widget.FrameLayout.LayoutParams lpCircle = new android.widget.FrameLayout.LayoutParams(dpSplash(280), dpSplash(280)); lpCircle.gravity = android.view.Gravity.CENTER;', 
+                     s)
           
           p.write_text(s,encoding='utf-8')
           PY
