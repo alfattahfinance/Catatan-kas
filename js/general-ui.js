@@ -8,20 +8,34 @@
 
   const replacements = [
     ['Pembayaran Santri', 'Pembayaran'],
-    ['Data Santri', 'Data Peserta Didik'],
-    ['Daftar Santri', 'Daftar Peserta Didik'],
-    ['Tambah Santri Baru', 'Tambah Peserta Didik'],
-    ['Tambah Santri', 'Tambah Peserta Didik'],
-    ['Import Banyak Santri', 'Import Banyak Peserta Didik'],
-    ['Import & Simpan Banyak Santri', 'Import & Simpan Banyak Peserta Didik'],
-    ['Kelola data santri pondok', 'Kelola data peserta didik'],
-    ['Nama Santri', 'Nama Siswa / Peserta Didik'],
-    ['Nama santri / keterangan', 'Nama siswa / peserta didik / keterangan'],
-    ['Masukkan nama santri', 'Masukkan nama siswa / peserta didik'],
+    ['Pembayaran Peserta Didik', 'Pembayaran'],
+    ['Data Peserta Didik', 'Daftar Nama'],
+    ['Data Santri', 'Daftar Nama'],
+    ['Daftar Peserta Didik', 'Daftar Nama'],
+    ['Daftar Santri', 'Daftar Nama'],
+    ['Tambah Peserta Didik Baru', 'Tambah Nama Baru'],
+    ['Tambah Peserta Didik', 'Tambah Nama'],
+    ['Tambah Santri Baru', 'Tambah Nama Baru'],
+    ['Tambah Santri', 'Tambah Nama'],
+    ['Import Banyak Peserta Didik', 'Import Banyak Nama'],
+    ['Import Banyak Santri', 'Import Banyak Nama'],
+    ['Import & Simpan Banyak Peserta Didik', 'Import & Simpan Banyak Nama'],
+    ['Import & Simpan Banyak Santri', 'Import & Simpan Banyak Nama'],
+    ['Kelola data peserta didik', 'Kelola daftar nama'],
+    ['Kelola data santri pondok', 'Kelola daftar nama'],
+    ['Nama Siswa / Peserta Didik', 'Nama Lengkap'],
+    ['Nama Santri', 'Nama Lengkap'],
+    ['Nama siswa / peserta didik / keterangan', 'Nama / Keterangan'],
+    ['Nama santri / keterangan', 'Nama / Keterangan'],
+    ['Masukkan nama siswa / peserta didik', 'Masukkan nama'],
+    ['Masukkan nama santri', 'Masukkan nama'],
     ['Dashboard Keuangan Pondok', 'Dashboard Keuangan'],
-    ['Santri', 'Peserta Didik'],
-    ['SANTRI', 'PESERTA DIDIK'],
-    ['santri', 'peserta didik']
+    ['Peserta Didik', 'Daftar Nama'],
+    ['PESERTA DIDIK', 'DAFTAR NAMA'],
+    ['Santri', 'Daftar Nama'],
+    ['SANTRI', 'DAFTAR NAMA'],
+    ['peserta didik', 'daftar nama'],
+    ['santri', 'daftar nama']
   ];
 
   function replaceString(text) {
@@ -61,6 +75,11 @@
       const before = el.getAttribute('content') || '';
       const after = replaceString(before);
       if (after !== before) el.setAttribute('content', after);
+    });
+
+    // Ubah href secara otomatis jika masih menunjuk ke santri.html
+    document.querySelectorAll('a[href="santri.html"]').forEach(el => {
+      el.setAttribute('href', 'siswa-siswi.html');
     });
   }
 
@@ -128,21 +147,20 @@
     }, true);
   }
 
-  // WebView-safe navigation for the Peserta Didik page.
-  // Keep the normal href as the primary route, but explicitly navigate on click
-  // so the APK cannot leave this one bottom-nav item unresponsive.
-  function ensureStudentNavigation() {
-    if (window.__ckStudentNavigationFixed) return;
-    window.__ckStudentNavigationFixed = true;
+  // WebView-safe navigation for the Daftar Nama page.
+  // Directs any clicks to 'siswa-siswi.html' directly.
+  function ensureDaftarNamaNavigation() {
+    if (window.__ckDaftarNamaNavigationFixed) return;
+    window.__ckDaftarNamaNavigationFixed = true;
     document.addEventListener('click', event => {
-      const link = event.target instanceof Element ? event.target.closest('a[href="santri.html"]') : null;
+      const link = event.target instanceof Element ? event.target.closest('a[href="siswa-siswi.html"], a[href="santri.html"]') : null;
       if (!link || link.dataset.ckStudentNav === '1' || link.dataset.ckSmoothNav === '1') return;
       link.dataset.ckStudentNav = '1';
       event.preventDefault();
       event.stopPropagation();
       document.body.classList.add('ck-page-leaving');
       window.setTimeout(() => {
-        window.location.assign(new URL('santri.html', document.baseURI).href);
+        window.location.assign(new URL('siswa-siswi.html', document.baseURI).href);
       }, 150);
     }, true);
   }
@@ -153,7 +171,7 @@
     ensureJenisKeuangan();
     improveExcelDownload();
     ensureSmoothBottomNavigation();
-    ensureStudentNavigation();
+    ensureDaftarNamaNavigation();
     if (location.pathname.endsWith('dashboard-excel.html')) setTimeout(improveExcelDownload, 500);
   }
 
