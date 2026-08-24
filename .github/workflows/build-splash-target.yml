@@ -1,5 +1,6 @@
 name: Build Keuangan APK - Splash Target
 
+# Final splash-only build: uses splash-logo.svg and never the old icon-192.png for the splash.
 on:
   workflow_dispatch:
   push:
@@ -26,7 +27,7 @@ permissions:
 
 jobs:
   build:
-    name: Build APK - Splash Target
+    name: Build APK - Final Splash
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -59,7 +60,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq librsvg2-bin
 
-      - name: Prepare Android project and target splash
+      - name: Prepare Android project and final splash
         shell: bash
         run: |
           set -euo pipefail
@@ -70,6 +71,7 @@ jobs:
           cp UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           test -s icon-192.png
           cp icon-192.png app/src/main/res/drawable/ic_keuangan.png
+          test -s splash-logo.svg
           rsvg-convert splash-logo.svg -w 512 -h 512 -o app/src/main/assets/splash-logo.png
           test -s app/src/main/assets/splash-logo.png
 
@@ -77,8 +79,12 @@ jobs:
           from pathlib import Path
           p=Path('app/src/main/java/com/catatankas/app/UpdatableMainActivity.java')
           s=p.read_text(encoding='utf-8')
+          # Splash only: replace the old application icon with the dedicated transparent splash logo.
           s=s.replace('getAssets().open("icon-192.png")','getAssets().open("splash-logo.png")')
-          s=s.replace('Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)))','Math.min(dpSplash(250),Math.max(dpSplash(175),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.46f)))')
+          # Make the logo noticeably larger while keeping safe margins on portrait and landscape screens.
+          old='Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)))'
+          new='Math.min(dpSplash(210),Math.max(dpSplash(155),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.40f)))'
+          s=s.replace(old,new)
           p.write_text(s,encoding='utf-8')
           PY
 
@@ -108,8 +114,8 @@ jobs:
               applicationId 'com.catatankas.app'
               minSdk 24
               targetSdk 35
-              versionCode 20600
-              versionName '2.6'
+              versionCode 20700
+              versionName '2.7'
               ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }
             }
             buildTypes { debug { minifyEnabled false }; release { minifyEnabled false; shrinkResources false } }
@@ -140,7 +146,7 @@ jobs:
           XML
 
           cat > app/src/main/AndroidManifest.xml <<'XML'
-          <?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:allowBackup="true" android:usesCleartextTraffic="true" android:label="Keuangan" android:theme="@style/AppTheme" android:icon="@drawable/ic_keuangan" android:resizeableActivity="true"><activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
+          <?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:allowBackup="true" android:usesCleartextTraffic="true" android:label="Keuangan" android:resizeableActivity="true" android:theme="@style/AppTheme" android:icon="@drawable/ic_keuangan"><activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
           XML
 
           cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
@@ -154,14 +160,16 @@ jobs:
           }
           JAVA
 
-      - name: Verify splash target
+      - name: Verify final splash is actually wired
         run: |
           set -euo pipefail
           test -s app/src/main/assets/splash-logo.png
           grep -q 'splash-logo.png' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          grep -q '0.46f' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'Catatan Kas' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          echo 'SPLASH TARGET LOGO + SIZE + TEXT OK'
+          grep -q 'Catatan keuangan lebih mudah' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q '3100' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q 'setDuration(550)' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          echo 'FINAL SPLASH: dedicated logo + larger size + text + animation + smooth fade verified'
 
       - name: Build Debug APK
         run: gradle --no-daemon clean assembleDebug --stacktrace
@@ -170,13 +178,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p output
-          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-Splash-Target.apk
-          test -s output/Keuangan-Splash-Target.apk
-          ls -lh output/Keuangan-Splash-Target.apk
+          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-Splash-Final.apk
+          test -s output/Keuangan-Splash-Final.apk
+          ls -lh output/Keuangan-Splash-Final.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Keuangan-APK-Splash-Target
-          path: output/Keuangan-Splash-Target.apk
+          name: Keuangan-APK-Splash-Final
+          path: output/Keuangan-Splash-Final.apk
           if-no-files-found: error
