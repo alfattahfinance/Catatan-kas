@@ -83,6 +83,7 @@ jobs:
           old='Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)))'
           new='Math.min(dpSplash(340),Math.max(dpSplash(240),Math.round(getResources().getDisplayMetrics().widthPixels*0.40f)))'
           s=s.replace(old,new)
+          s=s.replace('textLp.topMargin=dpSplash(252);','textLp.topMargin=dpSplash(405);')
           old_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);overlay.setBackgroundColor(APP_BG);overlay.setSystemUiVisibility(0);'
           new_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);android.graphics.drawable.GradientDrawable splashBg=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(0,112,102),Color.rgb(2,145,130),Color.rgb(0,88,84)});overlay.setBackground(splashBg);overlay.setSystemUiVisibility(0);'
           s=s.replace(old_bg,new_bg)
@@ -172,9 +173,10 @@ jobs:
           grep -q 'Catatan Kas' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'Catatan keuangan lebih mudah' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q '340' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q 'textLp.topMargin=dpSplash(405)' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'splashBg' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'setDuration(550)' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          echo 'FINAL SPLASH: target logo + larger logo + gradient background + animation + smooth fade verified'
+          echo 'FINAL SPLASH: target logo + larger logo + separated title + gradient background + animation + smooth fade verified'
 
       - name: Build Debug APK
         run: gradle --no-daemon clean assembleDebug --stacktrace
