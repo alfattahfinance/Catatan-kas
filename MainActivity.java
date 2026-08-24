@@ -78,14 +78,43 @@ public class MainActivity extends AppCompatActivity {
             @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){
                 if(filePathCallback!=null)filePathCallback.onReceiveValue(null);
                 filePathCallback=callback;
+                String[] accepts=params!=null?params.getAcceptTypes():null;
+                boolean imageOnly=true;
+                boolean hasAccept=false;
+                if(accepts!=null){
+                    for(String a:accepts){
+                        if(a==null||a.trim().isEmpty())continue;
+                        hasAccept=true;
+                        String x=a.trim().toLowerCase();
+                        if(!(x.startsWith("image/")||x.equals(".jpg")||x.equals(".jpeg")||x.equals(".png")||x.equals(".webp")||x.equals(".gif")||x.equals(".bmp")))imageOnly=false;
+                    }
+                }
+                String mime=imageOnly&&hasAccept?"image/*":"*/*";
                 Intent chooser=new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 chooser.addCategory(Intent.CATEGORY_OPENABLE);
-                chooser.setType("image/*");
+                chooser.setType(mime);
+                if(!imageOnly&&accepts!=null&&accepts.length>0){
+                    java.util.ArrayList<String> mimeTypes=new java.util.ArrayList<>();
+                    for(String a:accepts){if(a!=null&&a.contains("/"))mimeTypes.add(a.trim());}
+                    if(!mimeTypes.isEmpty())chooser.putExtra(Intent.EXTRA_MIME_TYPES,mimeTypes.toArray(new String[0]));
+                }
                 chooser.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);
                 chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                 try{startActivityForResult(chooser,FILE_CHOOSER_REQUEST);return true;}
                 catch(Exception first){
-                    try{Intent fallback=new Intent(Intent.ACTION_GET_CONTENT);fallback.addCategory(Intent.CATEGORY_OPENABLE);fallback.setType("image/*");fallback.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);fallback.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivityForResult(Intent.createChooser(fallback,"Pilih gambar"),FILE_CHOOSER_REQUEST);return true;}
+                    try{
+                        Intent fallback=new Intent(Intent.ACTION_GET_CONTENT);
+                        fallback.addCategory(Intent.CATEGORY_OPENABLE);
+                        fallback.setType(mime);
+                        if(!imageOnly&&accepts!=null&&accepts.length>0){
+                            java.util.ArrayList<String> mimeTypes=new java.util.ArrayList<>();
+                            for(String a:accepts){if(a!=null&&a.contains("/"))mimeTypes.add(a.trim());}
+                            if(!mimeTypes.isEmpty())fallback.putExtra(Intent.EXTRA_MIME_TYPES,mimeTypes.toArray(new String[0]));
+                        }
+                        fallback.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);
+                        fallback.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivityForResult(Intent.createChooser(fallback,"Pilih file"),FILE_CHOOSER_REQUEST);return true;
+                    }
                     catch(Exception second){filePathCallback=null;showMessage("Tidak dapat membuka pemilih file. Pastikan aplikasi File/Pengelola Berkas tersedia.");return false;}
                 }
             }
