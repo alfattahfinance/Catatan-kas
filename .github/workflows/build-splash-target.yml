@@ -1,0 +1,182 @@
+name: Build Keuangan APK - Splash Target
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'UpdatableMainActivity.java'
+      - 'splash-logo.svg'
+      - '.github/workflows/build-splash-target.yml'
+      - '*.html'
+      - '*.js'
+      - '*.css'
+      - 'js/**'
+      - 'css/**'
+      - 'assets/**'
+      - 'images/**'
+      - 'img/**'
+      - '*.png'
+      - '*.jpg'
+      - '*.jpeg'
+      - 'python/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build APK - Splash Target
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Setup Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK and SVG converter
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq librsvg2-bin
+
+      - name: Prepare Android project and target splash
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf app build.gradle settings.gradle gradle.properties
+          mkdir -p app/src/main/java/com/catatankas/app app/src/main/res/values app/src/main/res/drawable app/src/main/assets app/src/main/python
+          rsync -a --exclude='.git/' --exclude='.github/' --exclude='app/' --exclude='output/' ./ app/src/main/assets/
+          cp python/rekap_pembayaran.py app/src/main/python/rekap_pembayaran.py
+          cp UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          test -s icon-192.png
+          cp icon-192.png app/src/main/res/drawable/ic_keuangan.png
+          rsvg-convert splash-logo.svg -w 512 -h 512 -o app/src/main/assets/splash-logo.png
+          test -s app/src/main/assets/splash-logo.png
+
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app/src/main/java/com/catatankas/app/UpdatableMainActivity.java')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('getAssets().open("icon-192.png")','getAssets().open("splash-logo.png")')
+          s=s.replace('Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)))','Math.min(dpSplash(250),Math.max(dpSplash(175),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.46f)))')
+          p.write_text(s,encoding='utf-8')
+          PY
+
+          cat > settings.gradle <<'GRADLE'
+          import org.gradle.api.initialization.resolve.RepositoriesMode
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
+          rootProject.name='Keuangan'; include ':app'
+          GRADLE
+
+          cat > build.gradle <<'GRADLE'
+          plugins { id 'com.android.application' version '8.7.3' apply false; id 'com.chaquo.python' version '17.0.0' apply false }
+          GRADLE
+
+          cat > gradle.properties <<'PROPS'
+          org.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.enableJetifier=true
+          PROPS
+
+          cat > app/build.gradle <<'GRADLE'
+          plugins { id 'com.android.application'; id 'com.chaquo.python' }
+          android {
+            namespace 'com.catatankas.app'
+            compileSdk 35
+            defaultConfig {
+              applicationId 'com.catatankas.app'
+              minSdk 24
+              targetSdk 35
+              versionCode 20600
+              versionName '2.6'
+              ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }
+            }
+            buildTypes { debug { minifyEnabled false }; release { minifyEnabled false; shrinkResources false } }
+            compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+          }
+          chaquopy { defaultConfig { version='3.10'; buildPython 'python'; pip { install 'openpyxl==3.1.5' } } }
+          dependencies {
+            implementation 'androidx.activity:activity:1.10.1'
+            implementation 'androidx.appcompat:appcompat:1.7.0'
+            implementation 'androidx.webkit:webkit:1.13.0'
+          }
+          GRADLE
+
+          cat > app/src/main/res/values/styles.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+              <item name="android:fontFamily">sans</item>
+              <item name="android:colorAccent">#198754</item>
+              <item name="android:windowBackground">#007066</item>
+              <item name="android:windowNoTitle">true</item>
+              <item name="android:statusBarColor">#007066</item>
+              <item name="android:navigationBarColor">#007066</item>
+              <item name="android:windowLightStatusBar">false</item>
+              <item name="android:windowLightNavigationBar">false</item>
+            </style>
+          </resources>
+          XML
+
+          cat > app/src/main/AndroidManifest.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:allowBackup="true" android:usesCleartextTraffic="true" android:label="Keuangan" android:theme="@style/AppTheme" android:icon="@drawable/ic_keuangan" android:resizeableActivity="true"><activity android:name=".UpdatableMainActivity" android:exported="true" android:screenOrientation="unspecified" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
+          XML
+
+          cat > app/src/main/java/com/catatankas/app/MainActivity.java <<'JAVA'
+          package com.catatankas.app;
+          import android.app.Activity; import android.os.Bundle; import android.view.ViewGroup; import android.webkit.WebView; import android.webkit.WebSettings; import android.webkit.WebResourceRequest; import android.webkit.WebResourceResponse; import androidx.webkit.WebViewAssetLoader;
+          public class MainActivity extends Activity {
+            protected WebView webView;
+            @Override protected void onCreate(Bundle b){super.onCreate(b);webView=new WebView(this);webView.setLayoutParams(new ViewGroup.LayoutParams(-1,-1));setContentView(webView);WebSettings s=webView.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setDatabaseEnabled(true);s.setAllowFileAccess(true);s.setAllowContentAccess(true);final WebViewAssetLoader l=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();webView.setWebViewClient(new android.webkit.WebViewClient(){@Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){WebResourceResponse x=l.shouldInterceptRequest(r.getUrl());return x!=null?x:super.shouldInterceptRequest(v,r);}});}
+            @Override public void onBackPressed(){if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed();}
+            @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}
+          }
+          JAVA
+
+      - name: Verify splash target
+        run: |
+          set -euo pipefail
+          test -s app/src/main/assets/splash-logo.png
+          grep -q 'splash-logo.png' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q '0.46f' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q 'Catatan Kas' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          echo 'SPLASH TARGET LOGO + SIZE + TEXT OK'
+
+      - name: Build Debug APK
+        run: gradle --no-daemon clean assembleDebug --stacktrace
+
+      - name: Prepare APK artifact
+        run: |
+          set -euo pipefail
+          mkdir -p output
+          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-Splash-Target.apk
+          test -s output/Keuangan-Splash-Target.apk
+          ls -lh output/Keuangan-Splash-Target.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Keuangan-APK-Splash-Target
+          path: output/Keuangan-Splash-Target.apk
+          if-no-files-found: error
