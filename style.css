@@ -25,3 +25,30 @@ html.dark-mode .ck-nama-suggest,body.dark-mode .ck-nama-suggest{background:#2a2a
 .ck-bottom{height:68px!important;min-height:68px!important;max-height:68px!important;box-sizing:border-box!important;overflow:hidden!important}
 .ck-bottom-inner{height:100%!important;min-height:0!important;align-items:stretch!important}
 .ck-bottom a{height:100%!important;min-height:0!important;max-height:none!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important}
+
+/* ==========================================
+   STYLING KARTU SALDO UTAMA (LIGHT & DARK)
+   ========================================== */
+.card-saldo {
+  background: linear-gradient(135deg, #198754 0%, #11653e 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(25, 135, 84, 0.25);
+  border: none !important;
+}
+
+.card-saldo * {
+  color: #ffffff !important;
+}
+
+.card-saldo .text-muted,
+.card-saldo label,
+.card-saldo span {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-mode .card-saldo,
+body.dark-mode .card-saldo {
+  background: linear-gradient(135deg, #145da0 0%, #0d47a1 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
