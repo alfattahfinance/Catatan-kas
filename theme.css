@@ -1,29 +1,41 @@
-/* Tema global Catatan Kas: Terang / Gelap / Ikuti Sistem HP */
+/* TEMA GLOBAL CATATAN KAS: TERANG / GELAP / IKUTI SISTEM HP */
 html,body{min-height:100%;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-html:not(.dark-mode),html:not(.dark-mode) body{background-color:#f6f0df!important;color:#26312c!important}
-html.dark-mode,html.dark-mode body,body.dark-mode{background:#121716!important;color:#f1f1f1!important}
-html:not(.dark-mode) body{background-image:linear-gradient(135deg,#a8bfa3 0%,#e7e3d4 48%,#f6f0df 100%)!important;background-size:220% 220%!important;background-attachment:fixed!important}
-html:not(.dark-mode) .custom-card,html:not(.dark-mode) .card,html:not(.dark-mode) .card-kas,html:not(.dark-mode) .stat,html:not(.dark-mode) .box,html:not(.dark-mode) .panel,html:not(.dark-mode) .section,html:not(.dark-mode) .table-card,html:not(.dark-mode) .filter-card{color:#26312c!important}
-html:not(.dark-mode) input,html:not(.dark-mode) select,html:not(.dark-mode) textarea{color:#26312c!important}
-html.dark-mode body{background:#121716!important;color:#f1f1f1!important}
-html.dark-mode .custom-card,html.dark-mode .card,html.dark-mode .card-kas,html.dark-mode .stat,html.dark-mode .box,html.dark-mode .panel,html.dark-mode .section,html.dark-mode .table-card,html.dark-mode .filter-card,html.dark-mode .info-card,html.dark-mode .chart-card,html.dark-mode .top,html.dark-mode .topbar,html.dark-mode .ck-topbar{background:#1b211f!important;color:#eef4f0!important;border-color:#34423b!important}
-html.dark-mode .card-body,html.dark-mode .card-header,html.dark-mode .card-footer{background:transparent!important;color:#eef4f0!important}
-html.dark-mode .text-dark,html.dark-mode .fw-bold,html.dark-mode label,html.dark-mode h1,html.dark-mode h2,html.dark-mode h3,html.dark-mode h4,html.dark-mode h5,html.dark-mode h6,html.dark-mode p,html.dark-mode b,html.dark-mode strong{color:#eef4f0!important}
-html.dark-mode .text-muted,html.dark-mode small{color:#a7b2ac!important}
-html.dark-mode .form-control,html.dark-mode .form-select,html.dark-mode input,html.dark-mode select,html.dark-mode textarea{background:#202825!important;color:#eef4f0!important;border-color:#46554d!important}
-html.dark-mode input::placeholder,html.dark-mode textarea::placeholder{color:#8f9a95!important}
-html.dark-mode .table{--bs-table-bg:transparent!important;--bs-table-color:#eef4f0!important;--bs-table-border-color:#34423b!important;--bs-table-hover-bg:#26332e!important;--bs-table-hover-color:#fff!important;color:#eef4f0!important}
-html.dark-mode .table th,html.dark-mode .table td{color:#eef4f0!important;background-color:transparent!important;border-color:#34423b!important}
-html.dark-mode .border{border-color:#34423b!important}
-html.dark-mode .bottom,html.dark-mode .ck-bottom,html.dark-mode .bottom-nav,html.dark-mode .bottom-navigation,html.dark-mode .navbar-bottom{background:#1b211f!important;border-color:#34423b!important;color:#eef4f0!important}
-html.dark-mode .bottom a,html.dark-mode .ck-bottom a,html.dark-mode .bottom-nav a,html.dark-mode .bottom-navigation a,html.dark-mode .navbar-bottom a{color:#a7b2ac!important}
-html.dark-mode .bottom a.active,html.dark-mode .ck-bottom a.active,html.dark-mode .bottom-nav a.active,html.dark-mode .bottom-navigation a.active,html.dark-mode .navbar-bottom a.active{color:#75d6a7!important}
-html.dark-mode .modal-content,html.dark-mode .dropdown-menu,html.dark-mode .list-group-item{background:#1b211f!important;color:#eef4f0!important;border-color:#34423b!important}
-html.dark-mode .btn-outline-secondary{color:#ddd!important;border-color:#777!important}
-html:not(.dark-mode) .card.saldo-card{background:linear-gradient(135deg,#d8e2dc 0%,#f5f1e6 100%)!important;border:1px solid #a8bfa3!important;color:#26312c!important;box-shadow:0 5px 18px rgba(77,99,73,.18)!important}
-html:not(.dark-mode) .card.saldo-card .card-body,html:not(.dark-mode) .card.saldo-card small,html:not(.dark-mode) .card.saldo-card #totalSaldo{color:#26312c!important}
-html:not(.dark-mode) .card.saldo-card #totalSaldo{font-weight:800!important}
-html.dark-mode .card.saldo-card{background:linear-gradient(135deg,#41624b 0%,#8b7539 100%)!important;color:#fff!important}
-html.dark-mode .card.saldo-card .card-body,html.dark-mode .card.saldo-card small,html.dark-mode .card.saldo-card #totalSaldo{color:#fff!important}
+html[data-theme="light"],html.light-mode{background:#f6f0df!important;color:#26312c!important}
+html[data-theme="light"] body,html.light-mode body{background-color:#f6f0df!important;color:#26312c!important;background-image:linear-gradient(135deg,#a8bfa3 0%,#e7e3d4 48%,#f6f0df 100%)!important;background-size:220% 220%!important;background-attachment:fixed!important}
+html[data-theme="dark"],html.dark-mode{background:#121716!important;color:#eef4f0!important}
+html[data-theme="dark"] body,html.dark-mode body{background:#121716!important;color:#eef4f0!important;background-image:none!important}
+
+/* TERANG: reset elemen umum yang sebelumnya memaksa putih */
+html[data-theme="light"] .custom-card,html[data-theme="light"] .card,html[data-theme="light"] .card-kas,html[data-theme="light"] .stat,html[data-theme="light"] .box,html[data-theme="light"] .panel,html[data-theme="light"] .section,html[data-theme="light"] .table-card,html[data-theme="light"] .filter-card,html.light-mode .custom-card,html.light-mode .card,html.light-mode .card-kas,html.light-mode .stat,html.light-mode .box,html.light-mode .panel,html.light-mode .section,html.light-mode .table-card,html.light-mode .filter-card{color:#26312c!important}
+html[data-theme="light"] .form-control,html[data-theme="light"] .form-select,html[data-theme="light"] input,html[data-theme="light"] select,html[data-theme="light"] textarea,html.light-mode .form-control,html.light-mode .form-select,html.light-mode input,html.light-mode select,html.light-mode textarea{background:#fff!important;color:#26312c!important;border-color:#ced4da!important}
+html[data-theme="light"] .text-dark,html.light-mode .text-dark{color:#26312c!important}
+html[data-theme="light"] .text-muted,html.light-mode .text-muted{color:#66736c!important}
+
+/* GELAP: semua komponen utama */
+html[data-theme="dark"] .custom-card,html[data-theme="dark"] .card,html[data-theme="dark"] .card-kas,html[data-theme="dark"] .stat,html[data-theme="dark"] .box,html[data-theme="dark"] .panel,html[data-theme="dark"] .section,html[data-theme="dark"] .table-card,html[data-theme="dark"] .filter-card,html[data-theme="dark"] .info-card,html[data-theme="dark"] .chart-card,html[data-theme="dark"] .top,html[data-theme="dark"] .topbar,html[data-theme="dark"] .ck-topbar,html.dark-mode .custom-card,html.dark-mode .card,html.dark-mode .card-kas,html.dark-mode .stat,html.dark-mode .box,html.dark-mode .panel,html.dark-mode .section,html.dark-mode .table-card,html.dark-mode .filter-card,html.dark-mode .info-card,html.dark-mode .chart-card,html.dark-mode .top,html.dark-mode .topbar,html.dark-mode .ck-topbar{background:#1b211f!important;color:#eef4f0!important;border-color:#34423b!important}
+html[data-theme="dark"] .card-body,html[data-theme="dark"] .card-header,html[data-theme="dark"] .card-footer,html.dark-mode .card-body,html.dark-mode .card-header,html.dark-mode .card-footer{background:transparent!important;color:#eef4f0!important}
+html[data-theme="dark"] .text-dark,html[data-theme="dark"] .fw-bold,html[data-theme="dark"] label,html[data-theme="dark"] h1,html[data-theme="dark"] h2,html[data-theme="dark"] h3,html[data-theme="dark"] h4,html[data-theme="dark"] h5,html[data-theme="dark"] h6,html[data-theme="dark"] p,html[data-theme="dark"] b,html[data-theme="dark"] strong,html.dark-mode .text-dark,html.dark-mode .fw-bold,html.dark-mode label,html.dark-mode h1,html.dark-mode h2,html.dark-mode h3,html.dark-mode h4,html.dark-mode h5,html.dark-mode h6,html.dark-mode p,html.dark-mode b,html.dark-mode strong{color:#eef4f0!important}
+html[data-theme="dark"] .text-muted,html[data-theme="dark"] small,html.dark-mode .text-muted,html.dark-mode small{color:#a7b2ac!important}
+html[data-theme="dark"] .form-control,html[data-theme="dark"] .form-select,html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea,html.dark-mode .form-control,html.dark-mode .form-select,html.dark-mode input,html.dark-mode select,html.dark-mode textarea{background:#202825!important;color:#eef4f0!important;border-color:#46554d!important}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder,html.dark-mode input::placeholder,html.dark-mode textarea::placeholder{color:#8f9a95!important}
+html[data-theme="dark"] .table,html.dark-mode .table{--bs-table-bg:transparent!important;--bs-table-color:#eef4f0!important;--bs-table-border-color:#34423b!important;--bs-table-hover-bg:#26332e!important;--bs-table-hover-color:#fff!important;color:#eef4f0!important}
+html[data-theme="dark"] .table th,html[data-theme="dark"] .table td,html.dark-mode .table th,html.dark-mode .table td{color:#eef4f0!important;background-color:transparent!important;border-color:#34423b!important}
+html[data-theme="dark"] .border,html.dark-mode .border{border-color:#34423b!important}
+html[data-theme="dark"] .bg-white,html[data-theme="dark"] .bg-light,html.dark-mode .bg-white,html.dark-mode .bg-light{background:#1b211f!important;color:#eef4f0!important}
+html[data-theme="dark"] .modal-content,html[data-theme="dark"] .dropdown-menu,html[data-theme="dark"] .list-group-item,html[data-theme="dark"] .accordion-item,html.dark-mode .modal-content,html.dark-mode .dropdown-menu,html.dark-mode .list-group-item,html.dark-mode .accordion-item{background:#1b211f!important;color:#eef4f0!important;border-color:#34423b!important}
+html[data-theme="dark"] hr,html.dark-mode hr{border-color:#46554d!important;opacity:1!important}
+
+/* NAVIGASI BAWAH */
+html[data-theme="dark"] .bottom,html[data-theme="dark"] .ck-bottom,html[data-theme="dark"] .bottom-nav,html[data-theme="dark"] .bottom-navigation,html[data-theme="dark"] .navbar-bottom,html.dark-mode .bottom,html.dark-mode .ck-bottom,html.dark-mode .bottom-nav,html.dark-mode .bottom-navigation,html.dark-mode .navbar-bottom{background:#1b211f!important;border-color:#34423b!important;color:#eef4f0!important}
+html[data-theme="dark"] .bottom a,html[data-theme="dark"] .ck-bottom a,html[data-theme="dark"] .bottom-nav a,html[data-theme="dark"] .bottom-navigation a,html[data-theme="dark"] .navbar-bottom a,html.dark-mode .bottom a,html.dark-mode .ck-bottom a,html.dark-mode .bottom-nav a,html.dark-mode .bottom-navigation a,html.dark-mode .navbar-bottom a{color:#a7b2ac!important}
+html[data-theme="dark"] .bottom a.active,html[data-theme="dark"] .ck-bottom a.active,html.dark-mode .bottom a.active,html.dark-mode .ck-bottom a.active{color:#75d6a7!important}
+
+/* KHUSUS KARTU SALDO */
+html[data-theme="light"] .card.saldo-card,html.light-mode .card.saldo-card{background:linear-gradient(135deg,#d8e2dc 0%,#f5f1e6 100%)!important;border:1px solid #a8bfa3!important;color:#26312c!important;box-shadow:0 5px 18px rgba(77,99,73,.18)!important}
+html[data-theme="light"] .card.saldo-card .card-body,html[data-theme="light"] .card.saldo-card small,html[data-theme="light"] .card.saldo-card #totalSaldo,html.light-mode .card.saldo-card .card-body,html.light-mode .card.saldo-card small,html.light-mode .card.saldo-card #totalSaldo{color:#26312c!important}
+html[data-theme="light"] .card.saldo-card #totalSaldo,html.light-mode .card.saldo-card #totalSaldo{font-weight:800!important}
+html[data-theme="dark"] .card.saldo-card,html.dark-mode .card.saldo-card{background:linear-gradient(135deg,#41624b 0%,#8b7539 100%)!important;color:#fff!important}
+html[data-theme="dark"] .card.saldo-card .card-body,html[data-theme="dark"] .card.saldo-card small,html[data-theme="dark"] .card.saldo-card #totalSaldo,html.dark-mode .card.saldo-card .card-body,html.dark-mode .card.saldo-card small,html.dark-mode .card.saldo-card #totalSaldo{color:#fff!important}
+
 .container,.container-sm,.container-md,.container-lg,.container-xl,.container-xxl,.container-fluid,.mobile-container,.page-container,.ck-page,.wrap{width:100%!important;max-width:none!important}
 @media (orientation:landscape) and (min-width:700px){html,body{width:100%!important;min-width:100%!important;overflow-x:hidden!important}body{padding-bottom:86px!important}body main,body .wrap,body .mobile-container,body .page-container,body .ck-page{width:100%!important;max-width:none!important}}
