@@ -1,22 +1,21 @@
-plugins {
-    id "com.android.application"
-}
-
-android {
-    namespace "com.catatankas.app"
-    compileSdk 35
-
-    defaultConfig {
-        applicationId "com.catatankas.app"
-        minSdk 24
-        targetSdk 35
-        versionCode 24
-        versionName "1.0.1"
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.1'
+        classpath 'com.chaquo.python:gradle:15.0.1'
     }
 }
 
-dependencies {
-    implementation "androidx.appcompat:appcompat:1.7.0"
-    implementation "androidx.webkit:webkit:1.13.0"
-    implementation "androidx.core:core:1.16.0"
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
