@@ -1,4 +1,4 @@
-import { db, auth } from "./firebase-config.js";
+import { db, auth } from "firebase-config.js";
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
@@ -24,7 +24,7 @@ async function loadSettings(userUid) {
   }
 
   // Isi form input jika elemen tersedia
-  if ($('namaLembaga')) $('namaLembaga').value = data.namaPondok || data.namaLembaga || '';
+  if ($('namaLembaga')) $('namaLembaga').value = data.namaLembaga || data.namalembaga || '';
   if ($('subJudul')) $('subJudul').value = data.subJudul || data.subjudul || '';
   if ($('temaAplikasi')) $('temaAplikasi').value = data.tema || 'light';
   
@@ -45,7 +45,7 @@ async function saveSettings() {
 
   const newSettings = {
     ...currentData,
-    namaPondok: $('namaLembaga')?.value?.trim() || '',
+    namaLembaga: $('namaLembaga')?.value?.trim() || '',
     subJudul: $('subJudul')?.value?.trim() || '',
     tema: $('temaAplikasi')?.value || 'light',
     updatedAt: new Date().toISOString()
