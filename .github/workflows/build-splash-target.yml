@@ -1,4 +1,4 @@
-Name: Build Keuangan APK - Splash Target
+name: Build Keuangan APK - Splash Target
 
 # Final splash-only build: dedicated splash logo + rich background + animation.
 on:
