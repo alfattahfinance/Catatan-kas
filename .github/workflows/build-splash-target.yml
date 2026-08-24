@@ -85,26 +85,22 @@ jobs:
           # Ganti pembacaan aset gambar menjadi splash-logo.png
           s = re.sub(r'getAssets\(\)\.open\("[^"]+"\)', 'getAssets().open("splash-logo.png")', s)
           
-          # Penyesuaian ukuran dan posisi logo di tengah layar
+          # Penyesuaian ukuran dan posisi logo di tengah layar agar pas
           old='Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)))'
           new='Math.min(dpSplash(340),Math.max(dpSplash(240),Math.round(getResources().getDisplayMetrics().widthPixels*0.40f)))'
           s=s.replace(old,new)
           s=s.replace('textLp.topMargin=dpSplash(252);','textLp.topMargin=dpSplash(405);')
           
+          # Latar belakang gradasi mewah persis gaya referensi
           old_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);overlay.setBackgroundColor(APP_BG);overlay.setSystemUiVisibility(0);'
-          new_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);android.graphics.drawable.GradientDrawable splashBg=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(0,112,102),Color.rgb(2,145,130),Color.rgb(0,88,84)});overlay.setBackground(splashBg);overlay.setSystemUiVisibility(0);'
+          new_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);android.graphics.drawable.GradientDrawable splashBg=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(0,105,96),Color.rgb(1,135,121),Color.rgb(0,80,75)});overlay.setBackground(splashBg);overlay.setSystemUiVisibility(0);'
           s=s.replace(old_bg,new_bg)
           
+          # Gelombang bawah yang lebih artistik dan mengalir
           old_wave='waveText.setText("∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿");waveText.setTextColor(Color.argb(150,130,255,235));waveText.setTextSize(30);'
-          new_wave='waveText.setText("〰〰〰〰〰〰〰〰〰〰〰〰〰〰");waveText.setTextColor(Color.argb(145,170,255,242));waveText.setTextSize(26);'
+          new_wave='waveText.setText(" ╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲ ");waveText.setTextColor(Color.argb(140,140,255,238));waveText.setTextSize(24);'
           s=s.replace(old_wave,new_wave)
 
-          # Perbaikan bentuk lingkaran latar belakang agar bulat sempurna (simetris)
-          # Memastikan layout lingkaran menggunakan lebar & tinggi yang sama persis (persegi)
-          s = re.sub(r'layoutParams\s*=\s*new\s+android\.widget\.FrameLayout\.LayoutParams\([^)]+\);\s*lp\.gravity\s*=\s*android\.graphics\.Gravity\.CENTER;', 
-                     'android.widget.FrameLayout.LayoutParams lpCircle = new android.widget.FrameLayout.LayoutParams(dpSplash(280), dpSplash(280)); lpCircle.gravity = android.view.Gravity.CENTER;', 
-                     s)
-          
           p.write_text(s,encoding='utf-8')
           PY
 
@@ -155,10 +151,10 @@ jobs:
             <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
               <item name="android:fontFamily">sans</item>
               <item name="android:colorAccent">#198754</item>
-              <item name="android:windowBackground">#007066</item>
+              <item name="android:windowBackground">#006960</item>
               <item name="android:windowNoTitle">true</item>
-              <item name="android:statusBarColor">#007066</item>
-              <item name="android:navigationBarColor">#007066</item>
+              <item name="android:statusBarColor">#006960</item>
+              <item name="android:navigationBarColor">#006960</item>
               <item name="android:windowLightStatusBar">false</item>
               <item name="android:windowLightNavigationBar">false</item>
             </style>
