@@ -1,7 +1,6 @@
 name: Build Keuangan APK - Splash Target
 
-# Final splash-only build: uses splash-logo.svg and never the old icon-192.png for the splash.
-# Triggered again after the final transparent splash logo update.
+# Final splash-only build: dedicated splash logo + rich background + animation.
 on:
   workflow_dispatch:
   push:
@@ -82,8 +81,14 @@ jobs:
           s=p.read_text(encoding='utf-8')
           s=s.replace('getAssets().open("icon-192.png")','getAssets().open("splash-logo.png")')
           old='Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)))'
-          new='Math.min(dpSplash(210),Math.max(dpSplash(155),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.40f)))'
+          new='Math.min(dpSplash(340),Math.max(dpSplash(240),Math.round(getResources().getDisplayMetrics().widthPixels*0.40f)))'
           s=s.replace(old,new)
+          old_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);overlay.setBackgroundColor(APP_BG);overlay.setSystemUiVisibility(0);'
+          new_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);android.graphics.drawable.GradientDrawable splashBg=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(0,112,102),Color.rgb(2,145,130),Color.rgb(0,88,84)});overlay.setBackground(splashBg);overlay.setSystemUiVisibility(0);'
+          s=s.replace(old_bg,new_bg)
+          old_wave='waveText.setText("∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿");waveText.setTextColor(Color.argb(150,130,255,235));waveText.setTextSize(30);'
+          new_wave='waveText.setText("〰〰〰〰〰〰〰〰〰〰〰〰〰〰");waveText.setTextColor(Color.argb(145,170,255,242));waveText.setTextSize(26);'
+          s=s.replace(old_wave,new_wave)
           p.write_text(s,encoding='utf-8')
           PY
 
@@ -166,9 +171,10 @@ jobs:
           grep -q 'splash-logo.png' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'Catatan Kas' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'Catatan keuangan lebih mudah' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          grep -q '3100' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q '340' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          grep -q 'splashBg' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
           grep -q 'setDuration(550)' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          echo 'FINAL SPLASH: dedicated logo + larger size + text + animation + smooth fade verified'
+          echo 'FINAL SPLASH: target logo + larger logo + gradient background + animation + smooth fade verified'
 
       - name: Build Debug APK
         run: gradle --no-daemon clean assembleDebug --stacktrace
