@@ -1,5 +1,5 @@
 {
   "version":"1.0.21",
-  "message":"Pembaruan v1.0.21: perbaikan label navigasi bawah halaman Peserta Didik agar tetap tampil sebagai Peserta Didik. Versi APK tetap 2.5.",
-  "files":["index.html","app.js","auth-guard.js","firebase-config.js","dashboard-excel.html","dashboard-excel-fix.js","laporan.html","laporan-actions.js","login.html","login.js","pembayaran.html","pembayaran.js","pengeluaran.html","pengeluaran.js","pengaturan.html","santri.html","santri.js","rekap.html","style.css","theme.css","theme.js","logo-sync.js","service-worker.js","manifest.json","register.html","js/pengaturan.js","js/update-check.js","js/theme.js","js/santri-import.js","js/import-santri-ui.js","js/pembayaran-autocomplete.js","js/jenis-keuangan.js","js/general-ui.js","js/data-cleanup.js","css/theme.css"]
+  "message":"Pembaruan v1.0.21: perbaikan label navigasi bawah halaman Peserta Didik dan penyesuaian modul Pemasukan. Versi APK tetap 2.5.",
+  "files":["index.html","app.js","auth-guard.js","firebase-config.js","dashboard-excel.html","dashboard-excel-fix.js","laporan.html","laporan-actions.js","login.html","login.js","pemasukan.html","pemasukan.js","pengeluaran.html","pengeluaran.js","pengaturan.html","santri.html","santri.js","rekap.html","style.css","theme.css","theme.js","logo-sync.js","service-worker.js","manifest.json","register.html","js/pengaturan.js","js/update-check.js","js/theme.js","js/santri-import.js","js/import-santri-ui.js","js/pembayaran-autocomplete.js","js/jenis-keuangan.js","js/general-ui.js","js/data-cleanup.js","css/theme.css"]
 }
