@@ -1,3 +1,65 @@
+Name: Build Keuangan APK - Splash Target
+
+# Final splash-only build: dedicated splash logo + rich background + animation.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'UpdatableMainActivity.java'
+      - 'splash-logo.svg'
+      - '.github/workflows/build-splash-target.yml'
+      - '*.html'
+      - '*.js'
+      - '*.css'
+      - 'js/**'
+      - 'css/**'
+      - 'assets/**'
+      - 'images/**'
+      - 'img/**'
+      - '*.png'
+      - '*.jpg'
+      - '*.jpeg'
+      - 'python/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build APK - Final Splash
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Setup Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK and SVG converter
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq librsvg2-bin
+
       - name: Prepare Android project and final splash
         shell: bash
         run: |
@@ -7,28 +69,36 @@
           rsync -a --exclude='.git/' --exclude='.github/' --exclude='app/' --exclude='output/' ./ app/src/main/assets/
           cp python/rekap_pembayaran.py app/src/main/python/rekap_pembayaran.py
           cp UpdatableMainActivity.java app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
-          test -s icon-192.png
-          cp icon-192.png app/src/main/res/drawable/ic_keuangan.png
           
-          # Menggunakan gambar PNG asli langsung agar presisi & tidak kosong
+          # Paksa penggantian logo menggunakan Photoroom_20260812_224807.png
+          test -s Photoroom_20260812_224807.png
+          cp Photoroom_20260812_224807.png app/src/main/res/drawable/ic_keuangan.png
           cp Photoroom_20260812_224807.png app/src/main/assets/splash-logo.png
-          test -s app/src/main/assets/splash-logo.png
+          cp Photoroom_20260812_224807.png app/src/main/assets/icon-192.png
 
           python - <<'PY'
+          import re
           from pathlib import Path
-          p=Path('app/src/main/java/com/catatankas/app/UpdatableMainActivity.java')
-          s=p.read_text(encoding='utf-8')
-          s=s.replace('getAssets().open("icon-192.png")','getAssets().open("splash-logo.png")')
+          p = Path('app/src/main/java/com/catatankas/app/UpdatableMainActivity.java')
+          s = p.read_text(encoding='utf-8')
+          
+          # Ganti pembacaan aset gambar menjadi splash-logo.png
+          s = re.sub(r'getAssets\(\)\.open\("[^"]+"\)', 'getAssets().open("splash-logo.png")', s)
+          
+          # Penyesuaian ukuran dan posisi logo di tengah layar
           old='Math.min(dpSplash(185),Math.max(dpSplash(135),Math.round(Math.min(getResources().getDisplayMetrics().widthPixels,getResources().getDisplayMetrics().heightPixels)*0.34f)))'
           new='Math.min(dpSplash(340),Math.max(dpSplash(240),Math.round(getResources().getDisplayMetrics().widthPixels*0.40f)))'
           s=s.replace(old,new)
           s=s.replace('textLp.topMargin=dpSplash(252);','textLp.topMargin=dpSplash(405);')
+          
           old_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);overlay.setBackgroundColor(APP_BG);overlay.setSystemUiVisibility(0);'
           new_bg='final android.widget.FrameLayout overlay=new android.widget.FrameLayout(this);android.graphics.drawable.GradientDrawable splashBg=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(0,112,102),Color.rgb(2,145,130),Color.rgb(0,88,84)});overlay.setBackground(splashBg);overlay.setSystemUiVisibility(0);'
           s=s.replace(old_bg,new_bg)
+          
           old_wave='waveText.setText("∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿");waveText.setTextColor(Color.argb(150,130,255,235));waveText.setTextSize(30);'
           new_wave='waveText.setText("〰〰〰〰〰〰〰〰〰〰〰〰〰〰");waveText.setTextColor(Color.argb(145,170,255,242));waveText.setTextSize(26);'
           s=s.replace(old_wave,new_wave)
+          
           p.write_text(s,encoding='utf-8')
           PY
 
@@ -103,3 +173,28 @@
             @Override protected void onDestroy(){if(webView!=null)webView.destroy();super.onDestroy();}
           }
           JAVA
+
+      - name: Verify final splash is actually wired
+        run: |
+          set -euo pipefail
+          test -s app/src/main/assets/splash-logo.png
+          grep -q 'splash-logo.png' app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
+          echo 'FINAL SPLASH: target logo + larger logo + separated title + gradient background + animation + smooth fade verified'
+
+      - name: Build Debug APK
+        run: gradle --no-daemon clean assembleDebug --stacktrace
+
+      - name: Prepare APK artifact
+        run: |
+          set -euo pipefail
+          mkdir -p output
+          cp app/build/outputs/apk/debug/app-debug.apk output/Keuangan-Splash-Final.apk
+          test -s output/Keuangan-Splash-Final.apk
+          ls -lh output/Keuangan-Splash-Final.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Keuangan-APK-Splash-Final
+          path: output/Keuangan-Splash-Final.apk
+          if-no-files-found: error
