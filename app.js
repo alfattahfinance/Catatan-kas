@@ -7,12 +7,12 @@ let semuaPemasukan=[],semuaPengeluaran=[],semuaSiswaSiswi=[],userAktif=null;
 let unsubscribePemasukan=null,unsubscribeExpenses=null,unsubscribeSiswaSiswi=null;
 let pemasukanReady=false,expensesReady=false,siswaSiswiReady=false;
 const $=id=>document.getElementById(id);
-const LOGO_DEFAULT="logo-catatan-kas.jpg";
-function settings(){try{if(window.CatatanKasSettings?.get)return window.CatatanKasSettings.get();const u=userAktif?.uid;const k=u?`pengaturanAplikasi_${u}`:"pengaturanAplikasi";return JSON.parse(localStorage.getItem(k)||"{}")}catch(_){return {}}}
+const LOGO_DEFAULT="Photoroom_20260812_224807.png?v=20260826";
+function settings(){try{if(window.CatatanKasSettings?.get)return window.CatatanKasSettings.get();const u=userAktif?.uid;const k=u?`pengaturanAplikasi_${u}`:"pengaturanAplikasi";return JSON.parse(localStorage.getItem(k)||"{}")||{}}catch(_){return {}}}
 function lembagaAktif(){const s=settings();return String(s.namaPondok||s.namaLembaga||s.lembaga||"").trim()}
-function logoDashboardTersimpan(){try{if(window.CatatanKasSettings?.getLogo)return window.CatatanKasSettings.getLogo();const u=userAktif?.uid;return localStorage.getItem(u?`logoDashboard_${u}`:"logoDashboard")||LOGO_DEFAULT}catch(_){return LOGO_DEFAULT}}
+function logoDashboardTersimpan(){return LOGO_DEFAULT}
 function terapkanIdentitasDashboard(){const s=settings(),nama=lembagaAktif(),title=nama||"Keuangan",subtitle=String(s.subJudul||s.subjudul||"").trim()||"Dashboard Keuangan";document.querySelectorAll(".app-name,[data-app-name]").forEach(e=>e.textContent=title);document.querySelectorAll(".app-subtitle,[data-app-subtitle]").forEach(e=>e.textContent=subtitle);document.title=nama?`${nama} | Keuangan`:"Keuangan | Dashboard"}
-function muatLogoDashboard(){const logo=logoDashboardTersimpan();document.querySelectorAll(".app-logo,.ck-logo,#logoDashboard,#dashboardLogo,#logoPreviewV2,#logoPreview,#previewLogoDashboard,img[alt='Logo Dashboard'],img[alt='Logo aplikasi'],img[alt='Logo Catatan Kas'],[data-dashboard-logo]").forEach(e=>{if(e?.tagName==="IMG"){e.src=logo;e.removeAttribute("srcset");e.removeAttribute("data-src")}})}
+function muatLogoDashboard(){const logo=logoDashboardTersimpan();document.querySelectorAll(".app-logo,.ck-logo,#logoDashboard,#dashboardLogo,#logoPreviewV2,#logoPreview,#previewLogoDashboard,img[alt='Logo Dashboard'],img[alt='Logo aplikasi'],img[alt='Logo Catatan Kas'],[data-dashboard-logo]").forEach(e=>{if(e?.tagName==="IMG"){e.removeAttribute("srcset");e.removeAttribute("data-src");e.dataset.logoSource="official-20260826";if(e.src!==new URL(logo,document.baseURI).href)e.src=logo}})}
 function refreshLogoDanDashboard(){muatLogoDashboard();terapkanIdentitasDashboard();tampilkanDashboard()}
 function rupiah(v){return "Rp"+(Number(v)||0).toLocaleString("id-ID")}
 const ambilNominal=i=>Number(i?.nominal??i?.jumlah??i?.nilai??0)||0;
