@@ -295,17 +295,28 @@ jobs:
           )
 
           s = p.read_text(encoding="utf-8")
-
-
+          
           # -----------------------------------------------------
-          # Paksa semua pembacaan asset splash menjadi:
-          # splash-logo.png
-          # -----------------------------------------------------
-          s = re.sub(
-              r'getAssets\(\)\.open\("[^"]+"\)',
-              'getAssets().open("splash-logo.png")',
-              s
-          )
+         # Pastikan MediaStore selalu di-import.
+         # Diperlukan oleh fitur Excel/Download.
+         # -----------------------------------------------------
+        if "import android.provider.MediaStore;" not in s:
+           s = s.replace(
+            "import android.os.Bundle;",
+                   "import android.os.Bundle;\nimport android.provider.MediaStore;"
+              )
+              
+        # -----------------------------------------------------
+        # Paksa semua pembacaan asset splash menjadi:
+        # splash-logo.png
+        # -----------------------------------------------------
+        s = re.sub(
+    
+            r'getAssets\(\)\.open\("[^"]+"\)',
+         'getAssets().open("splash-logo.png")',
+          s
+    
+     )
 
 
           # -----------------------------------------------------
@@ -319,7 +330,7 @@ jobs:
               'getResources().getDisplayMetrics().widthPixels,'
               'getResources().getDisplayMetrics().heightPixels'
               ')*0.34f)))'
-          )
+                 )
 
           new = (
               'Math.min(dpSplash(340),'
@@ -338,13 +349,14 @@ jobs:
           s = s.replace(
               'textLp.topMargin=dpSplash(252);',
               'textLp.topMargin=dpSplash(405);'
-          )
+           )
+
 
 
           # -----------------------------------------------------
           # Background splash gradient
           # -----------------------------------------------------
-          old_bg = (
+           old_bg = (
               'final android.widget.FrameLayout overlay='
               'new android.widget.FrameLayout(this);'
               'overlay.setBackgroundColor(APP_BG);'
