@@ -1,25 +1,41 @@
 import { db, auth } from "../firebase-config.js";
-import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { doc, getDoc, setDoc, deleteField } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
 const DEFAULT_LOGO = "Photoroom_20260812_224807.png?v=20260826";
+const DEFAULT = { namaLembaga: "", subJudul: "", mataUang: "Rupiah", tema: "system" };
 let uid = "";
 let loading = false;
-const DEFAULT = { namaPondok: "", subJudul: "", mataUang: "Rupiah", tema: "system" };
 const key = base => uid ? `${base}_${uid}` : base;
 const read = () => { try { return JSON.parse(localStorage.getItem(key("pengaturanAplikasi")) || "{}") || {}; } catch (_) { return {}; } };
 const write = data => { try { localStorage.setItem(key("pengaturanAplikasi"), JSON.stringify(data)); return true; } catch (_) { return false; } };
-const logoRead = data => {
+
+// Satu sumber nama lembaga + subjudul. Nama lama hanya dibaca untuk migrasi.
+function normalize(data = {}) {
+  const namaLembaga = String(data.namaLembaga ?? data.namaPondok ?? data.namaSekolah ?? data.lembaga ?? "").trim();
+  const subJudul = String(data.subJudul ?? data.subjudul ?? data.subTitle ?? "").trim();
+  return { ...data, namaLembaga, subJudul };
+}
+function cleanLocal(data) {
+  const out = { ...data };
+  delete out.namaPondok;
+  delete out.namaSekolah;
+  delete out.lembaga;
+  delete out.subjudul;
+  delete out.subTitle;
+  return out;
+}
+function logoRead(data) {
   const fromData = String(data?.logoDashboard || "").trim();
   if (fromData) return fromData;
   try { const saved = String(localStorage.getItem(key("logoDashboard")) || "").trim(); if (saved) return saved; } catch (_) {}
   return DEFAULT_LOGO;
-};
+}
 function status(text, error = false) { const e = $("statusPengaturan"); if (!e) return; e.textContent = text; e.classList.toggle("text-danger", error); e.classList.toggle("text-success", !error); }
-function applyTheme(value, save = true) {
+function applyTheme(value, persist = true) {
   const t = ["light", "dark", "system"].includes(value) ? value : "system";
-  if (window.themeManager?.setTheme) { window.themeManager.setTheme(t, save); return; }
+  if (window.themeManager?.setTheme) { window.themeManager.setTheme(t, persist); return; }
   const resolved = t === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : t;
   document.documentElement.classList.toggle("dark-mode", resolved === "dark");
   document.documentElement.classList.toggle("light-mode", resolved === "light");
@@ -28,20 +44,25 @@ function applyTheme(value, save = true) {
   try { localStorage.setItem(key("themeMode"), t); } catch (_) {}
 }
 function fill(data) {
-  if ($("namaPondok")) $("namaPondok").value = data.namaPondok || data.namaLembaga || "";
-  if ($("subJudul")) $("subJudul").value = data.subJudul || data.subjudul || "";
-  if ($("mataUang")) $("mataUang").value = data.mataUang || "Rupiah";
-  if ($("tema")) $("tema").value = ["light", "dark", "system"].includes(data.tema) ? data.tema : "system";
-  if ($("previewLogoDashboard")) $("previewLogoDashboard").src = logoRead(data);
+  const d = normalize(data);
+  const nama = $("namaSekolah");
+  if (nama) nama.value = d.namaLembaga;
+  if ($("subJudul")) $("subJudul").value = d.subJudul;
+  if ($("mataUang")) $("mataUang").value = d.mataUang || "Rupiah";
+  if ($("tema")) $("tema").value = ["light", "dark", "system"].includes(d.tema) ? d.tema : "system";
+  if ($("previewLogoDashboard")) $("previewLogoDashboard").src = logoRead(d);
   applyTheme($("tema")?.value || "system", false);
 }
 async function load(userUid) {
   uid = userUid || "";
-  let data = { ...DEFAULT, ...read() };
+  let data = normalize({ ...DEFAULT, ...read() });
   if (uid) {
-    try { const snap = await getDoc(doc(db, "settings", uid)); if (snap.exists()) data = { ...data, ...snap.data() }; }
-    catch (e) { console.warn("Gagal membaca pengaturan akun; data perangkat tetap digunakan.", e); }
+    try {
+      const snap = await getDoc(doc(db, "settings", uid));
+      if (snap.exists()) data = normalize({ ...data, ...snap.data() });
+    } catch (e) { console.warn("Gagal membaca pengaturan akun; data perangkat tetap digunakan.", e); }
   }
+  data = cleanLocal(data);
   write(data);
   if (data.logoDashboard) { try { localStorage.setItem(key("logoDashboard"), data.logoDashboard); } catch (_) {} }
   fill(data);
@@ -50,22 +71,35 @@ async function load(userUid) {
 }
 async function save() {
   if (loading) return;
-  const data = {
+  const namaLembaga = $("namaSekolah")?.value?.trim() || "";
+  const subJudul = $("subJudul")?.value?.trim() || "";
+  const data = cleanLocal({
     ...read(),
-    namaPondok: $("namaPondok")?.value?.trim() || "",
-    namaLembaga: $("namaPondok")?.value?.trim() || "",
-    subJudul: $("subJudul")?.value?.trim() || "",
+    namaLembaga,
+    subJudul,
     mataUang: $("mataUang")?.value || "Rupiah",
     tema: $("tema")?.value || "system",
     updatedAt: new Date().toISOString()
-  };
+  });
   if (!write(data)) { status("Penyimpanan perangkat penuh. Pengaturan belum tersimpan.", true); return; }
   applyTheme(data.tema, true);
   window.dispatchEvent(new Event("settingsChanged"));
   if (!uid) { status("Pengaturan tersimpan di perangkat."); return; }
   loading = true;
-  try { await setDoc(doc(db, "settings", uid), data, { merge: true }); status("Pengaturan tersimpan."); }
-  catch (e) { console.error(e); status("Pengaturan tersimpan di perangkat, tetapi gagal sinkron ke akun.", true); }
+  try {
+    await setDoc(doc(db, "settings", uid), {
+      ...data,
+      namaLembaga,
+      subJudul,
+      // Bersihkan nama/subjudul lama agar tidak ada dua sumber data.
+      namaPondok: deleteField(),
+      namaSekolah: deleteField(),
+      lembaga: deleteField(),
+      subjudul: deleteField(),
+      subTitle: deleteField()
+    }, { merge: true });
+    status("Pengaturan tersimpan.");
+  } catch (e) { console.error(e); status("Pengaturan tersimpan di perangkat, tetapi gagal sinkron ke akun.", true); }
   finally { loading = false; }
 }
 function makeSmallImage(file) {
@@ -81,7 +115,7 @@ async function changeLogo(file) {
   try {
     const src = await makeSmallImage(file);
     try { localStorage.setItem(key("logoDashboard"), src); } catch (_) { status("Logo tidak dapat disimpan di perangkat.", true); return; }
-    const data = { ...read(), logoDashboard: src, updatedAt: new Date().toISOString() };
+    const data = { ...cleanLocal(read()), logoDashboard: src, updatedAt: new Date().toISOString() };
     write(data);
     if ($("previewLogoDashboard")) $("previewLogoDashboard").src = src;
     if (uid) {
@@ -94,7 +128,7 @@ async function changeLogo(file) {
 }
 async function resetLogo() {
   try { localStorage.removeItem(key("logoDashboard")); } catch (_) {}
-  const data = { ...read() }; delete data.logoDashboard; write(data);
+  const data = { ...cleanLocal(read()) }; delete data.logoDashboard; write(data);
   if ($("previewLogoDashboard")) $("previewLogoDashboard").src = DEFAULT_LOGO;
   if (uid) { try { await setDoc(doc(db, "settings", uid), { logoDashboard: null, updatedAt: new Date().toISOString() }, { merge: true }); } catch (e) { console.error(e); } }
   window.dispatchEvent(new Event("logoDashboardChanged")); window.dispatchEvent(new Event("settingsChanged"));
@@ -106,14 +140,17 @@ async function resetAll() {
   write(data);
   try { localStorage.removeItem(key("logoDashboard")); } catch (_) {}
   fill(data); applyTheme("system", true);
-  if (uid) { try { await setDoc(doc(db, "settings", uid), data, { merge: true }); } catch (e) { console.error(e); status("Pengaturan perangkat direset, tetapi akun gagal disinkronkan.", true); return; } }
+  if (uid) {
+    try { await setDoc(doc(db, "settings", uid), { ...data, namaPondok: deleteField(), namaSekolah: deleteField(), lembaga: deleteField(), subjudul: deleteField(), subTitle: deleteField() }, { merge: true }); }
+    catch (e) { console.error(e); status("Pengaturan perangkat direset, tetapi akun gagal disinkronkan.", true); return; }
+  }
   window.dispatchEvent(new Event("logoDashboardChanged")); window.dispatchEvent(new Event("settingsChanged"));
   status("Pengaturan dikembalikan ke awal.");
 }
 
 $("simpanPengaturanButton")?.addEventListener("click", e => { e.preventDefault(); save(); });
 $("tema")?.addEventListener("change", () => save());
-["namaPondok", "subJudul", "mataUang"].forEach(id => $(id)?.addEventListener("change", () => save()));
+["namaSekolah", "subJudul", "mataUang"].forEach(id => $(id)?.addEventListener("change", () => save()));
 $("logoDashboardInput")?.addEventListener("change", e => changeLogo(e.target.files?.[0]));
 $("resetLogoButton")?.addEventListener("click", e => { e.preventDefault(); resetLogo(); });
 $("resetPengaturanButton")?.addEventListener("click", e => { e.preventDefault(); resetAll(); });
