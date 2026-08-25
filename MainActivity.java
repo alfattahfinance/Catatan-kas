@@ -38,6 +38,8 @@ import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private static final int FILE_CHOOSER_REQUEST=4101;
@@ -63,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setVisibility(View.INVISIBLE);setupSplash();
         WebSettings settings=webView.getSettings();
         settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setDatabaseEnabled(true);
-        settings.setAllowFileAccess(false);settings.setAllowContentAccess(true);settings.setBuiltInZoomControls(false);settings.setDisplayZoomControls(false);
+        settings.setAllowFileAccess(true);settings.setAllowContentAccess(true);settings.setBuiltInZoomControls(false);settings.setDisplayZoomControls(false);
         settings.setSupportZoom(false);settings.setMediaPlaybackRequiresUserGesture(false);settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setUseWideViewPort(false);settings.setLoadWithOverviewMode(false);
         webView.setBackgroundColor(Color.rgb(18,23,22));webView.setVerticalScrollBarEnabled(true);webView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
@@ -71,52 +73,29 @@ public class MainActivity extends AppCompatActivity {
         final WebViewAssetLoader assetLoader=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
         webView.setWebViewClient(new WebViewClientCompat(){
             @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){return assetLoader.shouldInterceptRequest(r.getUrl());}
-            @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if(u==null)return false;String url=u.toString().toLowerCase();if(url.contains("github.com")||url.contains("githubusercontent.com")||url.endsWith(".apk")){openExternalUrl(u);return true}if(!url.startsWith("https://appassets.androidplatform.net/")&&!url.startsWith("http://appassets.androidplatform.net/")){openExternalUrl(u);return true}return false;}
+            @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if(u==null)return false;String url=u.toString().toLowerCase(Locale.ROOT);if(url.contains("github.com")||url.contains("githubusercontent.com")||url.endsWith(".apk")){openExternalUrl(u);return true}if(!url.startsWith("https://appassets.androidplatform.net/")&&!url.startsWith("http://appassets.androidplatform.net/")){openExternalUrl(u);return true}return false;}
             @Override public void onPageFinished(WebView v,String url){super.onPageFinished(v,url);v.evaluateJavascript("(function(){try{var s=document.getElementById('ckLandscapeScrollFix');if(!s){s=document.createElement('style');s.id='ckLandscapeScrollFix';s.textContent='html,body{overflow-y:auto!important;height:auto!important;min-height:100%!important;}body{overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;}';document.head.appendChild(s)}}catch(e){}})();}
         });
         webView.setWebChromeClient(new WebChromeClient(){
             @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){
-                if(filePathCallback!=null)filePathCallback.onReceiveValue(null);
-                filePathCallback=callback;
+                return openFileChooser(callback,params);
+            }
+            @SuppressWarnings("unused")
+            public void openFileChooser(ValueCallback<Uri> callback,String acceptType,String capture){
+                ValueCallback<Uri[]> modern=uris->{if(callback!=null)callback.onReceiveValue(uris!=null&&uris.length>0?uris[0]:null);};
+                openFileChooser(modern,acceptType);
+            }
+            @SuppressWarnings("unused")
+            public void openFileChooser(ValueCallback<Uri> callback,String acceptType){
+                ValueCallback<Uri[]> modern=uris->{if(callback!=null)callback.onReceiveValue(uris!=null&&uris.length>0?uris[0]:null);};
+                openFileChooser(modern,acceptType);
+            }
+            private boolean openFileChooser(ValueCallback<Uri[]> callback,FileChooserParams params){
                 String[] accepts=params!=null?params.getAcceptTypes():null;
-                boolean imageOnly=true;
-                boolean hasAccept=false;
-                if(accepts!=null){
-                    for(String a:accepts){
-                        if(a==null||a.trim().isEmpty())continue;
-                        hasAccept=true;
-                        String x=a.trim().toLowerCase();
-                        if(!(x.startsWith("image/")||x.equals(".jpg")||x.equals(".jpeg")||x.equals(".png")||x.equals(".webp")||x.equals(".gif")||x.equals(".bmp")))imageOnly=false;
-                    }
-                }
-                String mime=imageOnly&&hasAccept?"image/*":"*/*";
-                Intent chooser=new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                chooser.addCategory(Intent.CATEGORY_OPENABLE);
-                chooser.setType(mime);
-                if(!imageOnly&&accepts!=null&&accepts.length>0){
-                    java.util.ArrayList<String> mimeTypes=new java.util.ArrayList<>();
-                    for(String a:accepts){if(a!=null&&a.contains("/"))mimeTypes.add(a.trim());}
-                    if(!mimeTypes.isEmpty())chooser.putExtra(Intent.EXTRA_MIME_TYPES,mimeTypes.toArray(new String[0]));
-                }
-                chooser.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);
-                chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                try{startActivityForResult(chooser,FILE_CHOOSER_REQUEST);return true;}
-                catch(Exception first){
-                    try{
-                        Intent fallback=new Intent(Intent.ACTION_GET_CONTENT);
-                        fallback.addCategory(Intent.CATEGORY_OPENABLE);
-                        fallback.setType(mime);
-                        if(!imageOnly&&accepts!=null&&accepts.length>0){
-                            java.util.ArrayList<String> mimeTypes=new java.util.ArrayList<>();
-                            for(String a:accepts){if(a!=null&&a.contains("/"))mimeTypes.add(a.trim());}
-                            if(!mimeTypes.isEmpty())fallback.putExtra(Intent.EXTRA_MIME_TYPES,mimeTypes.toArray(new String[0]));
-                        }
-                        fallback.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);
-                        fallback.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        startActivityForResult(Intent.createChooser(fallback,"Pilih file"),FILE_CHOOSER_REQUEST);return true;
-                    }
-                    catch(Exception second){filePathCallback=null;showMessage("Tidak dapat membuka pemilih file. Pastikan aplikasi File/Pengelola Berkas tersedia.");return false;}
-                }
+                return startNativeFilePicker(callback,flattenAcceptTypes(accepts));
+            }
+            private boolean openFileChooser(ValueCallback<Uri[]> callback,String acceptType){
+                return startNativeFilePicker(callback,flattenAcceptTypes(new String[]{acceptType}));
             }
         });
         registerDownloadReceiver();
@@ -125,25 +104,65 @@ public class MainActivity extends AppCompatActivity {
         splashHandler.postDelayed(()->{webView.setVisibility(View.VISIBLE);if(splashView!=null)splashView.animate().alpha(0f).setDuration(420).withEndAction(()->{if(splashView!=null){root.removeView(splashView);splashView=null;}}).start();},1450);
     }
 
+    private String[] flattenAcceptTypes(String[] accepts){
+        if(accepts==null||accepts.length==0)return new String[0];
+        ArrayList<String> out=new ArrayList<>();
+        for(String raw:accepts){
+            if(raw==null)continue;
+            for(String part:raw.split(",")){
+                String x=part.trim().toLowerCase(Locale.ROOT);
+                if(!x.isEmpty()&&!out.contains(x))out.add(x);
+            }
+        }
+        return out.toArray(new String[0]);
+    }
+
+    private boolean startNativeFilePicker(ValueCallback<Uri[]> callback,String[] accepts){
+        if(filePathCallback!=null)filePathCallback.onReceiveValue(null);
+        filePathCallback=callback;
+        boolean imageOnly=accepts.length>0;
+        boolean hasUsableMime=false;
+        ArrayList<String> mimeTypes=new ArrayList<>();
+        for(String a:accepts){
+            String x=a.toLowerCase(Locale.ROOT);
+            if(x.startsWith("image/")){hasUsableMime=true;if(!mimeTypes.contains(x))mimeTypes.add(x);}
+            else if(x.contains("/")){hasUsableMime=true;if(!mimeTypes.contains(x))mimeTypes.add(x);imageOnly=false;}
+            else if(x.equals(".jpg")||x.equals(".jpeg")||x.equals(".png")||x.equals(".webp")||x.equals(".gif")||x.equals(".bmp")){hasUsableMime=true;}
+            else if(x.equals(".xlsx")||x.equals(".xls")||x.equals(".csv")||x.equals(".txt")){imageOnly=false;}
+            else imageOnly=false;
+        }
+        if(!hasUsableMime&&accepts.length>0)imageOnly=false;
+        String mime=imageOnly?"image/*":"*/*";
+        Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(mime);
+        if(!mimeTypes.isEmpty()&&!imageOnly)intent.putExtra(Intent.EXTRA_MIME_TYPES,mimeTypes.toArray(new String[0]));
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        try{startActivityForResult(Intent.createChooser(intent,"Pilih file"),FILE_CHOOSER_REQUEST);return true;}
+        catch(Exception first){
+            try{
+                Intent fallback=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                fallback.addCategory(Intent.CATEGORY_OPENABLE);fallback.setType(mime);
+                if(!mimeTypes.isEmpty()&&!imageOnly)fallback.putExtra(Intent.EXTRA_MIME_TYPES,mimeTypes.toArray(new String[0]));
+                fallback.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);fallback.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                startActivityForResult(Intent.createChooser(fallback,"Pilih file"),FILE_CHOOSER_REQUEST);return true;
+            }catch(Exception second){filePathCallback=null;showMessage("Pemilih file tidak tersedia di perangkat ini.");return false;}
+        }
+    }
+
     private void setupSplash(){
         final int teal=Color.rgb(37,103,93);
-        splashView=new FrameLayout(this);splashView.setBackgroundColor(teal);
-        root.addView(splashView,new FrameLayout.LayoutParams(-1,-1));
+        splashView=new FrameLayout(this);splashView.setBackgroundColor(teal);root.addView(splashView,new FrameLayout.LayoutParams(-1,-1));
         LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setGravity(Gravity.CENTER_HORIZONTAL);content.setPadding(dp(28),dp(28),dp(28),dp(28));
         FrameLayout.LayoutParams clp=new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER);splashView.addView(content,clp);
-
         ImageView logo=new ImageView(this);logo.setScaleType(ImageView.ScaleType.CENTER_CROP);logo.setBackgroundColor(Color.TRANSPARENT);try(InputStream in=getAssets().open("logo-catatan-kas.jpg")){Bitmap b=BitmapFactory.decodeStream(in);if(b!=null)logo.setImageBitmap(b);}catch(Exception ignored){}
         GradientDrawable logoFrame=new GradientDrawable();logoFrame.setColor(Color.TRANSPARENT);logoFrame.setCornerRadius(dp(34));logoFrame.setStroke(dp(1),Color.argb(45,255,255,255));logo.setBackground(logoFrame);logo.setClipToOutline(true);
         LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(190),dp(190));ilp.gravity=Gravity.CENTER_HORIZONTAL;content.addView(logo,ilp);
-
         TextView title=new TextView(this);title.setText("Keuangan");title.setTextColor(Color.WHITE);title.setTextSize(27);title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);title.setGravity(Gravity.CENTER);title.setPadding(0,dp(22),0,0);content.addView(title,new LinearLayout.LayoutParams(-1,-2));
         TextView subtitle=new TextView(this);subtitle.setText("Catatan keuangan lebih mudah");subtitle.setTextColor(Color.rgb(224,246,240));subtitle.setTextSize(13);subtitle.setGravity(Gravity.CENTER);subtitle.setPadding(0,dp(6),0,0);content.addView(subtitle,new LinearLayout.LayoutParams(-1,-2));
-
         content.setAlpha(0f);logo.setAlpha(0f);logo.setScaleX(.78f);logo.setScaleY(.78f);title.setAlpha(0f);subtitle.setAlpha(0f);
-        logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(650).setInterpolator(new android.view.animation.OvershootInterpolator(1.2f)).start();
-        content.animate().alpha(1f).setStartDelay(120).setDuration(500).start();
-        title.animate().alpha(1f).setStartDelay(360).setDuration(500).start();
-        subtitle.animate().alpha(1f).setStartDelay(520).setDuration(500).start();
+        logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(650).setInterpolator(new android.view.animation.OvershootInterpolator(1.2f)).start();content.animate().alpha(1f).setStartDelay(120).setDuration(500).start();title.animate().alpha(1f).setStartDelay(360).setDuration(500).start();subtitle.animate().alpha(1f).setStartDelay(520).setDuration(500).start();
     }
     private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
     @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){
@@ -151,10 +170,10 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode!=FILE_CHOOSER_REQUEST||filePathCallback==null)return;
         Uri[] results=null;
         if(resultCode==RESULT_OK&&data!=null){
-            if(data.getClipData()!=null&&data.getClipData().getItemCount()>0){results=new Uri[]{data.getClipData().getItemAt(0).getUri()};}
-            else if(data.getData()!=null){results=new Uri[]{data.getData()};}
+            if(data.getClipData()!=null&&data.getClipData().getItemCount()>0)results=new Uri[]{data.getClipData().getItemAt(0).getUri()};
+            else if(data.getData()!=null)results=new Uri[]{data.getData()};
         }
-        filePathCallback.onReceiveValue(results);filePathCallback=null;
+        ValueCallback<Uri[]> cb=filePathCallback;filePathCallback=null;cb.onReceiveValue(results);
     }
     @Override protected void onResume(){super.onResume();if(waitingInstallPermission&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.O&&getPackageManager().canRequestPackageInstalls()){waitingInstallPermission=false;if(pendingApkFile!=null)installApk(pendingApkFile);}}
     public class AndroidDownload{@JavascriptInterface public void downloadApk(String apkUrl,String version){runOnUiThread(()->startApkDownload(apkUrl,version));}}
