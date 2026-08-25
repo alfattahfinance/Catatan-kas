@@ -3,13 +3,19 @@ import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.17.1/
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
+const DEFAULT_LOGO = "Photoroom_20260812_224807.png?v=20260826";
 let uid = "";
 let loading = false;
 const DEFAULT = { namaPondok: "", subJudul: "", mataUang: "Rupiah", tema: "system" };
 const key = base => uid ? `${base}_${uid}` : base;
 const read = () => { try { return JSON.parse(localStorage.getItem(key("pengaturanAplikasi")) || "{}") || {}; } catch (_) { return {}; } };
 const write = data => { try { localStorage.setItem(key("pengaturanAplikasi"), JSON.stringify(data)); return true; } catch (_) { return false; } };
-const logoRead = () => { try { return localStorage.getItem(key("logoDashboard")) || "logo-catatan-kas.jpg"; } catch (_) { return "logo-catatan-kas.jpg"; } };
+const logoRead = data => {
+  const fromData = String(data?.logoDashboard || "").trim();
+  if (fromData) return fromData;
+  try { const saved = String(localStorage.getItem(key("logoDashboard")) || "").trim(); if (saved) return saved; } catch (_) {}
+  return DEFAULT_LOGO;
+};
 function status(text, error = false) { const e = $("statusPengaturan"); if (!e) return; e.textContent = text; e.classList.toggle("text-danger", error); e.classList.toggle("text-success", !error); }
 function applyTheme(value, save = true) {
   const t = ["light", "dark", "system"].includes(value) ? value : "system";
@@ -26,7 +32,7 @@ function fill(data) {
   if ($("subJudul")) $("subJudul").value = data.subJudul || data.subjudul || "";
   if ($("mataUang")) $("mataUang").value = data.mataUang || "Rupiah";
   if ($("tema")) $("tema").value = ["light", "dark", "system"].includes(data.tema) ? data.tema : "system";
-  if ($("previewLogoDashboard")) $("previewLogoDashboard").src = logoRead() || data.logoDashboard || "logo-catatan-kas.jpg";
+  if ($("previewLogoDashboard")) $("previewLogoDashboard").src = logoRead(data);
   applyTheme($("tema")?.value || "system", false);
 }
 async function load(userUid) {
@@ -37,8 +43,10 @@ async function load(userUid) {
     catch (e) { console.warn("Gagal membaca pengaturan akun; data perangkat tetap digunakan.", e); }
   }
   write(data);
+  if (data.logoDashboard) { try { localStorage.setItem(key("logoDashboard"), data.logoDashboard); } catch (_) {} }
   fill(data);
   window.dispatchEvent(new Event("settingsChanged"));
+  window.dispatchEvent(new Event("logoDashboardChanged"));
 }
 async function save() {
   if (loading) return;
@@ -62,19 +70,8 @@ async function save() {
 }
 function makeSmallImage(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const max = 512, scale = Math.min(1, max / Math.max(img.width, img.height));
-        const w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
-        const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.82));
-      };
-      img.onerror = reject; img.src = reader.result;
-    };
+    const reader = new FileReader(); reader.onerror = reject;
+    reader.onload = () => { const img = new Image(); img.onload = () => { const max = 512, scale = Math.min(1, max / Math.max(img.width, img.height)); const w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale)); const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h; const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0, w, h); resolve(canvas.toDataURL("image/jpeg", 0.82)); }; img.onerror = reject; img.src = reader.result; };
     reader.readAsDataURL(file);
   });
 }
@@ -84,22 +81,23 @@ async function changeLogo(file) {
   try {
     const src = await makeSmallImage(file);
     try { localStorage.setItem(key("logoDashboard"), src); } catch (_) { status("Logo tidak dapat disimpan di perangkat.", true); return; }
+    const data = { ...read(), logoDashboard: src, updatedAt: new Date().toISOString() };
+    write(data);
     if ($("previewLogoDashboard")) $("previewLogoDashboard").src = src;
     if (uid) {
       try { await setDoc(doc(db, "settings", uid), { logoDashboard: src, updatedAt: new Date().toISOString() }, { merge: true }); }
       catch (e) { console.error(e); status("Logo tersimpan di perangkat, tetapi gagal sinkron ke akun.", true); }
     }
-    window.dispatchEvent(new Event("logoDashboardChanged"));
-    window.dispatchEvent(new Event("settingsChanged"));
+    window.dispatchEvent(new Event("logoDashboardChanged")); window.dispatchEvent(new Event("settingsChanged"));
     status("Logo berhasil disimpan.");
   } catch (e) { console.error(e); status("Logo tidak dapat diproses. Pilih gambar lain.", true); }
 }
 async function resetLogo() {
   try { localStorage.removeItem(key("logoDashboard")); } catch (_) {}
-  if ($("previewLogoDashboard")) $("previewLogoDashboard").src = "logo-catatan-kas.jpg";
+  const data = { ...read() }; delete data.logoDashboard; write(data);
+  if ($("previewLogoDashboard")) $("previewLogoDashboard").src = DEFAULT_LOGO;
   if (uid) { try { await setDoc(doc(db, "settings", uid), { logoDashboard: null, updatedAt: new Date().toISOString() }, { merge: true }); } catch (e) { console.error(e); } }
-  window.dispatchEvent(new Event("logoDashboardChanged"));
-  window.dispatchEvent(new Event("settingsChanged"));
+  window.dispatchEvent(new Event("logoDashboardChanged")); window.dispatchEvent(new Event("settingsChanged"));
   status("Logo bawaan berhasil digunakan.");
 }
 async function resetAll() {
