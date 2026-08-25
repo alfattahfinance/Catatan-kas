@@ -6,6 +6,7 @@
 (() => {
   'use strict';
 
+  const OFFICIAL_LOGO = 'Photoroom_20260812_224807.png?v=20260826';
   const replacements = [
     ['Pembayaran Santri', 'Pembayaran'],
     ['Pembayaran Peserta Didik', 'Pembayaran'],
@@ -69,17 +70,24 @@
         }
       }
     });
-
     if (document.title) document.title = replaceString(document.title);
     document.querySelectorAll('meta[name="description"],meta[property="og:title"],meta[property="og:description"]').forEach(el => {
       const before = el.getAttribute('content') || '';
       const after = replaceString(before);
       if (after !== before) el.setAttribute('content', after);
     });
+    document.querySelectorAll('a[href="santri.html"]').forEach(el => el.setAttribute('href', 'siswa-siswi.html'));
+  }
 
-    // Ubah href secara otomatis jika masih menunjuk ke santri.html
-    document.querySelectorAll('a[href="santri.html"]').forEach(el => {
-      el.setAttribute('href', 'siswa-siswi.html');
+  function forceOfficialLogo(root = document) {
+    const selector = '.app-logo,.ck-logo,.logo,#logoDashboard,#dashboardLogo,#logo,#laporanLogo,#logoPreviewV2,#logoPreview,#logoPreviewV2,#previewLogoDashboard,img[alt="Logo Catatan Kas"],img[alt="Logo Dashboard"],img[alt="Logo aplikasi"],[data-dashboard-logo]';
+    const imgs = root.querySelectorAll ? root.querySelectorAll(selector) : [];
+    imgs.forEach(img => {
+      if (img.tagName !== 'IMG') return;
+      img.removeAttribute('srcset');
+      img.removeAttribute('data-src');
+      img.dataset.logoSource = 'official-20260826';
+      if (!img.src.endsWith('Photoroom_20260812_224807.png?v=20260826')) img.src = OFFICIAL_LOGO;
     });
   }
 
@@ -147,8 +155,6 @@
     }, true);
   }
 
-  // WebView-safe navigation for the Daftar Nama page.
-  // Directs any clicks to 'siswa-siswi.html' directly.
   function ensureDaftarNamaNavigation() {
     if (window.__ckDaftarNamaNavigationFixed) return;
     window.__ckDaftarNamaNavigationFixed = true;
@@ -159,15 +165,14 @@
       event.preventDefault();
       event.stopPropagation();
       document.body.classList.add('ck-page-leaving');
-      window.setTimeout(() => {
-        window.location.assign(new URL('siswa-siswi.html', document.baseURI).href);
-      }, 150);
+      window.setTimeout(() => window.location.assign(new URL('siswa-siswi.html', document.baseURI).href), 150);
     }, true);
   }
 
   function run() {
     replaceTextNodes(document.body);
     updateVisibleAttributes();
+    forceOfficialLogo();
     ensureJenisKeuangan();
     improveExcelDownload();
     ensureSmoothBottomNavigation();
@@ -175,13 +180,9 @@
     if (location.pathname.endsWith('dashboard-excel.html')) setTimeout(improveExcelDownload, 500);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run, { once: true });
-  } else {
-    run();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
+  else run();
 
-  /* Observe only newly inserted DOM nodes. Do not observe characterData. */
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       if (mutation.type !== 'childList' || !mutation.addedNodes.length) continue;
@@ -189,6 +190,7 @@
         if (node.nodeType === Node.ELEMENT_NODE) {
           replaceTextNodes(node);
           updateVisibleAttributes();
+          forceOfficialLogo(node);
         }
       });
     }
