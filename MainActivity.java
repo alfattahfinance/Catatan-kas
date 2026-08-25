@@ -40,6 +40,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Locale;
+import android.webkit.DownloadListener;
+import android.webkit.MimeTypeMap;
+
 
 public class MainActivity extends AppCompatActivity {
     private static final int FILE_CHOOSER_REQUEST=4101;
@@ -79,7 +82,20 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient(){
             @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){
                 return openFileChooser(callback,params);
-            }
+             }
+         webView.setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(
+                    String url,
+                    String userAgent,
+                    String contentDisposition,
+                    String mimeType,
+                    long contentLength
+    ) {
+        downloadWebFile(url, contentDisposition, mimeType);
+    }
+});
+            
             @SuppressWarnings("unused")
             public void openFileChooser(ValueCallback<Uri> callback,String acceptType,String capture){
                 ValueCallback<Uri[]> modern=uris->{if(callback!=null)callback.onReceiveValue(uris!=null&&uris.length>0?uris[0]:null);};
@@ -117,20 +133,157 @@ public class MainActivity extends AppCompatActivity {
         return out.toArray(new String[0]);
     }
 
-    private boolean startNativeFilePicker(ValueCallback<Uri[]> callback,String[] accepts){
-        if(filePathCallback!=null)filePathCallback.onReceiveValue(null);
-        filePathCallback=callback;
-        boolean imageOnly=accepts.length>0;
-        boolean hasUsableMime=false;
-        ArrayList<String> mimeTypes=new ArrayList<>();
-        for(String a:accepts){
-            String x=a.toLowerCase(Locale.ROOT);
-            if(x.startsWith("image/")){hasUsableMime=true;if(!mimeTypes.contains(x))mimeTypes.add(x);}
-            else if(x.contains("/")){hasUsableMime=true;if(!mimeTypes.contains(x))mimeTypes.add(x);imageOnly=false;}
-            else if(x.equals(".jpg")||x.equals(".jpeg")||x.equals(".png")||x.equals(".webp")||x.equals(".gif")||x.equals(".bmp")){hasUsableMime=true;}
-            else if(x.equals(".xlsx")||x.equals(".xls")||x.equals(".csv")||x.equals(".txt")){imageOnly=false;}
-            else imageOnly=false;
+    private boolean startNativeFilePicker(ValueCallback<Uri[]> callback, String[] accepts) {
+
+    if (filePathCallback != null) {
+        filePathCallback.onReceiveValue(null);
+    }
+
+    filePathCallback = callback;
+
+    ArrayList<String> mimeTypes = new ArrayList<>();
+
+    boolean imageRequest = false;
+    boolean documentRequest = false;
+
+    if (accepts != null) {
+        for (String raw : accepts) {
+            if (raw == null) continue;
+
+            for (String part : raw.split(",")) {
+                String a = part.trim().toLowerCase(Locale.ROOT);
+
+                if (a.isEmpty()) continue;
+
+                if (a.startsWith("image/")) {
+                    imageRequest = true;
+                    if (!mimeTypes.contains(a)) {
+                        mimeTypes.add(a);
+                    }
+                }
+
+                else if (a.equals(".jpg") ||
+                         a.equals(".jpeg") ||
+                         a.equals(".png") ||
+                         a.equals(".webp") ||
+                         a.equals(".gif") ||
+                         a.equals(".bmp")) {
+
+                    imageRequest = true;
+                }
+
+                else if (a.equals(".xlsx")) {
+                    documentRequest = true;
+                    mimeTypes.add(
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    );
+                }
+
+                else if (a.equals(".xls")) {
+                    documentRequest = true;
+                    mimeTypes.add(
+                            "application/vnd.ms-excel"
+                    );
+                }
+
+                else if (a.equals(".csv")) {
+                    documentRequest = true;
+                    mimeTypes.add("text/csv");
+                    mimeTypes.add("text/comma-separated-values");
+                }
+
+                else if (a.equals(".txt")) {
+                    documentRequest = true;
+                    mimeTypes.add("text/plain");
+                }
+
+                else if (a.equals("*/*")) {
+                    documentRequest = true;
+                }
+
+                else if (a.contains("/")) {
+                    documentRequest = true;
+                    if (!mimeTypes.contains(a)) {
+                        mimeTypes.add(a);
+                    }
+                }
+            }
         }
+    }
+
+    String mimeType;
+
+    if (imageRequest && !documentRequest) {
+        mimeType = "image/*";
+    } else {
+        mimeType = "*/*";
+    }
+
+    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+    intent.addCategory(Intent.CATEGORY_OPENABLE);
+    intent.setType(mimeType);
+
+    if (!mimeTypes.isEmpty() && !imageRequest) {
+        intent.putExtra(
+                Intent.EXTRA_MIME_TYPES,
+                mimeTypes.toArray(new String[0])
+        );
+    }
+
+    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+
+    intent.addFlags(
+            Intent.FLAG_GRANT_READ_URI_PERMISSION |
+            Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+    );
+
+    try {
+        startActivityForResult(
+                Intent.createChooser(intent, "Pilih File"),
+                FILE_CHOOSER_REQUEST
+        );
+
+        return true;
+
+    } catch (Exception e) {
+
+        try {
+            Intent fallback = new Intent(Intent.ACTION_GET_CONTENT);
+            fallback.addCategory(Intent.CATEGORY_OPENABLE);
+            fallback.setType(mimeType);
+
+            if (!mimeTypes.isEmpty() && !imageRequest) {
+                fallback.putExtra(
+                        Intent.EXTRA_MIME_TYPES,
+                        mimeTypes.toArray(new String[0])
+                );
+            }
+
+            fallback.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+
+            fallback.addFlags(
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+            );
+
+            startActivityForResult(
+                    Intent.createChooser(fallback, "Pilih File"),
+                    FILE_CHOOSER_REQUEST
+            );
+
+            return true;
+
+        } catch (Exception second) {
+
+            filePathCallback = null;
+
+            showMessage(
+                    "Pemilih file tidak tersedia di perangkat ini."
+            );
+
+            return false;
+        }
+    }
+    }
         if(!hasUsableMime&&accepts.length>0)imageOnly=false;
         String mime=imageOnly?"image/*":"*/*";
         Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
@@ -164,16 +317,155 @@ public class MainActivity extends AppCompatActivity {
         content.setAlpha(0f);logo.setAlpha(0f);logo.setScaleX(.78f);logo.setScaleY(.78f);title.setAlpha(0f);subtitle.setAlpha(0f);
         logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(650).setInterpolator(new android.view.animation.OvershootInterpolator(1.2f)).start();content.animate().alpha(1f).setStartDelay(120).setDuration(500).start();title.animate().alpha(1f).setStartDelay(360).setDuration(500).start();subtitle.animate().alpha(1f).setStartDelay(520).setDuration(500).start();
     }
-    private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
-    @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){
-        super.onActivityResult(requestCode,resultCode,data);
-        if(requestCode!=FILE_CHOOSER_REQUEST||filePathCallback==null)return;
-        Uri[] results=null;
-        if(resultCode==RESULT_OK&&data!=null){
-            if(data.getClipData()!=null&&data.getClipData().getItemCount()>0)results=new Uri[]{data.getClipData().getItemAt(0).getUri()};
-            else if(data.getData()!=null)results=new Uri[]{data.getData()};
+
+    private void downloadWebFile(
+        String url,
+        String contentDisposition,
+        String mimeType
+) {
+    try {
+
+        if (url == null || url.trim().isEmpty()) {
+            showMessage("File tidak dapat diunduh.");
+            return;
         }
-        ValueCallback<Uri[]> cb=filePathCallback;filePathCallback=null;cb.onReceiveValue(results);
+
+        String fileName = null;
+
+        if (contentDisposition != null) {
+            android.content.Intent dummy = new android.content.Intent();
+
+            String cd = contentDisposition;
+
+            int index = cd.toLowerCase(Locale.ROOT)
+                    .indexOf("filename=");
+
+            if (index >= 0) {
+                fileName = cd.substring(index + 9)
+                        .replace("\"", "")
+                        .replace("'", "")
+                        .trim();
+            }
+        }
+
+        if (fileName == null || fileName.isEmpty()) {
+
+            String extension = MimeTypeMap
+                    .getSingleton()
+                    .getExtensionFromMimeType(mimeType);
+
+            if (extension == null || extension.isEmpty()) {
+                extension = "xlsx";
+            }
+
+            fileName = "Catatan-Kas-" +
+                    System.currentTimeMillis() +
+                    "." +
+                    extension;
+        }
+
+        DownloadManager.Request request =
+                new DownloadManager.Request(Uri.parse(url));
+
+        request.setTitle(fileName);
+        request.setDescription("Mengunduh file...");
+        request.setMimeType(
+                mimeType != null
+                        ? mimeType
+                        : "application/octet-stream"
+        );
+
+        request.setNotificationVisibility(
+                DownloadManager.Request
+                        .VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+        );
+
+        request.setDestinationInExternalPublicDir(
+                Environment.DIRECTORY_DOWNLOADS,
+                fileName
+        );
+
+        request.addRequestHeader(
+                "User-Agent",
+                "Mozilla/5.0 Android CatatanKas"
+        );
+
+        request.setAllowedOverMetered(true);
+        request.setAllowedOverRoaming(true);
+
+        downloadManager.enqueue(request);
+
+        showMessage(
+                "File sedang diunduh ke folder Download."
+        );
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+        showMessage(
+                "Gagal mengunduh file."
+        );
+    }
+
+    private int dp(int n) {
+        return Math.round(
+                n * getResources().getDisplayMetrics().density
+        );
+    }
+
+    @Override
+    protected void onActivityResult(
+            int requestCode,
+            int resultCode,
+            Intent data
+    ) {
+        super.onActivityResult(
+                requestCode,
+                resultCode,
+                data
+        );
+
+
+    if (requestCode != FILE_CHOOSER_REQUEST) {
+        return;
+    }
+
+    if (filePathCallback == null) {
+        return;
+    }
+
+    Uri[] results = null;
+
+    if (resultCode == RESULT_OK && data != null) {
+
+        if (data.getClipData() != null) {
+
+            int count =
+                    data.getClipData().getItemCount();
+
+            if (count > 0) {
+
+                results = new Uri[]{
+                        data.getClipData()
+                                .getItemAt(0)
+                                .getUri()
+                };
+            }
+
+        } else if (data.getData() != null) {
+
+            results = new Uri[]{
+                    data.getData()
+            };
+        }
+    }
+
+    ValueCallback<Uri[]> callback =
+            filePathCallback;
+
+    filePathCallback = null;
+
+    callback.onReceiveValue(results);
     }
     @Override protected void onResume(){super.onResume();if(waitingInstallPermission&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.O&&getPackageManager().canRequestPackageInstalls()){waitingInstallPermission=false;if(pendingApkFile!=null)installApk(pendingApkFile);}}
     public class AndroidDownload{@JavascriptInterface public void downloadApk(String apkUrl,String version){runOnUiThread(()->startApkDownload(apkUrl,version));}}
