@@ -131,6 +131,10 @@
     });
   }
 
+  function scheduleApplyLogos() {
+    window.setTimeout(() => applyLogos(), 0);
+  }
+
   function ensureJenisKeuangan() {
     if (window.ckJenisKeuangan) return;
     if (!document.querySelector('#jenis, #jenisPembayaran, #jenisPengeluaran, #filterKategori, #ckDaftarJenis')) return;
@@ -221,15 +225,20 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
   else run();
 
-  window.addEventListener('accountReady', applyLogos);
-  window.addEventListener('accountDataReady', applyLogos);
-  window.addEventListener('logoDashboardChanged', applyLogos);
-  window.addEventListener('settingsChanged', applyLogos);
-  window.addEventListener('pageshow', applyLogos);
-  window.addEventListener('focus', applyLogos);
+  window.addEventListener('accountReady', scheduleApplyLogos);
+  window.addEventListener('accountDataReady', scheduleApplyLogos);
+  window.addEventListener('logoDashboardChanged', scheduleApplyLogos);
+  window.addEventListener('settingsChanged', scheduleApplyLogos);
+  window.addEventListener('pageshow', scheduleApplyLogos);
+  window.addEventListener('focus', scheduleApplyLogos);
 
   const observer = new MutationObserver(mutations => {
+    let logoAttributeChanged = false;
     for (const mutation of mutations) {
+      if (mutation.type === 'attributes' && mutation.target instanceof HTMLImageElement) {
+        logoAttributeChanged = true;
+        continue;
+      }
       if (mutation.type !== 'childList' || !mutation.addedNodes.length) continue;
       mutation.addedNodes.forEach(node => {
         if (node.nodeType !== Node.ELEMENT_NODE) return;
@@ -238,10 +247,16 @@
         applyLogos(node);
       });
     }
+    if (logoAttributeChanged) scheduleApplyLogos();
   });
 
   const startObserver = () => {
-    if (document.body) observer.observe(document.body, { childList: true, subtree: true });
+    if (document.body) observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['src', 'srcset', 'data-src']
+    });
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startObserver, { once: true });
   else startObserver();
