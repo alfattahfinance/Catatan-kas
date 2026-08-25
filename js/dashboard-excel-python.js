@@ -31,25 +31,65 @@ function ensureXLSX() {
 
 function collectRows() {
     const rows = [];
-    document.querySelectorAll('#body tr').forEach(tr => {
-        const td = tr.querySelectorAll('td');
-        if (td.length !== 17) return;
-        const row = {
+    const body = document.querySelector('#body');
+    if (!body) return rows;
+
+    body.querySelectorAll('tr').forEach(tr => {
+        const td = Array.from(tr.querySelectorAll('td'));
+        if (!td.length) return;
+        if (td.length === 1 && td[0].colSpan) return;
+        if (td.length < 17) return;
+
+        rows.push({
             Nama: td[0].textContent.trim(),
-            Jan: td[1].textContent.trim(), Feb: td[2].textContent.trim(),
-            Mar: td[3].textContent.trim(), Apr: td[4].textContent.trim(),
-            Mei: td[5].textContent.trim(), Jun: td[6].textContent.trim(),
-            Jul: td[7].textContent.trim(), Agu: td[8].textContent.trim(),
-            Sep: td[9].textContent.trim(), Okt: td[10].textContent.trim(),
-            Nov: td[11].textContent.trim(), Des: td[12].textContent.trim(),
+            Jan: td[1].textContent.trim(),
+            Feb: td[2].textContent.trim(),
+            Mar: td[3].textContent.trim(),
+            Apr: td[4].textContent.trim(),
+            Mei: td[5].textContent.trim(),
+            Jun: td[6].textContent.trim(),
+            Jul: td[7].textContent.trim(),
+            Agu: td[8].textContent.trim(),
+            Sep: td[9].textContent.trim(),
+            Okt: td[10].textContent.trim(),
+            Nov: td[11].textContent.trim(),
+            Des: td[12].textContent.trim(),
             'Periode Wajib': td[13].textContent.trim(),
             'Jumlah Bulan': td[14].textContent.trim(),
             'Sudah Bayar Sampai': td[15].textContent.trim(),
             'Total Masuk': td[16].textContent.trim()
-        };
-        if (row.Nama) rows.push(row);
+        });
     });
     return rows;
+}
+
+function buildWorkbook(XLSX, rows) {
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [
+        {wch:28}, ...Array(12).fill({wch:7}),
+        {wch:25}, {wch:15}, {wch:22}, {wch:18}
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Rekap Pemasukan');
+    return wb;
+}
+
+function saveAndroid(XLSX, wb, filename) {
+    if (!window.AndroidWebUpdater || typeof window.AndroidWebUpdater.saveExcelBase64 !== 'function') {
+        return false;
+    }
+    const base64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+    const saved = window.AndroidWebUpdater.saveExcelBase64(base64, filename);
+    if (!saved) throw new Error('Excel berhasil dibuat tetapi gagal disimpan ke Download.');
+    status('✓ Excel tersimpan di Download.');
+    setTimeout(() => {
+        try {
+            if (typeof window.AndroidWebUpdater.openLastExcel === 'function') {
+                window.AndroidWebUpdater.openLastExcel();
+            }
+        } catch (_) {}
+    }, 350);
+    return true;
 }
 
 async function exportExcel(event) {
@@ -69,33 +109,15 @@ async function exportExcel(event) {
         const filename = `Rekap-Pemasukan-${year}.xlsx`;
 
         if (!rows.length) {
-            throw new Error('Tidak ada data untuk diekspor.');
+            throw new Error('Data tabel belum siap. Silakan tunggu sampai daftar pembayaran tampil.');
         }
 
-        const ws = XLSX.utils.json_to_sheet(rows);
-        ws['!cols'] = [
-            {wch:28}, ...Array(12).fill({wch:7}),
-            {wch:25}, {wch:15}, {wch:22}, {wch:18}
-        ];
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Rekap Pemasukan');
+        const wb = buildWorkbook(XLSX, rows);
 
-        if (window.AndroidWebUpdater && typeof window.AndroidWebUpdater.saveExcelBase64 === 'function') {
-            const base64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-            const saved = window.AndroidWebUpdater.saveExcelBase64(base64, filename);
-            if (!saved) throw new Error('Excel berhasil dibuat tetapi gagal disimpan ke Download.');
-            status('✓ Excel tersimpan di Download.');
-            setTimeout(() => {
-                try {
-                    if (typeof window.AndroidWebUpdater.openLastExcel === 'function') {
-                        window.AndroidWebUpdater.openLastExcel();
-                    }
-                } catch (_) {}
-            }, 350);
-        } else {
-            XLSX.writeFile(wb, filename);
-            status('✓ Excel berhasil diekspor.');
-        }
+        if (saveAndroid(XLSX, wb, filename)) return;
+
+        XLSX.writeFile(wb, filename);
+        status(`✓ Excel berhasil diekspor (${rows.length} nama).`);
     } catch (e) {
         console.error('Export Excel:', e);
         status('Export Excel gagal: ' + (e?.message || 'kesalahan tidak diketahui.'), false);
@@ -111,7 +133,6 @@ function connectButton() {
         button.dataset.excelBridgeConnected = '1';
         button.innerHTML = '<i class="bi bi-file-earmark-excel me-1"></i>Export Excel';
         button.title = 'Export data ke file Excel';
-        /* Capture + stopImmediatePropagation mencegah handler lama yang salah ikut berjalan. */
         button.addEventListener('click', exportExcel, true);
     });
     return buttons.length > 0;
