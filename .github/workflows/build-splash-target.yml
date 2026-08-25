@@ -1,9 +1,7 @@
 name: Build Keuangan APK - Splash Target
 
-# Splash-only build.
-# Satu sumber logo: Photoroom_20260812_224807.png
-# icon-192.png, icon-512.png, splash-logo.png, dan ic_keuangan.png
-# dibuat otomatis saat workflow berjalan.
+# Satu-satunya sumber logo: Photoroom_20260812_224807.png
+# icon-192, icon-512, splash-logo, dan ic_keuangan dibuat otomatis.
 on:
   workflow_dispatch:
   push:
@@ -56,7 +54,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK and image tools
+      - name: Install Android SDK
         shell: bash
         run: |
           set -euo pipefail
@@ -87,16 +85,16 @@ jobs:
             app/src/main/assets \
             app/src/main/python
 
+          test -s "Photoroom_20260812_224807.png"
+          test -s "python/rekap_pembayaran.py"
+          test -s "UpdatableMainActivity.java"
+
           rsync -a \
             --exclude='.git/' \
             --exclude='.github/' \
             --exclude='app/' \
             --exclude='output/' \
             ./ app/src/main/assets/
-
-          test -s "Photoroom_20260812_224807.png"
-          test -s "python/rekap_pembayaran.py"
-          test -s "UpdatableMainActivity.java"
 
           cp python/rekap_pembayaran.py \
             app/src/main/python/rekap_pembayaran.py
@@ -111,9 +109,7 @@ jobs:
           source = Path("Photoroom_20260812_224807.png")
           assets = Path("app/src/main/assets")
           drawable = Path("app/src/main/res/drawable")
-
           img = Image.open(source).convert("RGBA")
-          print("Logo asli:", img.size)
 
           def make_square_icon(size, output):
               canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -123,12 +119,13 @@ jobs:
               y = (size - copy.height) // 2
               canvas.alpha_composite(copy, (x, y))
               canvas.save(output, "PNG", optimize=True)
-              print(f"Created {output}: {size}x{size}")
+              print(f"Created: {output} -> {size}x{size}")
 
           make_square_icon(192, assets / "icon-192.png")
           make_square_icon(512, assets / "icon-512.png")
           img.save(assets / "splash-logo.png", "PNG", optimize=True)
           make_square_icon(512, drawable / "ic_keuangan.png")
+          print("Semua logo dibuat dari Photoroom_20260812_224807.png")
           PY
 
           python - <<'PY'
@@ -138,26 +135,14 @@ jobs:
           p = Path("app/src/main/java/com/catatankas/app/UpdatableMainActivity.java")
           s = p.read_text(encoding="utf-8")
 
-          # Pastikan MediaStore tersedia untuk fitur Excel/Download.
-          if "import android.provider.MediaStore;" not in s:
-              marker = "import android.os.Bundle;"
-              if marker in s:
-                  s = s.replace(
-                      marker,
-                      marker + "\nimport android.provider.MediaStore;",
-                      1,
-                  )
-              else:
-                  s = "import android.provider.MediaStore;\n" + s
-
-          # Semua pembacaan asset gambar splash diarahkan ke logo final.
+          # Source memakai getAssets() dan .open() pada baris berbeda.
+          # Regex ini menangani spasi maupun newline agar benar-benar diganti.
           s = re.sub(
-              r'getAssets\(\)\.open\("[^"]+"\)',
+              r'getAssets\(\)\s*\.open\(\s*"[^"]+"\s*\)',
               'getAssets().open("splash-logo.png")',
               s,
           )
 
-          # Perbesar logo splash bila pola lama masih ada.
           old_size = (
               'Math.min(dpSplash(185),'
               'Math.max(dpSplash(135),'
@@ -273,16 +258,13 @@ jobs:
               targetSdk 35
               versionCode 20700
               versionName '2.7'
-
               ndk {
                 abiFilters 'arm64-v8a', 'armeabi-v7a'
               }
             }
 
             buildTypes {
-              debug {
-                minifyEnabled false
-              }
+              debug { minifyEnabled false }
               release {
                 minifyEnabled false
                 shrinkResources false
@@ -374,7 +356,6 @@ jobs:
               webView = new WebView(this);
               webView.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
               setContentView(webView);
-
               WebSettings s = webView.getSettings();
               s.setJavaScriptEnabled(true);
               s.setDomStorageEnabled(true);
@@ -382,10 +363,9 @@ jobs:
               s.setAllowFileAccess(true);
               s.setAllowContentAccess(true);
 
-              final WebViewAssetLoader loader =
-                new WebViewAssetLoader.Builder()
-                  .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                  .build();
+              final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
+                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
 
               webView.setWebViewClient(new android.webkit.WebViewClient() {
                 @Override
@@ -432,9 +412,6 @@ jobs:
 
           grep -q '@drawable/ic_keuangan' \
             app/src/main/AndroidManifest.xml
-
-          grep -q 'import android.provider.MediaStore;' \
-            app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
 
           python - <<'PY'
           from PIL import Image
