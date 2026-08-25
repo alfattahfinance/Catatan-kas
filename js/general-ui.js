@@ -1,12 +1,22 @@
 /*
- * General UI labels for the public release of Keuangan.
- * IMPORTANT: this changes visible labels only. Firebase collection/field names
- * such as "santri" are intentionally NOT renamed so existing data remains safe.
+ * General UI for Keuangan.
+ * Satu pengelola logo untuk semua halaman:
+ * - tanpa akun -> logo bawaan
+ * - dengan akun -> logo milik akun
+ * - tidak pernah memakai logo akun lain / logo lama
  */
 (() => {
   'use strict';
 
-  const OFFICIAL_LOGO = 'Photoroom_20260812_224807.png?v=20260826';
+  const DEFAULT_LOGO = 'Photoroom_20260812_224807.png?v=20260826';
+  const LOGO_SELECTOR = [
+    '.app-logo', '.ck-logo', '.logo', '#logoDashboard', '#dashboardLogo',
+    '#logo', '#laporanLogo', '#logoPreviewV2', '#logoPreview',
+    '#previewLogoDashboard', 'img[alt="Logo Catatan Kas"]',
+    'img[alt="Logo Dashboard"]', 'img[alt="Logo aplikasi"]',
+    'img[alt="Logo Keuangan"]', '[data-dashboard-logo]'
+  ].join(',');
+
   const replacements = [
     ['Pembayaran Santri', 'Pembayaran'],
     ['Pembayaran Peserta Didik', 'Pembayaran'],
@@ -41,9 +51,7 @@
 
   function replaceString(text) {
     let result = String(text ?? '');
-    for (const [from, to] of replacements) {
-      if (result.includes(from)) result = result.replaceAll(from, to);
-    }
+    for (const [from, to] of replacements) result = result.replaceAll(from, to);
     return result;
   }
 
@@ -53,41 +61,73 @@
     const nodes = [];
     let node;
     while ((node = walker.nextNode())) nodes.push(node);
-    for (const textNode of nodes) {
+    nodes.forEach(textNode => {
       const before = textNode.nodeValue || '';
       const after = replaceString(before);
       if (after !== before) textNode.nodeValue = after;
-    }
+    });
   }
 
   function updateVisibleAttributes() {
     document.querySelectorAll('[title],[aria-label],input[placeholder],textarea[placeholder]').forEach(el => {
-      for (const attr of ['title', 'aria-label', 'placeholder']) {
-        if (el.hasAttribute(attr)) {
-          const before = el.getAttribute(attr) || '';
-          const after = replaceString(before);
-          if (after !== before) el.setAttribute(attr, after);
-        }
-      }
+      ['title', 'aria-label', 'placeholder'].forEach(attr => {
+        if (!el.hasAttribute(attr)) return;
+        const before = el.getAttribute(attr) || '';
+        const after = replaceString(before);
+        if (after !== before) el.setAttribute(attr, after);
+      });
     });
     if (document.title) document.title = replaceString(document.title);
     document.querySelectorAll('meta[name="description"],meta[property="og:title"],meta[property="og:description"]').forEach(el => {
-      const before = el.getAttribute('content') || '';
-      const after = replaceString(before);
-      if (after !== before) el.setAttribute('content', after);
+      el.setAttribute('content', replaceString(el.getAttribute('content') || ''));
     });
     document.querySelectorAll('a[href="santri.html"]').forEach(el => el.setAttribute('href', 'siswa-siswi.html'));
   }
 
-  function forceOfficialLogo(root = document) {
-    const selector = '.app-logo,.ck-logo,.logo,#logoDashboard,#dashboardLogo,#logo,#laporanLogo,#logoPreviewV2,#logoPreview,#logoPreviewV2,#previewLogoDashboard,img[alt="Logo Catatan Kas"],img[alt="Logo Dashboard"],img[alt="Logo aplikasi"],[data-dashboard-logo]';
-    const imgs = root.querySelectorAll ? root.querySelectorAll(selector) : [];
-    imgs.forEach(img => {
-      if (img.tagName !== 'IMG') return;
+  function currentUid() {
+    return String(window.currentFirebaseUid || '').trim();
+  }
+
+  function readJson(key) {
+    try { return JSON.parse(localStorage.getItem(key) || '{}') || {}; }
+    catch (_) { return {}; }
+  }
+
+  function validLogo(value) {
+    const v = String(value || '').trim();
+    if (!v || /logo-catatan-kas\.(?:jpg|jpeg|png|webp)$/i.test(v)) return false;
+    return /^data:image\//i.test(v) || /^https?:\/\//i.test(v) ||
+      /^(?:\.\/)?[\w./-]+\.(?:png|jpe?g|webp|gif|svg)(?:\?.*)?$/i.test(v);
+  }
+
+  function configuredLogo() {
+    const uid = currentUid();
+    if (!uid) return DEFAULT_LOGO;
+
+    const scopedLogo = String(localStorage.getItem(`logoDashboard_${uid}`) || '').trim();
+    if (validLogo(scopedLogo)) return scopedLogo;
+
+    const scopedSettings = readJson(`pengaturanAplikasi_${uid}`);
+    const fromSettings = scopedSettings.logoDashboard || scopedSettings.logo || scopedSettings.logoUrl;
+    if (validLogo(fromSettings)) return fromSettings;
+
+    return DEFAULT_LOGO;
+  }
+
+  function applyLogos(root = document) {
+    const logo = configuredLogo();
+    const nodes = root.querySelectorAll ? root.querySelectorAll(LOGO_SELECTOR) : [];
+    nodes.forEach(img => {
+      if (!(img instanceof HTMLImageElement)) return;
       img.removeAttribute('srcset');
+      img.removeAttribute('sizes');
       img.removeAttribute('data-src');
-      img.dataset.logoSource = 'official-20260826';
-      if (!img.src.endsWith('Photoroom_20260812_224807.png?v=20260826')) img.src = OFFICIAL_LOGO;
+      img.dataset.logoManager = 'account-single-source';
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = DEFAULT_LOGO;
+      };
+      if (img.getAttribute('src') !== logo) img.src = logo;
     });
   }
 
@@ -131,11 +171,10 @@
     if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
     let target;
     try { target = new URL(href, document.baseURI); } catch (_) { return; }
-    if (target.origin !== location.origin) return;
-    if (!/\.html(?:$|[?#])/i.test(target.pathname)) return;
+    if (target.origin !== location.origin || !/\.html(?:$|[?#])/i.test(target.pathname)) return;
     link.dataset.ckSmoothNav = '1';
     document.body.classList.add('ck-page-leaving');
-    window.setTimeout(() => { window.location.assign(target.href); }, 150);
+    window.setTimeout(() => window.location.assign(target.href), 150);
   }
 
   function ensureSmoothBottomNavigation() {
@@ -143,8 +182,7 @@
     window.__ckSmoothBottomNavigationFixed = true;
     document.addEventListener('click', event => {
       const link = event.target instanceof Element ? event.target.closest('.ck-bottom a') : null;
-      if (!link) return;
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const href = link.getAttribute('href');
       if (!href) return;
       const target = new URL(href, document.baseURI);
@@ -172,7 +210,7 @@
   function run() {
     replaceTextNodes(document.body);
     updateVisibleAttributes();
-    forceOfficialLogo();
+    applyLogos();
     ensureJenisKeuangan();
     improveExcelDownload();
     ensureSmoothBottomNavigation();
@@ -183,15 +221,21 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
   else run();
 
+  window.addEventListener('accountReady', applyLogos);
+  window.addEventListener('accountDataReady', applyLogos);
+  window.addEventListener('logoDashboardChanged', applyLogos);
+  window.addEventListener('settingsChanged', applyLogos);
+  window.addEventListener('pageshow', applyLogos);
+  window.addEventListener('focus', applyLogos);
+
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       if (mutation.type !== 'childList' || !mutation.addedNodes.length) continue;
       mutation.addedNodes.forEach(node => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          replaceTextNodes(node);
-          updateVisibleAttributes();
-          forceOfficialLogo(node);
-        }
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        replaceTextNodes(node);
+        updateVisibleAttributes();
+        applyLogos(node);
       });
     }
   });
