@@ -1,10 +1,389 @@
 /* Export Excel untuk Dashboard Excel — berjalan di Updatable APK/Web. */
 (function(){
 'use strict';
-const $=id=>document.getElementById(id);
-function amount(x){return Number(x?.nominal??x?.jumlah??x?.nilai??x?.total??0)||0}function name(x){return String(x?.namaSantri??x?.nama_santri??x?.nama??'').trim()}function kind(x){return String(x?.jenis??x?.kategori??x?.jenisPembayaran??'Lainnya').trim()||'Lainnya'}function dateOf(x){const v=x?.tanggal??x?.date??x?.createdAt??x?.waktu;if(v?.toDate)return v.toDate();if(v instanceof Date)return v;if(typeof v==='number'){const d=new Date(v);return Number.isNaN(d.getTime())?null:d}if(typeof v==='string'){const d=new Date(/^\d{4}-\d{2}-\d{2}$/.test(v)?v+'T00:00:00':v);return Number.isNaN(d.getTime())?null:d}return null}
-function toast(msg,ok=true){let e=$('excelExportToast');if(e)e.remove();e=document.createElement('div');e.id='excelExportToast';e.textContent=msg;e.style.cssText=`position:fixed;left:50%;bottom:82px;transform:translateX(-50%);z-index:9999;background:${ok?'#198754':'#dc3545'};color:#fff;padding:10px 14px;border-radius:10px;font-size:.72rem;font-weight:800;box-shadow:0 5px 18px rgba(0,0,0,.25)`;document.body.appendChild(e);setTimeout(()=>e.remove(),3000)}
-function ensureLibrary(){if(window.XLSX)return Promise.resolve();if(window.__xlsxLoading)return window.__xlsxLoading;window.__xlsxLoading=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';s.onload=()=>resolve();s.onerror=()=>reject(new Error('Library Excel tidak dapat dimuat'));document.head.appendChild(s)});return window.__xlsxLoading}
-async function exportExcel(){const user=window.currentFirebaseUser;if(!user){toast('Silakan login terlebih dahulu.',false);return}try{await ensureLibrary();const {getDocs,collection,query,where}=await import('https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js');const firebase=await import('../firebase-config.js');const snap=await getDocs(query(collection(firebase.db,'payments'),where('uid','==',user.uid)));const year=Number($('tahun')?.value)||new Date().getFullYear(),type=$('jenis')?.value||'Semua';const rows=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>{const d=dateOf(x);return d&&d.getFullYear()===year&&(type==='Semua'||kind(x).toLowerCase()===type.toLowerCase())});const detail=rows.map((x,i)=>{const d=dateOf(x);return{No:i+1,Nama:name(x),Tanggal:d?d.toLocaleDateString('id-ID'):'',Jenis:kind(x),Nominal:amount(x)}});const rekap={};detail.forEach(x=>{if(!rekap[x.Nama])rekap[x.Nama]={Nama:x.Nama};rekap[x.Nama][x.Jenis]=(rekap[x.Nama][x.Jenis]||0)+x.Nominal;rekap[x.Nama].Total=(rekap[x.Nama].Total||0)+x.Nominal});const wb=XLSX.utils.book_new(),ws1=XLSX.utils.json_to_sheet(detail),ws2=XLSX.utils.json_to_sheet(Object.values(rekap));XLSX.utils.book_append_sheet(wb,ws1,'Transaksi');XLSX.utils.book_append_sheet(wb,ws2,'Rekap Perorang');XLSX.writeFile(wb,`Rekap-Pembayaran-${year}.xlsx`);toast(`Excel berhasil dibuat (${detail.length} transaksi).`)}catch(e){console.error(e);toast('Gagal membuat Excel: '+(e?.message||e),false)}}
-function addButton(){if(window.AndroidPython)return;if(!$('tahun')||!$('jenis')||$('webExportExcel'))return;const host=document.querySelector('.filter')?.parentElement||document.querySelector('.cardx');if(!host)return;const b=document.createElement('button');b.id='webExportExcel';b.type='button';b.className='btn btn-success btn-sm mt-2';b.innerHTML='<i class="bi bi-file-earmark-excel me-1"></i>Export Excel';b.addEventListener('click',exportExcel);host.appendChild(b)}
-function init(){addButton();window.addEventListener('accountDataReady',addButton);setTimeout(addButton,300)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();})();
+
+const $ = id => document.getElementById(id);
+
+function amount(x){
+    return Number(
+        x?.nominal ??
+        x?.jumlah ??
+        x?.nilai ??
+        x?.total ??
+        0
+    ) || 0;
+}
+
+function name(x){
+    return String(
+        x?.namaSantri ??
+        x?.nama_santri ??
+        x?.nama ??
+        ''
+    ).trim();
+}
+
+function kind(x){
+    return String(
+        x?.jenis ??
+        x?.kategori ??
+        x?.jenisPembayaran ??
+        'Lainnya'
+    ).trim() || 'Lainnya';
+}
+
+function dateOf(x){
+    const v = x?.tanggal ?? x?.date ?? x?.createdAt ?? x?.waktu;
+
+    if(v?.toDate) return v.toDate();
+    if(v instanceof Date) return v;
+
+    if(typeof v === 'number'){
+        const d = new Date(v);
+        return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    if(typeof v === 'string'){
+        const d = new Date(
+            /^\d{4}-\d{2}-\d{2}$/.test(v)
+                ? v + 'T00:00:00'
+                : v
+        );
+        return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    return null;
+}
+
+function toast(msg, ok=true){
+    let e = $('excelExportToast');
+
+    if(e) e.remove();
+
+    e = document.createElement('div');
+    e.id = 'excelExportToast';
+    e.textContent = msg;
+
+    e.style.cssText =
+        `position:fixed;
+         left:50%;
+         bottom:82px;
+         transform:translateX(-50%);
+         z-index:9999;
+         background:${ok ? '#198754' : '#dc3545'};
+         color:#fff;
+         padding:10px 14px;
+         border-radius:10px;
+         font-size:.72rem;
+         font-weight:800;
+         box-shadow:0 5px 18px rgba(0,0,0,.25);`;
+
+    document.body.appendChild(e);
+
+    setTimeout(() => e.remove(), 3500);
+}
+
+function ensureLibrary(){
+    if(window.XLSX){
+        return Promise.resolve();
+    }
+
+    if(window.__xlsxLoading){
+        return window.__xlsxLoading;
+    }
+
+    window.__xlsxLoading = new Promise((resolve,reject) => {
+        const s = document.createElement('script');
+
+        s.src =
+            'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+
+        s.onload = () => resolve();
+        s.onerror = () =>
+            reject(new Error('Library Excel tidak dapat dimuat'));
+
+        document.head.appendChild(s);
+    });
+
+    return window.__xlsxLoading;
+}
+
+/*
+ * Menyimpan Excel melalui AndroidWebUpdater.
+ * Ini yang membuat Export Excel benar-benar bekerja di APK.
+ */
+async function saveExcelAndroid(wb, filename){
+
+    if(
+        window.AndroidWebUpdater &&
+        typeof window.AndroidWebUpdater.saveExcelBase64 === 'function'
+    ){
+
+        const base64 = XLSX.write(wb,{
+            bookType:'xlsx',
+            type:'base64'
+        });
+
+        const result =
+            window.AndroidWebUpdater.saveExcelBase64(
+                base64,
+                filename
+            );
+
+        if(!result){
+            throw new Error(
+                'Android tidak dapat menyimpan file Excel.'
+            );
+        }
+
+        toast(
+            'Excel berhasil disimpan ke folder Download.'
+        );
+
+        return true;
+    }
+
+    return false;
+}
+
+async function exportExcel(){
+
+    const user = window.currentFirebaseUser;
+
+    if(!user){
+        toast(
+            'Silakan login terlebih dahulu.',
+            false
+        );
+        return;
+    }
+
+    try{
+
+        toast('Menyiapkan file Excel...');
+
+        await ensureLibrary();
+
+        const {
+            getDocs,
+            collection,
+            query,
+            where
+        } = await import(
+            'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js'
+        );
+
+        const firebase =
+            await import('../firebase-config.js');
+
+        const snap = await getDocs(
+            query(
+                collection(firebase.db,'payments'),
+                where('uid','==',user.uid)
+            )
+        );
+
+        const year =
+            Number($('tahun')?.value) ||
+            new Date().getFullYear();
+
+        const type =
+            $('jenis')?.value ||
+            'Semua';
+
+        const rows = snap.docs
+            .map(d => ({
+                id:d.id,
+                ...d.data()
+            }))
+            .filter(x => {
+
+                const d = dateOf(x);
+
+                return d &&
+                    d.getFullYear() === year &&
+                    (
+                        type === 'Semua' ||
+                        kind(x).toLowerCase() ===
+                        type.toLowerCase()
+                    );
+            });
+
+        const detail = rows.map((x,i) => {
+
+            const d = dateOf(x);
+
+            return {
+                No:i + 1,
+                Nama:name(x),
+                Tanggal:d
+                    ? d.toLocaleDateString('id-ID')
+                    : '',
+                Jenis:kind(x),
+                Nominal:amount(x)
+            };
+        });
+
+        const rekap = {};
+
+        detail.forEach(x => {
+
+            if(!rekap[x.Nama]){
+                rekap[x.Nama] = {
+                    Nama:x.Nama
+                };
+            }
+
+            rekap[x.Nama][x.Jenis] =
+                (rekap[x.Nama][x.Jenis] || 0) +
+                x.Nominal;
+
+            rekap[x.Nama].Total =
+                (rekap[x.Nama].Total || 0) +
+                x.Nominal;
+        });
+
+        const wb = XLSX.utils.book_new();
+
+        const ws1 =
+            XLSX.utils.json_to_sheet(detail);
+
+        const ws2 =
+            XLSX.utils.json_to_sheet(
+                Object.values(rekap)
+            );
+
+        XLSX.utils.book_append_sheet(
+            wb,
+            ws1,
+            'Transaksi'
+        );
+
+        XLSX.utils.book_append_sheet(
+            wb,
+            ws2,
+            'Rekap Perorang'
+        );
+
+        const filename =
+            `Rekap-Pembayaran-${year}.xlsx`;
+
+        /*
+         * APK Android:
+         * gunakan bridge AndroidWebUpdater.
+         */
+        const savedAndroid =
+            await saveExcelAndroid(
+                wb,
+                filename
+            );
+
+        if(savedAndroid){
+            return;
+        }
+
+        /*
+         * Browser biasa:
+         * tetap gunakan download normal.
+         */
+        XLSX.writeFile(
+            wb,
+            filename
+        );
+
+        toast(
+            `Excel berhasil dibuat (${detail.length} transaksi).`
+        );
+
+    }catch(e){
+
+        console.error(
+            'Export Excel Error:',
+            e
+        );
+
+        toast(
+            'Gagal membuat Excel: ' +
+            (e?.message || e),
+            false
+        );
+    }
+}
+
+function addButton(){
+
+    /*
+     * JANGAN menggunakan AndroidPython.
+     * Bridge APK yang benar adalah AndroidWebUpdater.
+     */
+
+    if(!$('tahun') || !$('jenis')){
+        return;
+    }
+
+    if($('webExportExcel')){
+        return;
+    }
+
+    const host =
+        document.querySelector('.filter')?.parentElement ||
+        document.querySelector('.cardx');
+
+    if(!host){
+        return;
+    }
+
+    const b =
+        document.createElement('button');
+
+    b.id = 'webExportExcel';
+    b.type = 'button';
+    b.className =
+        'btn btn-success btn-sm mt-2';
+
+    b.innerHTML =
+        '<i class="bi bi-file-earmark-excel me-1"></i>' +
+        'Export Excel';
+
+    b.addEventListener(
+        'click',
+        exportExcel
+    );
+
+    host.appendChild(b);
+}
+
+function init(){
+
+    addButton();
+
+    window.addEventListener(
+        'accountDataReady',
+        addButton
+    );
+
+    setTimeout(
+        addButton,
+        300
+    );
+
+    setTimeout(
+        addButton,
+        1000
+    );
+}
+
+if(document.readyState === 'loading'){
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        init,
+        {once:true}
+    );
+
+}else{
+
+    init();
+}
+
+})();
