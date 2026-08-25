@@ -1,12 +1,18 @@
 name: Build Keuangan APK - Splash Target
 
+# Final splash-only build:
+# - Logo utama: Photoroom_20260812_224807.png
+# - icon-192.png dibuat otomatis
+# - icon-512.png dibuat otomatis
+# - splash-logo.png menggunakan logo yang sama
+# - ic_keuangan.png menggunakan logo yang sama
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - 'UpdatableMainActivity.java'
-      - 'Photoroom_20260812_224807.png'
+      - 'splash-logo.svg'
       - '.github/workflows/build-splash-target.yml'
       - '*.html'
       - '*.js'
@@ -50,7 +56,7 @@ jobs:
 
 
       # =========================================================
-      # PYTHON
+      # PYTHON 3.10
       # =========================================================
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
@@ -59,7 +65,7 @@ jobs:
 
 
       # =========================================================
-      # GRADLE
+      # GRADLE 8.9
       # =========================================================
       - name: Setup Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
@@ -75,11 +81,12 @@ jobs:
 
 
       # =========================================================
-      # INSTALL TOOLS
+      # INSTALL ANDROID SDK + IMAGE TOOLS
       # =========================================================
       - name: Install Android SDK and image tools
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
 
@@ -89,7 +96,18 @@ jobs:
             "build-tools;35.0.0"
 
           sudo apt-get update -qq
-          sudo apt-get install -y -qq imagemagick
+          sudo apt-get install -y -qq librsvg2-bin
+
+
+      # =========================================================
+      # INSTALL PILLOW
+      # Digunakan untuk membuat icon-192 dan icon-512
+      # otomatis dari logo utama.
+      # =========================================================
+      - name: Install Python Pillow
+        shell: bash
+        run: |
+          set -euo pipefail
 
           python -m pip install --upgrade pip
           python -m pip install Pillow
@@ -103,15 +121,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "=========================================="
-          echo "PREPARE KEUANGAN APK"
-          echo "=========================================="
-
-          # Bersihkan project hasil build sebelumnya
-          rm -rf app
-          rm -f build.gradle
-          rm -f settings.gradle
-          rm -f gradle.properties
+          # -----------------------------------------------------
+          # Bersihkan project Android sementara
+          # -----------------------------------------------------
+          rm -rf app build.gradle settings.gradle gradle.properties
 
           mkdir -p \
             app/src/main/java/com/catatankas/app \
@@ -120,21 +133,9 @@ jobs:
             app/src/main/assets \
             app/src/main/python
 
-          # =====================================================
-          # CEK LOGO UTAMA
-          # =====================================================
-          echo "Memeriksa logo utama..."
-
-          test -f "Photoroom_20260812_224807.png"
-          test -s "Photoroom_20260812_224807.png"
-
-          echo "Logo ditemukan:"
-          ls -lh "Photoroom_20260812_224807.png"
-
-
-          # =====================================================
-          # SALIN FILE WEB KE ASSETS
-          # =====================================================
+          # -----------------------------------------------------
+          # Salin file aplikasi ke assets
+          # -----------------------------------------------------
           rsync -a \
             --exclude='.git/' \
             --exclude='.github/' \
@@ -142,64 +143,73 @@ jobs:
             --exclude='output/' \
             ./ app/src/main/assets/
 
+          # -----------------------------------------------------
+          # Python Chaquopy
+          # -----------------------------------------------------
+          cp python/rekap_pembayaran.py \
+            app/src/main/python/rekap_pembayaran.py
 
-          # =====================================================
-          # PYTHON CHAQUOPY
-          # =====================================================
-          if [ -f "python/rekap_pembayaran.py" ]; then
-            cp python/rekap_pembayaran.py \
-              app/src/main/python/rekap_pembayaran.py
-          fi
-
-
-          # =====================================================
-          # MAIN ACTIVITY
-          # =====================================================
+          # -----------------------------------------------------
+          # Main Activity
+          # -----------------------------------------------------
           cp UpdatableMainActivity.java \
             app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
 
 
           # =====================================================
-          # LOGO SPLASH
+          # LOGO FINAL
+          # SATU-SATUNYA SUMBER:
+          # Photoroom_20260812_224807.png
           # =====================================================
-          cp Photoroom_20260812_224807.png \
-            app/src/main/assets/splash-logo.png
+
+          echo "=========================================="
+          echo "MEMERIKSA LOGO UTAMA"
+          echo "=========================================="
+
+          test -s "Photoroom_20260812_224807.png"
+
+          echo "Logo utama ditemukan:"
+          ls -lh "Photoroom_20260812_224807.png"
 
 
           # =====================================================
-          # LOGO APK
+          # BUAT SEMUA LOGO DARI SUMBER YANG SAMA
           # =====================================================
-          cp Photoroom_20260812_224807.png \
-            app/src/main/res/drawable/ic_keuangan.png
-
-
-          # =====================================================
-          # GENERATE ICON 192 DAN 512 OTOMATIS
-          # =====================================================
-          echo "Membuat icon-192.png..."
-          echo "Membuat icon-512.png..."
-
           python - <<'PY'
-          from PIL import Image
           from pathlib import Path
+          from PIL import Image
 
           source = Path("Photoroom_20260812_224807.png")
 
-          if not source.exists():
-              raise SystemExit("Logo utama tidak ditemukan")
+          assets = Path("app/src/main/assets")
+          drawable = Path("app/src/main/res/drawable")
 
+          assets.mkdir(parents=True, exist_ok=True)
+          drawable.mkdir(parents=True, exist_ok=True)
+
+          # -----------------------------------------------------
+          # Buka logo utama
+          # -----------------------------------------------------
           img = Image.open(source).convert("RGBA")
 
-          def make_icon(size, output):
-              # Pertahankan rasio logo
-              copy = img.copy()
-              copy.thumbnail((size, size), Image.Resampling.LANCZOS)
+          print("Logo asli :", img.size)
 
-              # Canvas transparan persegi
+          # -----------------------------------------------------
+          # Fungsi membuat icon persegi dengan transparansi
+          # tanpa merusak rasio logo.
+          # -----------------------------------------------------
+          def make_square_icon(size, output):
               canvas = Image.new(
                   "RGBA",
                   (size, size),
                   (0, 0, 0, 0)
+              )
+
+              copy = img.copy()
+
+              copy.thumbnail(
+                  (size, size),
+                  Image.Resampling.LANCZOS
               )
 
               x = (size - copy.width) // 2
@@ -209,65 +219,88 @@ jobs:
 
               canvas.save(
                   output,
-                  format="PNG",
+                  "PNG",
                   optimize=True
               )
 
-              print(f"Created {output}: {size}x{size}")
+              print(
+                  f"Created: {output} -> "
+                  f"{size}x{size}"
+              )
 
-          make_icon(
+
+          # -----------------------------------------------------
+          # ICON 192
+          # -----------------------------------------------------
+          make_square_icon(
               192,
-              "app/src/main/assets/icon-192.png"
+              assets / "icon-192.png"
           )
 
-          make_icon(
+
+          # -----------------------------------------------------
+          # ICON 512
+          # -----------------------------------------------------
+          make_square_icon(
               512,
-              "app/src/main/assets/icon-512.png"
+              assets / "icon-512.png"
           )
 
-          print("ICON GENERATION SUCCESS")
+
+          # -----------------------------------------------------
+          # SPLASH LOGO
+          # Menggunakan logo sumber yang sama.
+          # -----------------------------------------------------
+          img.save(
+              assets / "splash-logo.png",
+              "PNG",
+              optimize=True
+          )
+
+          print(
+              "Created: app/src/main/assets/splash-logo.png"
+          )
+
+
+          # -----------------------------------------------------
+          # ANDROID APPLICATION ICON
+          # Menggunakan versi 512x512.
+          # -----------------------------------------------------
+          make_square_icon(
+              512,
+              drawable / "ic_keuangan.png"
+          )
+
+          print(
+              "Created: "
+              "app/src/main/res/drawable/ic_keuangan.png"
+          )
+
+          print("==========================================")
+          print("SEMUA LOGO BERHASIL DIBUAT")
+          print("==========================================")
           PY
 
 
           # =====================================================
-          # VERIFIKASI FILE HASIL GENERATE
-          # =====================================================
-          echo ""
-          echo "=========================================="
-          echo "CHECK GENERATED LOGOS"
-          echo "=========================================="
-
-          test -s app/src/main/assets/splash-logo.png
-          test -s app/src/main/assets/icon-192.png
-          test -s app/src/main/assets/icon-512.png
-          test -s app/src/main/res/drawable/ic_keuangan.png
-
-          file \
-            app/src/main/assets/splash-logo.png \
-            app/src/main/assets/icon-192.png \
-            app/src/main/assets/icon-512.png \
-            app/src/main/res/drawable/ic_keuangan.png
-
-          echo ""
-          echo "SEMUA LOGO BERHASIL DIBUAT."
-
-
-          # =====================================================
-          # PATCH UPDATABLE MAIN ACTIVITY
+          # UPDATE UPDATABLE MAIN ACTIVITY
           # =====================================================
           python - <<'PY'
           import re
           from pathlib import Path
 
           p = Path(
-              "app/src/main/java/com/catatankas/app/UpdatableMainActivity.java"
+              "app/src/main/java/com/catatankas/app/"
+              "UpdatableMainActivity.java"
           )
 
           s = p.read_text(encoding="utf-8")
 
 
-          # Semua pembacaan asset gambar splash diarahkan
-          # ke logo yang sama
+          # -----------------------------------------------------
+          # Paksa semua pembacaan asset splash menjadi:
+          # splash-logo.png
+          # -----------------------------------------------------
           s = re.sub(
               r'getAssets\(\)\.open\("[^"]+"\)',
               'getAssets().open("splash-logo.png")',
@@ -275,8 +308,10 @@ jobs:
           )
 
 
+          # -----------------------------------------------------
           # Ukuran logo splash
-          old_size = (
+          # -----------------------------------------------------
+          old = (
               'Math.min(dpSplash(185),'
               'Math.max(dpSplash(135),'
               'Math.round('
@@ -286,7 +321,7 @@ jobs:
               ')*0.34f)))'
           )
 
-          new_size = (
+          new = (
               'Math.min(dpSplash(340),'
               'Math.max(dpSplash(240),'
               'Math.round('
@@ -294,19 +329,21 @@ jobs:
               '*0.40f)))'
           )
 
-          s = s.replace(old_size, new_size)
+          s = s.replace(old, new)
 
 
-          # Posisi judul di bawah logo
+          # -----------------------------------------------------
+          # Posisi teks splash
+          # -----------------------------------------------------
           s = s.replace(
               'textLp.topMargin=dpSplash(252);',
               'textLp.topMargin=dpSplash(405);'
           )
 
 
-          # =====================================================
-          # BACKGROUND SPLASH
-          # =====================================================
+          # -----------------------------------------------------
+          # Background splash gradient
+          # -----------------------------------------------------
           old_bg = (
               'final android.widget.FrameLayout overlay='
               'new android.widget.FrameLayout(this);'
@@ -332,9 +369,9 @@ jobs:
           s = s.replace(old_bg, new_bg)
 
 
-          # =====================================================
-          # GELOMBANG BAWAH
-          # =====================================================
+          # -----------------------------------------------------
+          # Wave bawah splash
+          # -----------------------------------------------------
           old_wave = (
               'waveText.setText("∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿");'
               'waveText.setTextColor(Color.argb(150,130,255,235));'
@@ -342,22 +379,30 @@ jobs:
           )
 
           new_wave = (
-              'waveText.setText(" ╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲ ");'
-              'waveText.setTextColor(Color.argb(140,140,255,238));'
+              'waveText.setText('
+              '" ╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲ ");'
+              'waveText.setTextColor('
+              'Color.argb(140,140,255,238));'
               'waveText.setTextSize(24);'
           )
 
           s = s.replace(old_wave, new_wave)
 
 
-          p.write_text(s, encoding="utf-8")
+          p.write_text(
+              s,
+              encoding="utf-8"
+          )
 
-          print("UpdatableMainActivity.java berhasil disesuaikan.")
+          print(
+              "UpdatableMainActivity.java "
+              "berhasil disesuaikan."
+          )
           PY
 
 
           # =====================================================
-          # GRADLE SETTINGS
+          # SETTINGS GRADLE
           # =====================================================
           cat > settings.gradle <<'GRADLE'
           import org.gradle.api.initialization.resolve.RepositoriesMode
@@ -371,7 +416,9 @@ jobs:
           }
 
           dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositoriesMode.set(
+              RepositoriesMode.FAIL_ON_PROJECT_REPOS
+            )
 
             repositories {
               google()
@@ -471,7 +518,7 @@ jobs:
 
 
           # =====================================================
-          # STYLE
+          # APP THEME
           # =====================================================
           cat > app/src/main/res/values/styles.xml <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
@@ -482,20 +529,37 @@ jobs:
               name="AppTheme"
               parent="Theme.AppCompat.NoActionBar">
 
-              <item name="android:fontFamily">sans</item>
-              <item name="android:colorAccent">#198754</item>
+              <item name="android:fontFamily">
+                sans
+              </item>
 
-              <item name="android:windowBackground">#006960</item>
+              <item name="android:colorAccent">
+                #198754
+              </item>
 
-              <item name="android:windowNoTitle">true</item>
+              <item name="android:windowBackground">
+                #006960
+              </item>
 
-              <item name="android:statusBarColor">#006960</item>
+              <item name="android:windowNoTitle">
+                true
+              </item>
 
-              <item name="android:navigationBarColor">#006960</item>
+              <item name="android:statusBarColor">
+                #006960
+              </item>
 
-              <item name="android:windowLightStatusBar">false</item>
+              <item name="android:navigationBarColor">
+                #006960
+              </item>
 
-              <item name="android:windowLightNavigationBar">false</item>
+              <item name="android:windowLightStatusBar">
+                false
+              </item>
+
+              <item name="android:windowLightNavigationBar">
+                false
+              </item>
 
             </style>
 
@@ -504,7 +568,7 @@ jobs:
 
 
           # =====================================================
-          # MANIFEST
+          # ANDROID MANIFEST
           # =====================================================
           cat > app/src/main/AndroidManifest.xml <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
@@ -513,7 +577,7 @@ jobs:
             xmlns:android="http://schemas.android.com/apk/res/android">
 
             <uses-permission
-              android:name="android.permission.INTERNET"/>
+              android:name="android.permission.INTERNET" />
 
             <application
               android:allowBackup="true"
@@ -532,10 +596,10 @@ jobs:
                 <intent-filter>
 
                   <action
-                    android:name="android.intent.action.MAIN"/>
+                    android:name="android.intent.action.MAIN" />
 
                   <category
-                    android:name="android.intent.category.LAUNCHER"/>
+                    android:name="android.intent.category.LAUNCHER" />
 
                 </intent-filter>
 
@@ -569,7 +633,6 @@ jobs:
 
             @Override
             protected void onCreate(Bundle b) {
-
               super.onCreate(b);
 
               webView = new WebView(this);
@@ -588,7 +651,7 @@ jobs:
               s.setAllowFileAccess(true);
               s.setAllowContentAccess(true);
 
-              final WebViewAssetLoader loader =
+              final WebViewAssetLoader l =
                 new WebViewAssetLoader.Builder()
                   .addPathHandler(
                     "/assets/",
@@ -605,13 +668,11 @@ jobs:
                     WebResourceRequest r
                   ) {
 
-                    WebResourceResponse response =
-                      loader.shouldInterceptRequest(
-                        r.getUrl()
-                      );
+                    WebResourceResponse x =
+                      l.shouldInterceptRequest(r.getUrl());
 
-                    return response != null
-                      ? response
+                    return x != null
+                      ? x
                       : super.shouldInterceptRequest(v, r);
                   }
                 }
@@ -621,7 +682,10 @@ jobs:
             @Override
             public void onBackPressed() {
 
-              if (webView != null && webView.canGoBack()) {
+              if (
+                webView != null &&
+                webView.canGoBack()
+              ) {
                 webView.goBack();
               } else {
                 super.onBackPressed();
@@ -642,7 +706,7 @@ jobs:
 
 
       # =========================================================
-      # FINAL VERIFY
+      # VERIFY FINAL SPLASH + SEMUA ICON
       # =========================================================
       - name: Verify final splash and logo
         shell: bash
@@ -650,43 +714,106 @@ jobs:
           set -euo pipefail
 
           echo "=========================================="
-          echo "VERIFY FINAL LOGO"
+          echo "VERIFY LOGO"
           echo "=========================================="
 
           # Logo sumber
           test -s "Photoroom_20260812_224807.png"
 
           # Splash
-          test -s "app/src/main/assets/splash-logo.png"
+          test -s \
+            "app/src/main/assets/splash-logo.png"
 
-          # Icon otomatis
-          test -s "app/src/main/assets/icon-192.png"
-          test -s "app/src/main/assets/icon-512.png"
+          # Icon 192
+          test -s \
+            "app/src/main/assets/icon-192.png"
 
-          # Icon APK
-          test -s "app/src/main/res/drawable/ic_keuangan.png"
+          # Icon 512
+          test -s \
+            "app/src/main/assets/icon-512.png"
 
-          # Pastikan Activity menggunakan splash logo
-          grep -q 'splash-logo.png' \
+          # Android launcher icon
+          test -s \
+            "app/src/main/res/drawable/ic_keuangan.png"
+
+          # Pastikan Java menggunakan splash-logo
+          grep -q \
+            'splash-logo.png' \
             app/src/main/java/com/catatankas/app/UpdatableMainActivity.java
 
-          echo ""
-          echo "FILE LOGO:"
+          # Pastikan manifest menggunakan launcher icon
+          grep -q \
+            '@drawable/ic_keuangan' \
+            app/src/main/AndroidManifest.xml
+
+
+          # =====================================================
+          # PERIKSA UKURAN ICON SEBENARNYA
+          # =====================================================
+          python - <<'PY'
+          from PIL import Image
+
+          checks = [
+              (
+                  "app/src/main/assets/icon-192.png",
+                  192
+              ),
+              (
+                  "app/src/main/assets/icon-512.png",
+                  512
+              ),
+          ]
+
+          for filename, expected in checks:
+
+              size = Image.open(filename).size
+
+              print(
+                  f"{filename}: {size[0]}x{size[1]}"
+              )
+
+              assert size == (
+                  expected,
+                  expected
+              ), (
+                  f"{filename} salah ukuran: {size}"
+              )
+
+          print(
+              "Semua ukuran icon benar."
+          )
+          PY
+
+
+          echo "=========================================="
+          echo "FINAL SPLASH VERIFIED"
+          echo "=========================================="
+
+          echo "Source:"
           ls -lh \
-            Photoroom_20260812_224807.png \
-            app/src/main/assets/splash-logo.png \
-            app/src/main/assets/icon-192.png \
-            app/src/main/assets/icon-512.png \
+            Photoroom_20260812_224807.png
+
+          echo "Splash:"
+          ls -lh \
+            app/src/main/assets/splash-logo.png
+
+          echo "Icon 192:"
+          ls -lh \
+            app/src/main/assets/icon-192.png
+
+          echo "Icon 512:"
+          ls -lh \
+            app/src/main/assets/icon-512.png
+
+          echo "Android icon:"
+          ls -lh \
             app/src/main/res/drawable/ic_keuangan.png
 
-          echo ""
-          echo "=========================================="
-          echo "FINAL SPLASH + LOGO VERIFIED"
-          echo "=========================================="
+          echo "FINAL SPLASH: target logo + automatic 192 icon + automatic 512 icon + larger logo + separated title + gradient background + animation + smooth fade verified"
 
 
       # =========================================================
-      # BUILD APK
+      # BUILD DEBUG APK
       # =========================================================
       - name: Build Debug APK
         run: |
@@ -694,7 +821,7 @@ jobs:
 
 
       # =========================================================
-      # PREPARE APK
+      # PREPARE APK ARTIFACT
       # =========================================================
       - name: Prepare APK artifact
         shell: bash
@@ -707,10 +834,11 @@ jobs:
             app/build/outputs/apk/debug/app-debug.apk \
             output/Keuangan-Splash-Final.apk
 
-          test -s output/Keuangan-Splash-Final.apk
+          test -s \
+            output/Keuangan-Splash-Final.apk
 
-          echo "APK berhasil dibuat:"
-          ls -lh output/Keuangan-Splash-Final.apk
+          ls -lh \
+            output/Keuangan-Splash-Final.apk
 
 
       # =========================================================
