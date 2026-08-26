@@ -7,9 +7,8 @@ let userAktif=null, unsubscribe=null, serverLoaded=false;
 const inputId=(...ids)=>ids.map(id=>$(id)).find(Boolean); const namaInput=()=>inputId("nama","namaSantri"); const kelasInput=()=>inputId("kelas","kelasSantri"); const waliInput=()=>inputId("wali","hpSantri"); const idInput=()=>$("idSantri");
 const cacheKey=()=>userAktif?.uid?`daftarSantri_${userAktif.uid}`:"daftarSantri";
 function readCache(){try{const x=JSON.parse(localStorage.getItem(cacheKey())||"[]");return Array.isArray(x)?x:[]}catch(_){return []}}
-function cleanList(list){const map=new Map();for(const x of list||[]){const nama=String(x?.nama??x?.namaSantri??x?.name??"").trim();if(!nama)continue;const id=String(x?.id??x?.docId??"").trim();const key=id||nama.toLowerCase();map.set(key,{id,nama,kelas:String(x?.kelas??x?.class??"-").trim()||"-",wali:String(x?.wali??x?.walisantri??"-").trim()||"-"})}return [...map.values()]}
-function writeCache(list){try{localStorage.setItem(cacheKey(),JSON.stringify(cleanList(list)))}catch(_){} }
-function clearCache(){try{localStorage.removeItem(cacheKey())}catch(_){} }
+function cleanList(list){const map=new Map();for(const x of list||[]){const nama=String(x?.nama??x?.namaSantri??x?.name??"").trim();if(!nama)continue;const id=String(x?.id??x?.docId??"").trim();map.set(id||nama.toLowerCase(),{id,nama,kelas:String(x?.kelas??x?.class??"-").trim()||"-",wali:String(x?.wali??x?.walisantri??"-").trim()||"-",periodeWajibDari:x?.periodeWajibDari??x?.dariBulan??null,periodeWajibSampai:x?.periodeWajibSampai??x?.sampaiBulan??null})}return [...map.values()]}
+function writeCache(list){try{localStorage.setItem(cacheKey(),JSON.stringify(cleanList(list)))}catch(_){} } function clearCache(){try{localStorage.removeItem(cacheKey())}catch(_){} }
 function kosongkan(){["nama","namaSantri","kelas","kelasSantri","wali","hpSantri","idSantri"].forEach(id=>{if($(id))$(id).value=""});const b=document.querySelector("button[onclick*='simpanSantri'],#btnSimpanSantri");if(b)b.innerHTML='<i class="bi bi-plus-circle"></i> Tambah Nama'}
 function refresh(){try{localStorage.setItem("catatanKasDataBerubah",String(Date.now()))}catch(_){}window.dispatchEvent(new CustomEvent("daftarSantriBerubah"));window.dispatchEvent(new CustomEvent("dataKeuanganBerubah"));window.dispatchEvent(new CustomEvent("santriDataReady",{detail:{uid:userAktif?.uid||null,list:readCache()}}))}
 function renderList(raw){const list=cleanList(raw);const el=$("daftarSantri"),tbody=$("tbodySantri"),jumlah=$("jumlahSantri");if(jumlah)jumlah.textContent=`${list.length} nama`;const empty='<div class="text-center text-muted py-3">Belum ada daftar nama.</div>';if(el){el.innerHTML=list.length?list.map((x,i)=>`<li class="list-group-item d-flex justify-content-between align-items-center py-3 gap-2"><div class="flex-grow-1"><b class="d-block nama-santri">${i+1}. ${esc(x.nama)}</b><small class="text-muted kelas-santri">Kelas: ${esc(x.kelas)} • No. HP: ${esc(x.wali)}</small></div><div class="d-flex gap-1"><button type="button" class="btn btn-outline-primary btn-sm" data-santri-action="edit" data-id="${esc(x.id)}"><i class="bi bi-pencil"></i></button><button type="button" class="btn btn-outline-danger btn-sm" data-santri-action="delete" data-id="${esc(x.id)}"><i class="bi bi-trash"></i></button></div></li>`).join(""):empty}
@@ -22,40 +21,5 @@ window.simpanSantri=async()=>{if(!userAktif)return alert("Silakan login terlebih
 window.editSantri=async id=>{if(!userAktif)return alert("Silakan login terlebih dahulu.");try{const s=await getDoc(doc(db,"santri",id));if(!s.exists()||s.data()?.uid!==userAktif.uid)return alert("Data nama tidak ditemukan pada akun ini.");const d=s.data();if(namaInput())namaInput().value=d.nama||"";if(kelasInput())kelasInput().value=d.kelas||"";if(waliInput())waliInput().value=d.wali||"";if(idInput())idInput().value=id;const b=document.querySelector("button[onclick*='simpanSantri'],#btnSimpanSantri");if(b)b.innerHTML="Simpan Perubahan";window.scrollTo({top:0,behavior:"smooth"})}catch(e){alert("Gagal membuka data.\n\n"+(e.message||e))}};
 window.hapusSantri=async id=>{if(!userAktif)return alert("Silakan login terlebih dahulu.");if(!confirm("Hapus data ini?\n\nData yang dihapus tidak dapat dikembalikan."))return;try{const ref=doc(db,"santri",id),s=await getDoc(ref);if(!s.exists()||s.data()?.uid!==userAktif.uid)return alert("Data nama tidak ditemukan pada akun ini.");await deleteDoc(ref);const left=readCache().filter(x=>x.id!==id);if(left.length)writeCache(left);else clearCache();await load();if(idInput()?.value===id)kosongkan();alert("🗑️ Data berhasil dihapus.");refresh()}catch(e){alert("Gagal menghapus data.\n\n"+(e.message||e))}};
 document.addEventListener("click",e=>{const b=e.target.closest("#btnSimpanSantri,button[onclick*='simpanSantri']");if(b){e.preventDefault();e.stopImmediatePropagation();window.simpanSantri();return}const a=e.target.closest("[data-santri-action]");if(!a)return;e.preventDefault();e.stopPropagation();a.dataset.santriAction==="edit"?window.editSantri(a.dataset.id):window.hapusSantri(a.dataset.id)},true);
-
-// Istilah tampilan dibuat umum ke Daftar Nama: istilah internal/database tetap tidak diubah.
-function gunakanIstilahUmum(){
-  const replaceText=(text)=>String(text??"")
-    .replace(/Data Peserta Didik/gi,"Daftar Nama")
-    .replace(/Data Santri/gi,"Daftar Nama")
-    .replace(/Nama Peserta Didik/gi,"Nama Lengkap")
-    .replace(/Nama Santri/gi,"Nama Lengkap")
-    .replace(/Daftar Peserta Didik/gi,"Daftar Nama")
-    .replace(/Daftar Santri/gi,"Daftar Nama")
-    .replace(/Peserta Didik/gi,"Daftar Nama")
-    .replace(/Santri/gi,"Daftar Nama")
-    .replace(/peserta didik/gi,"daftar nama")
-    .replace(/santri/gi,"daftar nama");
-  const apply=(root)=>{
-    if(!root)return;
-    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
-    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
-    nodes.forEach(n=>{const v=replaceText(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v});
-    root.querySelectorAll?.("input,textarea,button,[title],[aria-label]").forEach(el=>{
-      if(el.placeholder)el.placeholder=replaceText(el.placeholder);
-      if(el.title)el.title=replaceText(el.title);
-      if(el.getAttribute("aria-label"))el.setAttribute("aria-label",replaceText(el.getAttribute("aria-label")));
-      if(el.tagName==="BUTTON"&&el.innerHTML)el.innerHTML=replaceText(el.innerHTML);
-    });
-  };
-  document.title=replaceText(document.title);
-  document.querySelector('meta[name="description"]')?.setAttribute("content",replaceText(document.querySelector('meta[name="description"]').getAttribute("content")));
-  apply(document.body);
-  if(!document.body.dataset.ckGeneralLabelObserver){
-    const observer=new MutationObserver(mutations=>{for(const m of mutations){for(const n of m.addedNodes){if(n.nodeType===1)apply(n);else if(n.nodeType===3)n.nodeValue=replaceText(n.nodeValue)}}});
-    observer.observe(document.body,{childList:true,subtree:true});
-    document.body.dataset.ckGeneralLabelObserver="1";
-  }
-}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",gunakanIstilahUmum,{once:true});else gunakanIstilahUmum();
-window.addEventListener("daftarSantriBerubah",()=>{if(userAktif)load()});import("./js/import-santri-ui.js").catch(()=>{});onAuthStateChanged(auth,u=>{userAktif=u||null;load();setTimeout(gunakanIstilahUmum,0)});
+function gunakanIstilahUmum(){const replaceText=(text)=>String(text??"").replace(/Data Peserta Didik/gi,"Daftar Nama").replace(/Data Santri/gi,"Daftar Nama").replace(/Nama Peserta Didik/gi,"Nama Lengkap").replace(/Nama Santri/gi,"Nama Lengkap").replace(/Daftar Peserta Didik/gi,"Daftar Nama").replace(/Daftar Santri/gi,"Daftar Nama").replace(/Peserta Didik/gi,"Daftar Nama").replace(/Santri/gi,"Daftar Nama").replace(/peserta didik/gi,"daftar nama").replace(/santri/gi,"daftar nama");const apply=(root)=>{if(!root)return;const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(n=>{const v=replaceText(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v});root.querySelectorAll?.("input,textarea,button,[title],[aria-label]").forEach(el=>{if(el.placeholder)el.placeholder=replaceText(el.placeholder);if(el.title)el.title=replaceText(el.title);if(el.getAttribute("aria-label"))el.setAttribute("aria-label",replaceText(el.getAttribute("aria-label")));if(el.tagName==="BUTTON"&&el.innerHTML)el.innerHTML=replaceText(el.innerHTML)})};document.title=replaceText(document.title);document.querySelector('meta[name="description"]')?.setAttribute("content",replaceText(document.querySelector('meta[name="description"]').getAttribute("content")));apply(document.body);if(!document.body.dataset.ckGeneralLabelObserver){const observer=new MutationObserver(mutations=>{for(const m of mutations){for(const n of m.addedNodes){if(n.nodeType===1)apply(n);else if(n.nodeType===3)n.nodeValue=replaceText(n.nodeValue)}}});observer.observe(document.body,{childList:true,subtree:true});document.body.dataset.ckGeneralLabelObserver="1"}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",gunakanIstilahUmum,{once:true});else gunakanIstilahUmum();window.addEventListener("daftarSantriBerubah",()=>{if(userAktif)load()});import("./js/import-santri-ui.js").catch(()=>{});onAuthStateChanged(auth,u=>{userAktif=u||null;load();setTimeout(gunakanIstilahUmum,0)});
