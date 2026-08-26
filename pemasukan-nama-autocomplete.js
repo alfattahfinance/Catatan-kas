@@ -60,6 +60,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
       });
       panel.appendChild(b);
     });
+    // Autocomplete hanya saran. Jika tidak ada kecocokan, biarkan kosong.
     panel.style.display = hasil.length ? "block" : "none";
   }
 
@@ -84,23 +85,30 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
   async function load() {
     if (stop) { stop(); stop = null; }
     namaList = fromCache();
+    bind();
     render();
     if (!user) return;
     try {
       const q = query(collection(db, "santri"), where("uid", "==", user.uid));
       const snap = await getDocs(q);
       if (auth.currentUser?.uid !== user.uid) return;
-      namaList = clean(snap.docs.map(d => {
-        const x = d.data() || {};
-        return x.nama ?? x.namaSantri ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa ?? "";
-      }));
+      namaList = clean([
+        ...fromCache(),
+        ...snap.docs.map(d => {
+          const x = d.data() || {};
+          return x.nama ?? x.namaSantri ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa ?? "";
+        })
+      ]);
       render();
       stop = onSnapshot(q, s => {
         if (auth.currentUser?.uid !== user.uid) return;
-        namaList = clean(s.docs.map(d => {
-          const x = d.data() || {};
-          return x.nama ?? x.namaSantri ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa ?? "";
-        }));
+        namaList = clean([
+          ...fromCache(),
+          ...s.docs.map(d => {
+            const x = d.data() || {};
+            return x.nama ?? x.namaSantri ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa ?? "";
+          })
+        ]);
         render();
       }, e => console.warn("Autocomplete santri listener:", e));
     } catch (e) {
