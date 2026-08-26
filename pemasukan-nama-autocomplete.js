@@ -1,5 +1,5 @@
 import { db, auth } from "./firebase-config.js";
-import { collection, getDocs, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 (() => {
@@ -7,119 +7,122 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
   window.__ckPemasukanAutocompleteStarted = true;
 
   let namaList = [];
-  let stop = null;
   let user = null;
-  let bound = false;
-  const input = () => document.getElementById("namaSiswaSiswiPemasukan");
-  const box = () => document.getElementById("saranNamaPemasukan");
-  const normal = v => String(v ?? "").trim().toLocaleLowerCase("id-ID");
+  let boundInput = null;
+
+  const getInput = () => document.getElementById("namaSiswaSiswiPemasukan");
+  const getBox = () => document.getElementById("saranNamaPemasukan");
+  const norm = v => String(v ?? "").trim().toLocaleLowerCase("id-ID");
 
   function clean(list) {
     const seen = new Set();
-    return (list || []).map(x => String(x ?? "").trim()).filter(Boolean).filter(n => {
-      const k = normal(n);
+    return list.map(v => String(v ?? "").trim()).filter(Boolean).filter(v => {
+      const k = norm(v);
       if (seen.has(k)) return false;
       seen.add(k);
       return true;
-    }).sort((a,b) => a.localeCompare(b, "id", {sensitivity:"base"}));
+    }).sort((a,b) => a.localeCompare(b, "id", { sensitivity: "base" }));
   }
 
-  function fromCache() {
-    const out = [];
+  function extract(x) {
+    if (typeof x === "string") return x;
+    if (!x || typeof x !== "object") return "";
+    return x.nama ?? x.namaSantri ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa ?? x.name ?? "";
+  }
+
+  function loadLocal() {
+    const result = [];
     try {
-      const direct = Array.isArray(window.__daftarSantri) ? window.__daftarSantri : [];
-      direct.forEach(x => out.push(x?.nama ?? x?.namaSantri ?? x?.name ?? x));
-      const keys = [];
-      if (user?.uid) keys.push(`daftarSantri_${user.uid}`);
-      keys.push("daftarSantri");
-      keys.forEach(k => {
-        const data = JSON.parse(localStorage.getItem(k) || "[]");
-        if (Array.isArray(data)) data.forEach(x => out.push(x?.nama ?? x?.namaSantri ?? x?.name ?? x));
+      if (Array.isArray(window.__daftarSantri)) window.__daftarSantri.forEach(x => result.push(extract(x)));
+      const keys = user?.uid ? [`daftarSantri_${user.uid}`, "daftarSantri"] : ["daftarSantri"];
+      keys.forEach(key => {
+        const raw = localStorage.getItem(key);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (Array.isArray(data)) data.forEach(x => result.push(extract(x)));
       });
     } catch (_) {}
-    return clean(out);
+    return result;
   }
 
   function render() {
-    const el = input(), panel = box();
-    if (!el || !panel) return;
-    const q = normal(el.value);
-    panel.innerHTML = "";
-    if (!q) { panel.style.display = "none"; return; }
-    const hasil = namaList.filter(n => normal(n).startsWith(q)).slice(0, 50);
-    hasil.forEach(n => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.textContent = n;
-      b.setAttribute("role", "option");
-      b.addEventListener("mousedown", e => {
+    const input = getInput();
+    const box = getBox();
+    if (!input || !box) return;
+
+    const text = norm(input.value);
+    box.innerHTML = "";
+    if (!text) {
+      box.style.display = "none";
+      return;
+    }
+
+    const matches = namaList.filter(n => norm(n).startsWith(text)).slice(0, 50);
+    for (const name of matches) {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.textContent = name;
+      item.setAttribute("role", "option");
+      item.addEventListener("mousedown", e => {
         e.preventDefault();
-        el.value = n;
-        panel.style.display = "none";
-        el.dispatchEvent(new Event("input", {bubbles:true}));
+        input.value = name;
+        box.style.display = "none";
+        input.dispatchEvent(new Event("input", { bubbles: true }));
       });
-      panel.appendChild(b);
-    });
-    // Autocomplete hanya saran. Jika tidak ada kecocokan, biarkan kosong.
-    panel.style.display = hasil.length ? "block" : "none";
+      box.appendChild(item);
+    }
+    box.style.display = matches.length ? "block" : "none";
   }
 
   function bind() {
-    const el = input(), panel = box();
-    if (!el || !panel || bound) return;
-    bound = true;
-    el.dataset.ckPrefixAutocomplete = "1";
-    el.setAttribute("autocomplete", "off");
-    el.addEventListener("input", render);
-    el.addEventListener("focus", () => { namaList = clean([...namaList, ...fromCache()]); render(); });
-    document.addEventListener("click", e => {
-      if (!el.contains(e.target) && !panel.contains(e.target)) panel.style.display = "none";
-    });
-    window.addEventListener("santriDataReady", e => {
-      const list = e.detail?.list || [];
-      namaList = clean([...namaList, ...list.map(x => x?.nama ?? x?.namaSantri ?? x?.name ?? "")]);
+    const input = getInput();
+    if (!input || boundInput === input) return;
+    boundInput = input;
+    input.setAttribute("autocomplete", "off");
+    input.addEventListener("input", render);
+    input.addEventListener("focus", () => {
+      namaList = clean([...namaList, ...loadLocal()]);
       render();
+    });
+    document.addEventListener("click", e => {
+      const box = getBox();
+      if (box && !input.contains(e.target) && !box.contains(e.target)) box.style.display = "none";
     });
   }
 
-  async function load() {
-    if (stop) { stop(); stop = null; }
-    namaList = fromCache();
-    bind();
-    render();
+  async function loadFirebase() {
     if (!user) return;
     try {
-      const q = query(collection(db, "santri"), where("uid", "==", user.uid));
-      const snap = await getDocs(q);
+      // Ambil seluruh daftar santri milik akun ini; autocomplete tidak mengubah data.
+      const snap = await getDocs(collection(db, "santri"));
       if (auth.currentUser?.uid !== user.uid) return;
-      namaList = clean([
-        ...fromCache(),
-        ...snap.docs.map(d => {
-          const x = d.data() || {};
-          return x.nama ?? x.namaSantri ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa ?? "";
-        })
-      ]);
+      const remote = [];
+      snap.forEach(doc => {
+        const data = doc.data() || {};
+        if (!data.uid || data.uid === user.uid) remote.push(extract(data));
+      });
+      namaList = clean([...namaList, ...remote, ...loadLocal()]);
       render();
-      stop = onSnapshot(q, s => {
-        if (auth.currentUser?.uid !== user.uid) return;
-        namaList = clean([
-          ...fromCache(),
-          ...s.docs.map(d => {
-            const x = d.data() || {};
-            return x.nama ?? x.namaSantri ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa ?? "";
-          })
-        ]);
-        render();
-      }, e => console.warn("Autocomplete santri listener:", e));
     } catch (e) {
-      console.warn("Autocomplete nama Pemasukan gagal memuat santri:", e);
-      namaList = fromCache();
+      console.warn("Autocomplete nama Pemasukan:", e);
+      namaList = clean([...namaList, ...loadLocal()]);
       render();
     }
   }
 
-  function start() { bind(); load(); }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, {once:true});
+  function start() {
+    bind();
+    namaList = clean(loadLocal());
+    render();
+    loadFirebase();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
   else start();
-  onAuthStateChanged(auth, u => { user = u || null; bind(); load(); });
+  onAuthStateChanged(auth, u => {
+    user = u || null;
+    namaList = clean(loadLocal());
+    bind();
+    loadFirebase();
+  });
 })();
