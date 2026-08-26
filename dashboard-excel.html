@@ -11,10 +11,12 @@
 fetch('dashboard-excel-fixed.html?v=20260826',{cache:'no-store'})
 .then(r=>{if(!r.ok)throw new Error('Dashboard Excel tidak dapat dimuat');return r.text()})
 .then(html=>{
-  /* Matikan engine lama. Tabel lama disembunyikan sampai engine baru selesai render. */
+  /* Hapus seluruh engine lama dari dashboard-fixed. */
   html=html.replace(/<script\s+type=["']module["'][^>]*>[\s\S]*?<\/script>/gi,'');
+  /* Jangan tampilkan hasil engine lama. Engine baru yang menentukan isi tabel. */
   html=html.replace(/<\/head>/i,'<style>#body{visibility:hidden}</style></head>');
-  const add='<script type="module" src="dashboard-excel-period.js?v=20260826"><\/script>';
+  const guard='<script>(function(){function watch(){const b=document.getElementById("body");if(!b)return;const show=()=>{b.style.visibility="visible"};new MutationObserver(show).observe(b,{childList:true,subtree:true,characterData:true});if(b.children.length)show()}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch()})();<\/script>';
+  const add=guard+'<script type="module" src="dashboard-excel-period.js?v=20260826"><\/script>';
   html=html.replace(/<\/body>/i,add+'</body>');
   document.open();
   document.write(html);
