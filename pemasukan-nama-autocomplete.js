@@ -13,11 +13,12 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
   const getInput = () => document.getElementById("namaSiswaSiswiPemasukan");
   const getBox = () => document.getElementById("saranNamaPemasukan");
   const norm = v => String(v ?? "").trim().toLocaleLowerCase("id-ID");
+  const stripNumber = v => String(v ?? "").trim().replace(/^\d+\.\s*/, "").trim();
 
   function extract(x) {
-    if (typeof x === "string") return x;
+    if (typeof x === "string") return stripNumber(x);
     if (!x || typeof x !== "object") return "";
-    return x.nama ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa_siswi ?? x.keterangan ?? x.namaSantri ?? x.name ?? "";
+    return stripNumber(x.nama ?? x.namaSiswaSiswi ?? x.namaSiswa ?? x.nama_siswa_siswi ?? x.keterangan ?? x.namaSantri ?? x.name ?? "");
   }
 
   function clean(list) {
@@ -98,7 +99,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     if (!input || boundInput === input) return;
     boundInput = input;
     input.setAttribute("autocomplete", "off");
-    // Tangkap input lebih dulu agar autocomplete lama di pemasukan.js tidak menimpa hasil baru.
     input.addEventListener("input", e => { e.stopImmediatePropagation(); refresh(); }, true);
     input.addEventListener("keyup", refresh);
     input.addEventListener("compositionend", refresh);
