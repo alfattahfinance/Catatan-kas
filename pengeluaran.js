@@ -7,6 +7,28 @@ let userAktif=null,idEdit=null,unsubscribe=null,authSelesai=false;
 const $=id=>document.getElementById(id),ambil=ids=>ids.map(id=>$(id)).find(Boolean);
 const amount=x=>Number(x?.nominal??x?.jumlah??x?.nilai??x?.total??0)||0;const jenis=x=>String(x?.jenis??x?.kategori??"Lainnya");const ket=x=>String(x?.keterangan??x?.nama??x?.deskripsi??x?.uraian??"Pengeluaran");
 
+// Satu sumber identitas halaman Pengeluaran: nama lembaga dan subjudul
+// selalu mengikuti Pengaturan Aplikasi milik akun yang sedang aktif.
+function settingsLocal(){try{const k=userAktif?.uid?`pengaturanAplikasi_${userAktif.uid}`:"pengaturanAplikasi";return JSON.parse(localStorage.getItem(k)||"{}")||{}}catch(_){return {}}}
+async function syncHeaderForAccount(user){
+  let p=settingsLocal();
+  if(user){
+    try{
+      const snap=await getDoc(doc(db,"settings",user.uid));
+      if(snap.exists()){
+        p={...p,...snap.data()};
+        try{localStorage.setItem(`pengaturanAplikasi_${user.uid}`,JSON.stringify(p))}catch(_){}
+      }
+    }catch(e){console.warn("Gagal membaca pengaturan header Pengeluaran:",e)}
+  }
+  const nama=String(p.namaLembaga??p.namaPondok??p.namaSekolah??p.lembaga??"").trim();
+  const sub=String(p.subJudul??p.subjudul??p.subTitle??"").trim();
+  const title=document.querySelector(".ck-title-top,.ck-title,.app-name,[data-app-name]");
+  const subtitle=document.querySelector(".ck-subtitle-top,.ck-subtitle,.app-subtitle,[data-app-subtitle],#namaPondokHeader,#namaSekolahHeader");
+  if(title&&nama)title.textContent=nama;
+  if(subtitle&&sub)subtitle.textContent=sub;
+}
+
 // Satu sumber logo halaman Pengeluaran: tanpa akun = logo bawaan,
 // dengan akun = logo milik akun dari pengaturan. Tidak lagi memakai
 // assets/logo-catatan-kas.jpg yang merupakan logo lama.
@@ -14,7 +36,8 @@ const DEFAULT_LOGO="Photoroom_20260812_224807.png?v=20260826";
 function logoElements(){return document.querySelectorAll('.ck-logo,#logoPreviewV2,#logoPreview,#logoDashboard,#dashboardLogo,#laporanLogo,[data-dashboard-logo],img[alt="Photoroom_20260812_224807"],img[alt="Logo Dashboard"],img[alt="Logo aplikasi"]')}
 function applyLogo(src){const logo=String(src||DEFAULT_LOGO).trim()||DEFAULT_LOGO;logoElements().forEach(img=>{if(img.tagName!=="IMG")return;img.removeAttribute("srcset");img.removeAttribute("data-src");img.src=logo;img.dataset.logoSource=userAktif?.uid?"account":"default";img.onerror=()=>{img.onerror=null;img.src=DEFAULT_LOGO}})}
 async function syncLogoForAccount(user){if(!user){applyLogo(DEFAULT_LOGO);return}const key=`logoDashboard_${user.uid}`;let local="";try{local=String(localStorage.getItem(key)||"").trim()}catch(_){}if(local)applyLogo(local);else applyLogo(DEFAULT_LOGO);try{const snap=await getDoc(doc(db,"settings",user.uid));const remote=String(snap.exists()?snap.data()?.logoDashboard||"":"").trim();if(remote){try{localStorage.setItem(key,remote)}catch(_){}applyLogo(remote)}else if(!local){applyLogo(DEFAULT_LOGO)}}catch(e){console.warn("Gagal membaca logo akun; menggunakan logo yang tersedia di perangkat.",e)}}
-window.addEventListener("logoDashboardChanged",()=>syncLogoForAccount(userAktif));
+window.addEventListener("logoDashboardChanged",()=>{syncLogoForAccount(userAktif);syncHeaderForAccount(userAktif)});
+window.addEventListener("settingsChanged",()=>syncHeaderForAccount(userAktif));
 function compactUI(){if(document.getElementById("ckExpenseCompactStyle"))return;const s=document.createElement("style");s.id="ckExpenseCompactStyle";s.textContent=`#daftarPengeluaran>div.ck-history-item{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:12px 10px!important;min-height:64px!important;line-height:1.2!important;font-size:.78rem!important}#daftarPengeluaran .ck-history-info{min-width:0;flex:1}#daftarPengeluaran small{font-size:.68rem!important;color:#728078!important;display:block!important;margin-bottom:4px!important}#daftarPengeluaran strong{font-size:.8rem!important;display:block!important;overflow-wrap:anywhere!important}#daftarPengeluaran .ck-history-right{flex:0 0 auto;text-align:right!important;min-width:120px!important}#daftarPengeluaran .ck-history-amount{font-size:.84rem!important;font-weight:900!important;color:#dc3545!important;white-space:nowrap!important}#daftarPengeluaran .ck-riwayat-actions{display:flex!important;justify-content:flex-end!important;gap:6px!important;margin-top:5px!important}#daftarPengeluaran .ck-riwayat-actions button{width:34px!important;height:34px!important;min-width:34px!important;padding:4px!important;font-size:.8rem!important;line-height:1!important;border-radius:8px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;margin:0!important}@media(max-width:520px){#daftarPengeluaran>div.ck-history-item{gap:8px!important;padding:10px 7px!important}#daftarPengeluaran .ck-history-right{min-width:112px!important}#daftarPengeluaran .ck-history-amount{font-size:.76rem!important}#daftarPengeluaran strong{font-size:.74rem!important}#daftarPengeluaran .ck-riwayat-actions{gap:5px!important}#daftarPengeluaran .ck-riwayat-actions button{width:32px!important;height:32px!important;min-width:32px!important;font-size:.76rem!important}}`;document.head.appendChild(s)}
 function localSettings(){try{const k=userAktif?.uid?`pengaturanAplikasi_${userAktif.uid}`:"pengaturanAplikasi";return JSON.parse(localStorage.getItem(k)||"{}")}catch(_){return {}}}
 async function lembagaAktif(){const local=localSettings();const localName=String(local.namaPondok||local.namaLembaga||local.lembaga||"").trim();if(localName)return localName;if(!userAktif)return "";try{const s=await getDoc(doc(db,"users",userAktif.uid));const p=s.exists()?s.data()?.pengaturan||{}:{};const name=String(p.namaPondok||p.namaLembaga||p.lembaga||"").trim();if(name){try{localStorage.setItem(`pengaturanAplikasi_${userAktif.uid}`,JSON.stringify({...local,...p,namaPondok:name}))}catch(_){}return name}}catch(e){console.warn(e)}return ""}
@@ -29,4 +52,4 @@ function render(s){const c=$("daftarPengeluaran");if(!c)return;compactUI();c.inn
 document.addEventListener("click",e=>{const b=e.target.closest("[data-expense-action]");if(b){e.preventDefault();b.dataset.expenseAction==="edit"?editPengeluaran(b.dataset.id):hapusPengeluaran(b.dataset.id);return}const s=e.target.closest("#btnSimpanPengeluaran,#simpanPengeluaran,button[onclick*='simpanPengeluaran']");if(s){e.preventDefault();e.stopImmediatePropagation();if(!s.dataset.saving)simpan()}},true);
 document.addEventListener("submit",e=>{if(e.target.matches("form")&&e.target.querySelector("#btnSimpanPengeluaran,#simpanPengeluaran")){e.preventDefault();if(!btn()?.dataset.saving)simpan()}},true);
 function mulaiPengeluaran(){if(unsubscribe){unsubscribe();unsubscribe=null}if(!userAktif)return;const q=query(collection(db,"expenses"),where("uid","==",userAktif.uid));const c=$("daftarPengeluaran");if(c)unsubscribe=onSnapshot(q,render,e=>{console.error(e);c.innerHTML='<div class="text-center text-danger p-2 small">Gagal memuat data akun.</div>'})}
-onAuthStateChanged(auth,u=>{userAktif=u||null;authSelesai=true;syncLogoForAccount(userAktif);mulaiPengeluaran()});
+onAuthStateChanged(auth,u=>{userAktif=u||null;authSelesai=true;syncLogoForAccount(userAktif);syncHeaderForAccount(userAktif);mulaiPengeluaran()});
