@@ -41,11 +41,10 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
         const data = JSON.parse(raw);
         if (Array.isArray(data)) result.push(...data);
       });
-      // Fallback: ambil cache Daftar Nama yang tersedia di perangkat.
       if (user?.uid) {
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i) || "";
-          if (!/^daftarSantri_/.test(key) || key === `daftarSantri_${user.uid}`) continue;
+          if (!/^daftarSantri_/.test(key)) continue;
           const data = JSON.parse(localStorage.getItem(key) || "[]");
           if (Array.isArray(data)) result.push(...data);
         }
@@ -61,7 +60,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     const text = norm(input.value);
     box.innerHTML = "";
     if (!text) { box.style.display = "none"; return; }
-
     const matches = namaList.filter(n => norm(n).startsWith(text)).slice(0, 50);
     matches.forEach(name => {
       const item = document.createElement("button");
@@ -86,10 +84,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     try {
       const own = await getDocs(query(collection(db, "santri"), where("uid", "==", user.uid)));
       if (auth.currentUser?.uid !== user.uid) return;
-      let docs = own.docs;
-      // Jika akun tidak memiliki hasil pada query UID, gunakan seluruh daftar lokal/cache.
-      // Ini hanya untuk autocomplete; tidak mengubah atau menyimpan data apa pun.
-      namaList = clean([...loadLocal(), ...docs.map(d => d.data())]);
+      namaList = clean([...loadLocal(), ...own.docs.map(d => d.data())]);
       render();
     } catch (e) {
       console.warn("Autocomplete nama Pemasukan:", e);
@@ -103,11 +98,11 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     if (!input || boundInput === input) return;
     boundInput = input;
     input.setAttribute("autocomplete", "off");
-    const update = () => refresh();
-    input.addEventListener("input", update);
-    input.addEventListener("keyup", update);
-    input.addEventListener("compositionend", update);
-    input.addEventListener("focus", update);
+    // Tangkap input lebih dulu agar autocomplete lama di pemasukan.js tidak menimpa hasil baru.
+    input.addEventListener("input", e => { e.stopImmediatePropagation(); refresh(); }, true);
+    input.addEventListener("keyup", refresh);
+    input.addEventListener("compositionend", refresh);
+    input.addEventListener("focus", refresh);
     document.addEventListener("click", e => {
       const box = getBox();
       if (box && !input.contains(e.target) && !box.contains(e.target)) box.style.display = "none";
