@@ -1,14 +1,16 @@
 /*
  * General UI for Keuangan.
- * Satu pengelola logo untuk semua halaman:
- * - tanpa akun -> logo bawaan
- * - dengan akun -> logo milik akun
- * - tidak pernah memakai logo akun lain / logo lama
+ * Satu sumber tampilan aplikasi untuk semua halaman:
+ * - nama lembaga + subjudul selalu mengikuti Pengaturan Aplikasi
+ * - logo mengikuti akun yang sedang aktif
+ * - tanpa akun memakai nilai bawaan
  */
 (() => {
   'use strict';
 
   const DEFAULT_LOGO = 'Photoroom_20260812_224807.png?v=20260826';
+  const DEFAULT_APP_NAME = 'Keuangan';
+  const DEFAULT_APP_SUBTITLE = 'Dashboard Keuangan';
   const LOGO_SELECTOR = [
     '.app-logo', '.ck-logo', '.logo', '#logoDashboard', '#dashboardLogo',
     '#logo', '#laporanLogo', '#logoPreviewV2', '#logoPreview',
@@ -16,6 +18,8 @@
     'img[alt="Logo Dashboard"]', 'img[alt="Logo aplikasi"]',
     'img[alt="Logo Keuangan"]', '[data-dashboard-logo]'
   ].join(',');
+  const APP_NAME_SELECTOR = '[data-app-name], .app-name, .ck-title';
+  const APP_SUBTITLE_SELECTOR = '[data-app-subtitle], .app-subtitle, .ck-subtitle';
 
   const replacements = [
     ['Pembayaran Santri', 'Pembayaran'],
@@ -85,12 +89,52 @@
   }
 
   function currentUid() {
-    return String(window.currentFirebaseUid || '').trim();
+    return String(window.currentFirebaseUid || window.currentFirebaseUser?.uid || '').trim();
   }
 
   function readJson(key) {
     try { return JSON.parse(localStorage.getItem(key) || '{}') || {}; }
     catch (_) { return {}; }
+  }
+
+  function readSettings() {
+    const uid = currentUid();
+    const scoped = uid ? readJson(`pengaturanAplikasi_${uid}`) : {};
+    const direct = readJson('pengaturanAplikasi');
+    return { ...direct, ...scoped };
+  }
+
+  function configuredAppText() {
+    const settings = readSettings();
+    const namaLembaga = String(settings.namaLembaga ?? settings.namaPondok ?? settings.namaSekolah ?? settings.lembaga ?? '').trim();
+    const subJudul = String(settings.subJudul ?? settings.subjudul ?? settings.subTitle ?? '').trim();
+    return {
+      namaLembaga: namaLembaga || DEFAULT_APP_NAME,
+      subJudul: subJudul || DEFAULT_APP_SUBTITLE
+    };
+  }
+
+  function applyAppText(root = document) {
+    const { namaLembaga, subJudul } = configuredAppText();
+    const scope = root?.querySelectorAll ? root : document;
+    scope.querySelectorAll(APP_NAME_SELECTOR).forEach(el => {
+      el.textContent = namaLembaga;
+      el.dataset.settingsAppName = '1';
+    });
+    scope.querySelectorAll(APP_SUBTITLE_SELECTOR).forEach(el => {
+      el.textContent = subJudul;
+      el.dataset.settingsAppSubtitle = '1';
+    });
+
+    // Semua halaman tetap memiliki judul browser yang relevan, tetapi memakai
+    // nama lembaga dari Pengaturan sebagai identitas aplikasi.
+    const pageTitle = String(document.title || '').trim();
+    if (pageTitle) {
+      const parts = pageTitle.split('|').map(x => x.trim()).filter(Boolean);
+      const pagePart = parts.length > 1 ? parts.slice(1).join(' | ') : parts[0];
+      if (pagePart && !/^keuangan$/i.test(pagePart)) document.title = `${namaLembaga} | ${pagePart}`;
+      else document.title = namaLembaga;
+    }
   }
 
   function validLogo(value) {
@@ -131,8 +175,8 @@
     });
   }
 
-  function scheduleApplyLogos() {
-    window.setTimeout(() => applyLogos(), 0);
+  function scheduleApply() {
+    window.setTimeout(() => { applyAppText(); applyLogos(); }, 0);
   }
 
   function ensureJenisKeuangan() {
@@ -214,6 +258,7 @@
   function run() {
     replaceTextNodes(document.body);
     updateVisibleAttributes();
+    applyAppText();
     applyLogos();
     ensureJenisKeuangan();
     improveExcelDownload();
@@ -225,29 +270,32 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
   else run();
 
-  window.addEventListener('accountReady', scheduleApplyLogos);
-  window.addEventListener('accountDataReady', scheduleApplyLogos);
-  window.addEventListener('logoDashboardChanged', scheduleApplyLogos);
-  window.addEventListener('settingsChanged', scheduleApplyLogos);
-  window.addEventListener('pageshow', scheduleApplyLogos);
-  window.addEventListener('focus', scheduleApplyLogos);
+  window.addEventListener('accountReady', scheduleApply);
+  window.addEventListener('accountDataReady', scheduleApply);
+  window.addEventListener('logoDashboardChanged', scheduleApply);
+  window.addEventListener('settingsChanged', scheduleApply);
+  window.addEventListener('pageshow', scheduleApply);
+  window.addEventListener('focus', scheduleApply);
 
   const observer = new MutationObserver(mutations => {
     let logoAttributeChanged = false;
+    let appTextChanged = false;
     for (const mutation of mutations) {
       if (mutation.type === 'attributes' && mutation.target instanceof HTMLImageElement) {
         logoAttributeChanged = true;
         continue;
       }
       if (mutation.type !== 'childList' || !mutation.addedNodes.length) continue;
+      appTextChanged = true;
       mutation.addedNodes.forEach(node => {
         if (node.nodeType !== Node.ELEMENT_NODE) return;
         replaceTextNodes(node);
         updateVisibleAttributes();
+        applyAppText(node);
         applyLogos(node);
       });
     }
-    if (logoAttributeChanged) scheduleApplyLogos();
+    if (logoAttributeChanged || appTextChanged) scheduleApply();
   });
 
   const startObserver = () => {
