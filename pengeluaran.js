@@ -6,32 +6,9 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
 let userAktif=null,idEdit=null,unsubscribe=null,authSelesai=false;
 const $=id=>document.getElementById(id),ambil=ids=>ids.map(id=>$(id)).find(Boolean);
 const amount=x=>Number(x?.nominal??x?.jumlah??x?.nilai??x?.total??0)||0;const jenis=x=>String(x?.jenis??x?.kategori??"Lainnya");const ket=x=>String(x?.keterangan??x?.nama??x?.deskripsi??x?.uraian??"Pengeluaran");
-
-// Satu sumber identitas halaman Pengeluaran: nama lembaga dan subjudul
-// selalu mengikuti Pengaturan Aplikasi milik akun yang sedang aktif.
 function settingsLocal(){try{const k=userAktif?.uid?`pengaturanAplikasi_${userAktif.uid}`:"pengaturanAplikasi";return JSON.parse(localStorage.getItem(k)||"{}")||{}}catch(_){return {}}}
-async function syncHeaderForAccount(user){
-  let p=settingsLocal();
-  if(user){
-    try{
-      const snap=await getDoc(doc(db,"settings",user.uid));
-      if(snap.exists()){
-        p={...p,...snap.data()};
-        try{localStorage.setItem(`pengaturanAplikasi_${user.uid}`,JSON.stringify(p))}catch(_){}
-      }
-    }catch(e){console.warn("Gagal membaca pengaturan header Pengeluaran:",e)}
-  }
-  const nama=String(p.namaLembaga??p.namaPondok??p.namaSekolah??p.lembaga??"").trim();
-  const sub=String(p.subJudul??p.subjudul??p.subTitle??"").trim();
-  const title=document.querySelector(".ck-title-top,.ck-title,.app-name,[data-app-name]");
-  const subtitle=document.querySelector(".ck-subtitle-top,.ck-subtitle,.app-subtitle,[data-app-subtitle],#namaPondokHeader,#namaSekolahHeader");
-  if(title&&nama)title.textContent=nama;
-  if(subtitle&&sub)subtitle.textContent=sub;
-}
-
-// Satu sumber logo halaman Pengeluaran: tanpa akun = logo bawaan,
-// dengan akun = logo milik akun dari pengaturan. Tidak lagi memakai
-// assets/logo-catatan-kas.jpg yang merupakan logo lama.
+async function syncHeaderForAccount(user){let p=settingsLocal();if(user){try{const snap=await getDoc(doc(db,"settings",user.uid));if(snap.exists()){p={...p,...snap.data()};try{localStorage.setItem(`pengaturanAplikasi_${user.uid}`,JSON.stringify(p))}catch(_){} }}catch(e){console.warn("Gagal membaca pengaturan header Pengeluaran:",e)}}const nama=String(p.namaLembaga??p.namaPondok??p.namaSekolah??p.lembaga??"").trim();const sub=String(p.subJudul??p.subjudul??p.subTitle??"").trim();const title=document.querySelector(".ck-title-top,.ck-title,.app-name,[data-app-name]");const subtitle=document.querySelector(".ck-subtitle-top,.ck-subtitle,.app-subtitle,[data-app-subtitle],#namaPondokHeader,#namaSekolahHeader");if(title&&nama)title.textContent=nama;if(subtitle&&sub)subtitle.textContent=sub}
+function enforceHeader(){syncHeaderForAccount(userAktif)}
 const DEFAULT_LOGO="Photoroom_20260812_224807.png?v=20260826";
 function logoElements(){return document.querySelectorAll('.ck-logo,#logoPreviewV2,#logoPreview,#logoDashboard,#dashboardLogo,#laporanLogo,[data-dashboard-logo],img[alt="Photoroom_20260812_224807"],img[alt="Logo Dashboard"],img[alt="Logo aplikasi"]')}
 function applyLogo(src){const logo=String(src||DEFAULT_LOGO).trim()||DEFAULT_LOGO;logoElements().forEach(img=>{if(img.tagName!=="IMG")return;img.removeAttribute("srcset");img.removeAttribute("data-src");img.src=logo;img.dataset.logoSource=userAktif?.uid?"account":"default";img.onerror=()=>{img.onerror=null;img.src=DEFAULT_LOGO}})}
@@ -50,6 +27,9 @@ window.editPengeluaran=async id=>{if(!userAktif)return alert("Silakan login terl
 window.hapusPengeluaran=async id=>{if(!userAktif)return;if(!confirm("Hapus data pengeluaran ini?"))return;const s=await getDoc(doc(db,"expenses",id));if(!s.exists())return alert("Data tidak ditemukan.");if(s.data()?.uid&&s.data().uid!==userAktif.uid)return alert("Data ini milik akun lain.");await deleteDoc(doc(db,"expenses",id));refresh()};
 function render(s){const c=$("daftarPengeluaran");if(!c)return;compactUI();c.innerHTML=s.docs.map(d=>{const x={id:d.id,...d.data()};return `<div class="border-bottom ck-history-item"><div class="ck-history-info"><small>${String(x.tanggal||"-")} · ${jenis(x)}</small><strong>${ket(x)}</strong></div><div class="ck-history-right"><div class="ck-history-amount">-Rp ${amount(x).toLocaleString("id-ID")}</div><span class="ck-riwayat-actions"><button class="btn btn-sm btn-outline-primary" data-expense-action="edit" data-id="${x.id}" title="Edit" aria-label="Edit"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-danger" data-expense-action="delete" data-id="${x.id}" title="Hapus" aria-label="Hapus"><i class="bi bi-trash"></i></button></span></div></div>`}).join("")||'<div class="text-center text-muted p-2 small">Belum ada pengeluaran untuk akun ini.</div>'}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-expense-action]");if(b){e.preventDefault();b.dataset.expenseAction==="edit"?editPengeluaran(b.dataset.id):hapusPengeluaran(b.dataset.id);return}const s=e.target.closest("#btnSimpanPengeluaran,#simpanPengeluaran,button[onclick*='simpanPengeluaran']");if(s){e.preventDefault();e.stopImmediatePropagation();if(!s.dataset.saving)simpan()}},true);
-document.addEventListener("submit",e=>{if(e.target.matches("form")&&e.target.querySelector("#btnSimpanPengeluaran,#simpanPengeluaran")){e.preventDefault();if(!btn()?.dataset.saving)simpan()}},true);
+document.addEventListener("submit",e=>{if(e.target.matches("form")&&e.target.querySelector("#btnSimpanPengeluaran,#simpanPengeluaran")){e.preventDefault();if(!btn()?.dataset.saving)simpan()}} ,true);
 function mulaiPengeluaran(){if(unsubscribe){unsubscribe();unsubscribe=null}if(!userAktif)return;const q=query(collection(db,"expenses"),where("uid","==",userAktif.uid));const c=$("daftarPengeluaran");if(c)unsubscribe=onSnapshot(q,render,e=>{console.error(e);c.innerHTML='<div class="text-center text-danger p-2 small">Gagal memuat data akun.</div>'})}
 onAuthStateChanged(auth,u=>{userAktif=u||null;authSelesai=true;syncLogoForAccount(userAktif);syncHeaderForAccount(userAktif);mulaiPengeluaran()});
+window.addEventListener("settingsChanged",()=>syncHeaderForAccount(userAktif));
+window.addEventListener("accountDataReady",()=>syncHeaderForAccount(userAktif));
+const headerGuard=new MutationObserver(()=>{const p=settingsLocal();const nama=String(p.namaLembaga??p.namaPondok??p.namaSekolah??p.lembaga??"").trim();const sub=String(p.subJudul??p.subjudul??p.subTitle??"").trim();if(nama||sub)syncHeaderForAccount(userAktif)});window.addEventListener("DOMContentLoaded",()=>{const target=document.querySelector(".ck-topbar")||document.body;if(target)headerGuard.observe(target,{childList:true,subtree:true});setTimeout(enforceHeader,100);setTimeout(enforceHeader,500);setTimeout(enforceHeader,1500)});
