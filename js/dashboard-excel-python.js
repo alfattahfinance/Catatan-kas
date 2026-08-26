@@ -16,6 +16,27 @@ function status(msg, ok = true) {
     e.style.fontWeight = '700';
 }
 
+function syncDashboardIdentity() {
+    const uid = String(window.currentFirebaseUid || window.currentFirebaseUser?.uid || '').trim();
+    let s = {};
+    try {
+        s = JSON.parse(localStorage.getItem(uid ? `pengaturanAplikasi_${uid}` : 'pengaturanAplikasi') || '{}') || {};
+    } catch (_) {}
+    const nama = String(s.namaLembaga || s.namaPondok || s.namaSekolah || s.lembaga || '').trim();
+    const sub = String(s.subJudul || s.subjudul || s.subTitle || '').trim();
+    const logo = String(uid ? localStorage.getItem(`logoDashboard_${uid}`) : '') || String(s.logoDashboard || '');
+    const nameEl = $('appName');
+    const subEl = $('appSub');
+    const logoEl = $('logo');
+    if (nameEl && nama) nameEl.textContent = nama;
+    if (subEl && sub) subEl.textContent = sub;
+    if (logoEl && logo) {
+        logoEl.removeAttribute('srcset');
+        logoEl.removeAttribute('data-src');
+        logoEl.src = logo;
+    }
+}
+
 function ensureXLSX() {
     if (window.XLSX) return Promise.resolve(window.XLSX);
     if (xlsxLoading) return xlsxLoading;
@@ -139,12 +160,15 @@ function connectButton() {
 }
 
 function init() {
+    syncDashboardIdentity();
     connectButton();
-    setTimeout(connectButton, 250);
-    setTimeout(connectButton, 700);
-    setTimeout(connectButton, 1500);
-    setTimeout(connectButton, 3000);
-    window.addEventListener('accountDataReady', connectButton);
+    setTimeout(() => { syncDashboardIdentity(); connectButton(); }, 250);
+    setTimeout(() => { syncDashboardIdentity(); connectButton(); }, 700);
+    setTimeout(() => { syncDashboardIdentity(); connectButton(); }, 1500);
+    setTimeout(() => { syncDashboardIdentity(); connectButton(); }, 3000);
+    window.addEventListener('accountDataReady', () => { syncDashboardIdentity(); connectButton(); });
+    window.addEventListener('settingsChanged', syncDashboardIdentity);
+    window.addEventListener('logoDashboardChanged', syncDashboardIdentity);
     window.addEventListener('dataKeuanganBerubah', connectButton);
 }
 
