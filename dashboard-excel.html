@@ -8,23 +8,34 @@
 <body>
 <div style="padding:20px;font-family:Arial">Memuat Dashboard Excel...</div>
 <script>
-fetch('dashboard-excel-fixed.html?v=20260826',{cache:'no-store'})
-.then(r=>{if(!r.ok)throw new Error('Dashboard Excel tidak dapat dimuat');return r.text()})
-.then(html=>{
-  /* Hapus seluruh engine lama dari dashboard-fixed. */
-  html=html.replace(/<script\s+type=["']module["'][^>]*>[\s\S]*?<\/script>/gi,'');
-  /* Jangan tampilkan hasil engine lama. Engine baru yang menentukan isi tabel. */
-  html=html.replace(/<\/head>/i,'<style>#body{visibility:hidden}</style></head>');
-  const guard='<script>(function(){function watch(){const b=document.getElementById("body");if(!b)return;const show=()=>{b.style.visibility="visible"};new MutationObserver(show).observe(b,{childList:true,subtree:true,characterData:true});if(b.children.length)show()}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watch);else watch()})();<\/script>';
-  const add=guard+'<script type="module" src="dashboard-excel-period.js?v=20260826"><\/script>';
-  html=html.replace(/<\/body>/i,add+'</body>');
-  document.open();
-  document.write(html);
-  document.close();
-})
-.catch(e=>{
-  document.body.innerHTML='<div style="padding:20px;font-family:Arial;color:#b02a37"><b>Dashboard Excel gagal dimuat.</b><br>'+e.message+'</div>';
-});
+(function(){
+  const VERSION='20260826-2';
+  fetch('dashboard-excel-fixed.html?v='+VERSION,{cache:'no-store'})
+  .then(r=>{if(!r.ok)throw new Error('Dashboard Excel tidak dapat dimuat');return r.text()})
+  .then(html=>{
+    /*
+      Penting: dashboard-excel-fixed.html masih memiliki renderer lama.
+      Jangan izinkan SATU PUN script inline dari file lama dieksekusi.
+      CSS dan HTML tetap dipakai, sedangkan engine periode dipasang sendiri.
+    */
+    html=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+    html=html.replace(/<script\b[^>]*src=["']https:\/\/cdn\.sheetjs\.com\/xlsx-[^"']+["'][^>]*>\s*<\/script>/gi,'');
+
+    /* Sembunyikan tabel sampai engine baru selesai render. */
+    html=html.replace(/<\/head>/i,'<style>#body{visibility:hidden}</style></head>');
+
+    const engine=`<script type="module" src="dashboard-excel-period.js?v=${VERSION}"><\/script>`;
+    const reveal=`<script>(function(){function wait(){const b=document.getElementById('body');if(!b)return;const obs=new MutationObserver(function(){if(b.children.length){b.style.visibility='visible';obs.disconnect()}});obs.observe(b,{childList:true,subtree:true,characterData:true});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wait);else wait()})();<\/script>`;
+    html=html.replace(/<\/body>/i,engine+reveal+'</body>');
+
+    document.open();
+    document.write(html);
+    document.close();
+  })
+  .catch(e=>{
+    document.body.innerHTML='<div style="padding:20px;font-family:Arial;color:#b02a37"><b>Dashboard Excel gagal dimuat.</b><br>'+e.message+'</div>';
+  });
+})();
 </script>
 </body>
 </html>
