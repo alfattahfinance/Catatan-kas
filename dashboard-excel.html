@@ -9,7 +9,7 @@
 <div style="padding:20px;font-family:Arial">Memuat Dashboard Excel...</div>
 <script>
 (function(){
-  const VERSION='20260826-2';
+  const VERSION='20260826-3';
   fetch('dashboard-excel-fixed.html?v='+VERSION,{cache:'no-store'})
   .then(r=>{if(!r.ok)throw new Error('Dashboard Excel tidak dapat dimuat');return r.text()})
   .then(html=>{
