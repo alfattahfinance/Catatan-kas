@@ -1,5 +1,5 @@
 import { db, auth } from "./firebase-config.js";
-import { collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 (() => {
@@ -7,7 +7,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
   let stop = null;
   const input = () => document.getElementById("namaSiswaSiswiPemasukan");
   const box = () => document.getElementById("saranNamaPemasukan");
-
   const normal = v => String(v ?? "").trim().toLocaleLowerCase("id-ID");
   const clean = list => [...new Set((list || []).map(x => String(x ?? "").trim()).filter(Boolean))]
     .sort((a,b) => a.localeCompare(b, "id", { sensitivity: "base" }));
@@ -19,9 +18,9 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     panel.innerHTML = "";
     if (!q) { panel.style.display = "none"; return; }
 
-    // WAJIB cocok dari awal nama, bukan contains().
+    // Pencarian HARUS dari AWAL nama. A/a => semua nama yang diawali A/a.
     const hasil = namaList.filter(n => normal(n).startsWith(q)).slice(0, 30);
-    for (const n of hasil) {
+    hasil.forEach(n => {
       const b = document.createElement("button");
       b.type = "button";
       b.textContent = n;
@@ -33,25 +32,31 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
         el.dispatchEvent(new Event("input", { bubbles: true }));
       });
       panel.appendChild(b);
-    }
+    });
     panel.style.display = hasil.length ? "block" : "none";
   }
 
-  async function load(uid) {
+  async function load() {
     if (stop) { stop(); stop = null; }
-    namaList = [];
-    if (!uid) { render(); return; }
-    const q = query(collection(db, "santri"), where("uid", "==", uid));
     try {
-      const snap = await getDocs(q);
-      namaList = clean(snap.docs.map(d => d.data()?.nama));
+      // Jangan bergantung pada field uid yang mungkin tidak ada pada data lama.
+      // Daftar nama utama tetap berasal dari koleksi santri.
+      const snap = await getDocs(collection(db, "santri"));
+      namaList = clean(snap.docs.map(d => {
+        const x = d.data() || {};
+        return x.nama ?? x.namaSiswaSiswi ?? x.namaSiswa ?? "";
+      }));
       render();
-      stop = onSnapshot(q, s => {
-        namaList = clean(s.docs.map(d => d.data()?.nama));
+
+      stop = onSnapshot(collection(db, "santri"), s => {
+        namaList = clean(s.docs.map(d => {
+          const x = d.data() || {};
+          return x.nama ?? x.namaSiswaSiswi ?? x.namaSiswa ?? "";
+        }));
         render();
       });
     } catch (e) {
-      console.warn("Autocomplete nama pemasukan gagal memuat daftar nama:", e);
+      console.warn("Autocomplete nama pembayaran gagal memuat santri:", e);
       namaList = [];
       render();
     }
@@ -68,16 +73,14 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     });
   }
 
-  const start = () => {
+  function start() {
     bind();
-    onAuthStateChanged(auth, user => load(user?.uid || null));
-    window.addEventListener("daftarSantriBerubah", () => auth.currentUser && load(auth.currentUser.uid));
-    window.addEventListener("santriDataReady", e => {
-      const list = e.detail?.list || [];
-      if (list.length) { namaList = clean(list.map(x => x.nama)); render(); }
-    });
-  };
+    onAuthStateChanged(auth, () => load());
+  }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
-  else start();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
 })();
