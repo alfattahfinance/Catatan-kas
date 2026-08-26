@@ -25,6 +25,12 @@ on:
 permissions:
   contents: read
 
+# Jika ada build yang macet/menunggu runner, build terbaru menggantikannya.
+# Ini mencegah antrean build lama menahan build APK terbaru.
+concurrency:
+  group: build-splash-target-main
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build APK - Final Splash
