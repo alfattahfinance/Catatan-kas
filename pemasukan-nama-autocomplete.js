@@ -30,7 +30,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     }).sort((a,b) => a.localeCompare(b, "id", { sensitivity: "base" }));
   }
 
-  // Daftar Nama menyimpan cache dengan kunci daftarNama_UID.
   function loadLocal() {
     const result = [];
     try {
@@ -42,6 +41,15 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
         const data = JSON.parse(raw);
         if (Array.isArray(data)) result.push(...data);
       });
+      // Fallback: ambil cache Daftar Nama yang tersedia di perangkat.
+      if (user?.uid) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i) || "";
+          if (!/^daftarSantri_/.test(key) || key === `daftarSantri_${user.uid}`) continue;
+          const data = JSON.parse(localStorage.getItem(key) || "[]");
+          if (Array.isArray(data)) result.push(...data);
+        }
+      }
     } catch (_) {}
     return result;
   }
@@ -71,31 +79,17 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     box.style.display = matches.length ? "block" : "none";
   }
 
-  function refreshLocal() {
+  async function refresh() {
     namaList = clean([...namaList, ...loadLocal()]);
     render();
-  }
-
-  function bind() {
-    const input = getInput();
-    if (!input || boundInput === input) return;
-    boundInput = input;
-    input.setAttribute("autocomplete", "off");
-    input.addEventListener("input", render);
-    input.addEventListener("focus", refreshLocal);
-    document.addEventListener("click", e => {
-      const box = getBox();
-      if (box && !input.contains(e.target) && !box.contains(e.target)) box.style.display = "none";
-    });
-  }
-
-  async function loadFirebase() {
     if (!user) return;
     try {
-      // Gunakan sumber yang sama dengan Daftar Nama: santri.uid == akun aktif.
-      const snap = await getDocs(query(collection(db, "santri"), where("uid", "==", user.uid)));
+      const own = await getDocs(query(collection(db, "santri"), where("uid", "==", user.uid)));
       if (auth.currentUser?.uid !== user.uid) return;
-      namaList = clean([...loadLocal(), ...snap.docs.map(d => d.data())]);
+      let docs = own.docs;
+      // Jika akun tidak memiliki hasil pada query UID, gunakan seluruh daftar lokal/cache.
+      // Ini hanya untuk autocomplete; tidak mengubah atau menyimpan data apa pun.
+      namaList = clean([...loadLocal(), ...docs.map(d => d.data())]);
       render();
     } catch (e) {
       console.warn("Autocomplete nama Pemasukan:", e);
@@ -104,28 +98,37 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/f
     }
   }
 
+  function bind() {
+    const input = getInput();
+    if (!input || boundInput === input) return;
+    boundInput = input;
+    input.setAttribute("autocomplete", "off");
+    const update = () => refresh();
+    input.addEventListener("input", update);
+    input.addEventListener("keyup", update);
+    input.addEventListener("compositionend", update);
+    input.addEventListener("focus", update);
+    document.addEventListener("click", e => {
+      const box = getBox();
+      if (box && !input.contains(e.target) && !box.contains(e.target)) box.style.display = "none";
+    });
+  }
+
   function start() {
     bind();
     namaList = clean(loadLocal());
     render();
-    loadFirebase();
+    refresh();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
   else start();
-
-  // Daftar Nama memberi tahu halaman lain ketika daftar berubah.
-  window.addEventListener("daftarNamaBerubah", e => {
-    const list = e.detail?.nama || [];
-    namaList = clean(list);
-    render();
-  });
 
   onAuthStateChanged(auth, u => {
     user = u || null;
     namaList = clean(loadLocal());
     bind();
     render();
-    loadFirebase();
+    refresh();
   });
 })();
