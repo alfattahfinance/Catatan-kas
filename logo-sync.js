@@ -35,4 +35,6 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 window.addEventListener("logoDashboardChanged",applyAll);window.addEventListener("settingsChanged",applyAll);window.addEventListener("accountReady",applyAll);window.addEventListener("accountDataReady",applyAll);window.addEventListener("pageshow",applyAll);window.addEventListener("focus",applyAll);
 const observer=new MutationObserver(m=>{let changed=false;for(const x of m){if(x.type==="childList"){x.addedNodes.forEach(n=>{if(n.nodeType===1)changed=true})}}if(changed)applyAll()});
 const observe=()=>document.body&&observer.observe(document.body,{childList:true,subtree:true});if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",observe,{once:true});else observe();
+// Pemasukan memuat autocomplete secara eksplisit agar tidak bergantung pada script lama/cache.
+if(location.pathname.toLowerCase().endsWith("/pemasukan.html")||location.pathname.toLowerCase().endsWith("pemasukan.html"))import("./pemasukan-nama-autocomplete.js").catch(e=>console.warn("Autocomplete nama Pemasukan gagal dimuat:",e));
 })();
