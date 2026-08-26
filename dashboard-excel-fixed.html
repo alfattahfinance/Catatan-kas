@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Dashboard Excel | Rekap Perorang</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="theme.css">
+<style>
+*{box-sizing:border-box}body{margin:0;padding-bottom:80px;background:linear-gradient(135deg,#f7f4ec,#eef5ef);color:#1d2924;font-family:Arial,sans-serif}.wrap{padding:10px}.top,.cardx{background:rgba(255,255,255,.94);border:1px solid #d9e5df;border-radius:14px}.top{display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:9px}.logo{width:45px;height:45px;object-fit:contain;border-radius:11px}.title{font-size:1rem;font-weight:900;color:#198754}.sub{font-size:.68rem;color:#728078}.cardx{padding:9px;margin-bottom:9px}.filter{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:7px}.form-label{font-size:.62rem;font-weight:800;color:#728078}.form-control,.form-select{min-height:38px;border-radius:9px;border:1px solid #d9e5df;font-size:.75rem}.table-wrap{overflow:auto}.table{min-width:1100px;margin:0}.table th{font-size:.62rem;background:#164c3d;color:#fff;white-space:nowrap}.table td{font-size:.65rem;vertical-align:middle;white-space:nowrap}.ok{color:#198754;font-weight:900}.no{color:#dc5b58;font-weight:900}.na{color:#9aa49f;font-weight:900}.last{color:#198754;font-weight:900}.section{font-size:.78rem;font-weight:900;margin-bottom:6px}.back{display:inline-flex;gap:5px;align-items:center;text-decoration:none;color:#198754;font-weight:800;font-size:.7rem;margin-bottom:7px}.bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid #d9e5df;padding:5px;z-index:1000}.bottomin{display:grid;grid-template-columns:repeat(5,1fr)}.bottom a{text-decoration:none;text-align:center;color:#6f7a75;font-size:.58rem;padding:3px}.bottom i{display:block;font-size:.9rem}.bottom .active{color:#198754;font-weight:900}.empty{text-align:center;color:#728078;padding:18px}@media(max-width:800px){.filter{grid-template-columns:1fr}.wrap{padding:8px} }html.dark-mode{--text:#eef4f0}html.dark-mode body{background:#101514!important;color:#eef4f0}html.dark-mode .top,html.dark-mode .cardx,html.dark-mode .bottom{background:#1b211f!important;border-color:#34423b}html.dark-mode .form-control,html.dark-mode .form-select{background:#202825!important;color:#eef4f0!important;border-color:#46554d!important}
+</style>
+</head>
+<body>
+<main class="wrap">
+<a class="back" href="index.html"><i class="bi bi-arrow-left"></i>Kembali ke Dashboard</a>
+<header class="top"><img id="logo" class="logo" src="Photoroom_20260812_224807.png" alt="Logo Keuangan"><div><div id="appName" class="title">Keuangan</div><div id="appSub" class="sub">Dashboard Keuangan</div></div></header>
+<section class="cardx">
+<div class="filter">
+<div><label class="form-label">Cari Nama</label><input id="cari" class="form-control" placeholder="Ketik nama..."></div>
+<div><label class="form-label">Tahun</label><select id="tahun" class="form-select"></select></div>
+<div><label class="form-label">Jenis pemasukan</label><select id="jenis" class="form-select"><option value="Semua">Semua</option><option>SPP</option><option>Syahriyyah</option><option>Infaq</option><option>Kas</option><option>Beras</option><option>Lainnya</option></select></div>
+</div>
+<div class="mt-2"><label class="form-label">Nama yang dipilih</label><select id="pilihNama" class="form-select"><option value="">Semua Nama</option></select></div>
+</section>
+<section class="cardx"><div class="section">Rekap Perorang</div><div class="table-wrap"><table class="table table-bordered"><thead><tr><th>Nama</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>Mei</th><th>Jun</th><th>Jul</th><th>Agu</th><th>Sep</th><th>Okt</th><th>Nov</th><th>Des</th><th>Periode Wajib</th><th>Jumlah Bulan</th><th>Sudah Bayar Sampai</th><th>Total Masuk</th></tr></thead><tbody id="body"><tr><td colspan="17" class="empty">Memuat data...</td></tr></tbody></table></div></section>
+<section class="cardx"><div class="section">Detail nama yang dipilih</div><div id="detail" class="empty">Pilih nama untuk melihat detail.</div></section>
+</main>
+<nav class="bottom"><div class="bottomin"><a href="index.html"><i class="bi bi-house"></i>Beranda</a><a href="siswa-siswi.html"><i class="bi bi-people"></i>Daftar Nama</a><a href="pemasukan.html"><i class="bi bi-cash-stack"></i>Masuk</a><a href="pengeluaran.html"><i class="bi bi-wallet2"></i>Keluar</a><a class="active" href="dashboard-excel.html"><i class="bi bi-file-earmark-spreadsheet"></i>Excel</a></div></nav>
+<script type="module" src="dashboard-excel-period.js?v=20260826-5"></script>
+<script src="theme.js"></script>
+</body>
+</html>
